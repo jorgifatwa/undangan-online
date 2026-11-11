@@ -1,0 +1,296 @@
+// =============================================================================
+// Skema database platform undangan digital
+// -----------------------------------------------------------------------------
+// Prinsip: DATA undangan disimpan sebagai JSON di Invitation.data (divalidasi
+// Zod per jenis acara di src/schemas), sehingga tema bisa diganti kapan saja
+// tanpa migrasi. Tabel relasional hanya untuk hal yang perlu di-query/di-index:
+// tamu, RSVP, ucapan, order, dan statistik kunjungan.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enum
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum EventType {
+  WEDDING
+  BIRTHDAY
+  AQIQAH
+  KHITANAN
+  SYUKURAN
+}
+
+/// Paket dibayar sekali per undangan. Harga & fitur didefinisikan di
+/// src/lib/packages.ts (sumber kebenaran server), bukan di database.
+enum PackageTier {
+  FREE
+  BASIC
+  PREMIUM
+  EXCLUSIVE
+}
+
+enum InvitationStatus {
+  DRAFT
+  PUBLISHED
+  EXPIRED
+}
+
+enum RsvpStatus {
+  HADIR
+  TIDAK_HADIR
+  RAGU
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+// -----------------------------------------------------------------------------
+// Auth.js (struktur standar @auth/prisma-adapter + field tambahan)
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  /// Hanya terisi untuk login email/password (bcrypt). Null untuk user OAuth.
+  passwordHash  String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  invitations Invitation[]
+  orders      Order[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/// Dipertahankan agar kompatibel dengan adapter, walau strategi session = JWT.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// -----------------------------------------------------------------------------
+// Undangan
+// -----------------------------------------------------------------------------
+
+model Invitation {
+  id           String           @id @default(cuid())
+  userId       String
+  /// Dipakai untuk subdomain {slug}.domain.id dan fallback /u/{slug}.
+  slug         String           @unique
+  eventType    EventType
+  /// Merujuk ke manifest.id di src/themes/{theme-slug}.
+  themeId      String
+  /// Kunci palet dari manifest tema (mis. "sage", "navy").
+  colorVariant String?
+  /// Data undangan; bentuknya ditentukan Zod schema sesuai eventType.
+  data         Json             @default("{}")
+  package      PackageTier      @default(FREE)
+  status       InvitationStatus @default(DRAFT)
+  /// Mode privat (Premium+): hanya tamu dengan link personal yang bisa membuka.
+  isPrivate    Boolean          @default(false)
+  /// Counter denormalisasi agar dashboard cepat; detail ada di InvitationView.
+  viewCount    Int              @default(0)
+  publishedAt  DateTime?
+  /// Null = aktif permanen (paket berbayar). FREE diisi publishedAt + 3 hari.
+  expiresAt    DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guests Guest[]
+  rsvps  Rsvp[]
+  wishes Wish[]
+  orders Order[]
+  views  InvitationView[]
+
+  @@index([userId])
+  @@index([status, expiresAt])
+}
+
+model Guest {
+  id              String    @id @default(cuid())
+  invitationId    String
+  name            String
+  /// Slug tamu untuk link personal: {slug}.domain.id/?to={guestSlug}
+  slug            String
+  /// Grup bebas, mis. "Keluarga", "Teman Kantor".
+  group           String?
+  /// Nomor WA dinormalisasi ke format 62xxxxxxxxxx.
+  phone           String?
+  /// Id acara (dari Invitation.data.events[].id) yang boleh dihadiri.
+  /// Array kosong = boleh menghadiri semua acara.
+  allowedEventIds String[]  @default([])
+  /// Waktu terakhir undangan dikirim lewat WA.
+  sentAt          DateTime?
+  /// Diisi saat QR check-in dipindai di lokasi acara.
+  checkedInAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  invitation Invitation       @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  rsvps      Rsvp[]
+  views      InvitationView[]
+
+  @@unique([invitationId, slug])
+  @@index([invitationId, group])
+}
+
+model Rsvp {
+  id           String     @id @default(cuid())
+  invitationId String
+  /// Null jika RSVP dari link umum (tanpa nama tamu personal).
+  guestId      String?
+  name         String
+  status       RsvpStatus
+  /// Jumlah orang yang hadir.
+  pax          Int        @default(1)
+  message      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  guest      Guest?     @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([invitationId, status])
+  @@index([guestId])
+}
+
+model Wish {
+  id           String   @id @default(cuid())
+  invitationId String
+  name         String
+  message      String
+  /// Pemilik undangan bisa menyembunyikan ucapan (spam/tidak pantas).
+  isHidden     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId, createdAt])
+}
+
+/// Log kunjungan ringan untuk statistik "dibuka". Tidak menyimpan IP mentah.
+model InvitationView {
+  id           String   @id @default(cuid())
+  invitationId String
+  guestId      String?
+  /// Hash harian (IP + UA + tanggal) untuk menghitung pengunjung unik.
+  visitorHash  String?
+  createdAt    DateTime @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  guest      Guest?     @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([invitationId, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// Pembayaran (Midtrans Snap)
+// -----------------------------------------------------------------------------
+
+model Order {
+  id              String      @id @default(cuid())
+  invitationId    String
+  userId          String
+  package         PackageTier
+  /// Nominal dalam rupiah, disimpan saat order dibuat (harga bisa berubah).
+  amount          Int
+  midtransOrderId String      @unique
+  status          OrderStatus @default(PENDING)
+  /// Mis. "qris", "gopay", "bank_transfer", "credit_card".
+  paymentType     String?
+  snapToken       String?
+  /// Payload notifikasi terakhir dari webhook Midtrans (audit).
+  rawNotification Json?
+  paidAt          DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId])
+  @@index([userId, status])
+}
+
+// -----------------------------------------------------------------------------
+// Musik latar
+// -----------------------------------------------------------------------------
+
+model MusicTrack {
+  id        String   @id @default(cuid())
+  title     String
+  artist    String?
+  /// URL file audio (R2/CDN).
+  url       String
+  /// Durasi dalam detik.
+  duration  Int?
+  /// Mis. "romantis", "islami", "instrumental", "anak".
+  category  String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([isActive, category])
+}
