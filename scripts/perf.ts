@@ -68,10 +68,17 @@ async function measure(base: string, themeId: string, lite: boolean) {
   // tsx/esbuild menyisipkan helper __name ke fungsi yang dikirim ke browser.
   await page.evaluateOnNewDocument("window.__name = (fn) => fn;");
   await page.evaluateOnNewDocument(() => {
-    const w = window as unknown as { __lcp: number };
+    const w = window as unknown as { __lcp: number; __lcpEl: string };
     w.__lcp = 0;
+    w.__lcpEl = "";
     new PerformanceObserver((list) => {
-      for (const e of list.getEntries()) w.__lcp = e.startTime;
+      for (const e of list.getEntries() as (PerformanceEntry & { element?: Element | null })[]) {
+        w.__lcp = e.startTime;
+        const el = e.element;
+        w.__lcpEl = el
+          ? `${el.tagName.toLowerCase()}${el.className && typeof el.className === "string" ? "." + el.className.split(" ")[0] : ""} "${(el.textContent ?? "").trim().slice(0, 24)}"`
+          : "?";
+      }
     }).observe({ type: "largest-contentful-paint", buffered: true });
   });
 
@@ -83,8 +90,13 @@ async function measure(base: string, themeId: string, lite: boolean) {
   const vitals = await page.evaluate(() => {
     const fcp = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? 0;
     const ready = performance.getEntriesByName("inv-ready")[0]?.startTime ?? 0;
-    const lcp = (window as unknown as { __lcp: number }).__lcp;
-    return { fcp: Math.round(fcp), lcp: Math.round(lcp), ready: Math.round(ready) };
+    const w = window as unknown as { __lcp: number; __lcpEl: string };
+    return {
+      fcp: Math.round(fcp),
+      lcp: Math.round(w.__lcp),
+      ready: Math.round(ready),
+      lcpEl: w.__lcpEl,
+    };
   });
 
   const idle = await collectFrames(page, () => sleep(3000));
@@ -114,25 +126,47 @@ async function measure(base: string, themeId: string, lite: boolean) {
   return { themeId, mode: lite ? "ringan" : "normal", ...vitals, idle, open, scroll };
 }
 
+type Result = Awaited<ReturnType<typeof measure>>;
+
+const avg = (xs: number[]) => Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);
+const avgFrames = (xs: FrameStats[]): FrameStats => ({
+  fps: avg(xs.map((x) => x.fps)),
+  p95: avg(xs.map((x) => x.p95)),
+  jankPct: Math.round((xs.reduce((a, x) => a + x.jankPct, 0) / xs.length) * 10) / 10,
+});
+
+/** pnpm perf <base> [themeId ...] [--runs=3] — angka dirata-rata dari beberapa kali tes. */
 async function main() {
-  const [base = "http://localhost:3300", ...ids] = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const runs = Number(args.find((a) => a.startsWith("--runs="))?.split("=")[1] ?? 1);
+  const [base = "http://localhost:3300", ...ids] = args.filter((a) => !a.startsWith("--"));
   const themes = ids.length ? ids : THEME_MANIFESTS.map((m) => m.id);
-  const rows: Awaited<ReturnType<typeof measure>>[] = [];
+
+  const rows: { themeId: string; mode: string; runs: Result[] }[] = [];
   for (const id of themes) {
     for (const lite of [false, true]) {
-      process.stdout.write(`… ${id} (${lite ? "ringan" : "normal"})\n`);
-      rows.push(await measure(base, id, lite));
+      const results: Result[] = [];
+      for (let i = 0; i < runs; i++) {
+        const r = await measure(base, id, lite);
+        process.stdout.write(`… ${id} (${r.mode}) #${i + 1}: LCP ${r.lcp} ms ← ${r.lcpEl}\n`);
+        results.push(r);
+      }
+      rows.push({ themeId: id, mode: lite ? "ringan" : "normal", runs: results });
     }
   }
 
   const f = (s: FrameStats) => `${s.fps} fps · p95 ${s.p95}ms · patah ${s.jankPct}%`;
-  console.log("\nCPU 4x + Fast 4G, cache kosong, viewport 390×844\n");
+  console.log(`\nCPU 4x + Fast 4G, cache kosong, viewport 390×844, rata-rata ${runs}× tes\n`);
   console.log("| Tema | Mode | FCP | LCP (cover) | Siap klik | Cover diam | Buka cover | Scroll |");
   console.log("|---|---|---|---|---|---|---|---|");
-  for (const r of rows) {
-    const lcpMark = r.lcp <= 2500 ? "✅" : "⚠️";
+  for (const { themeId, mode, runs: rs } of rows) {
+    const lcp = avg(rs.map((r) => r.lcp));
+    const range =
+      rs.length > 1
+        ? ` (${Math.min(...rs.map((r) => r.lcp))}–${Math.max(...rs.map((r) => r.lcp))})`
+        : "";
     console.log(
-      `| ${r.themeId} | ${r.mode} | ${r.fcp} ms | ${r.lcp} ms ${lcpMark} | ${r.ready} ms | ${f(r.idle)} | ${f(r.open)} | ${f(r.scroll)} |`,
+      `| ${themeId} | ${mode} | ${avg(rs.map((r) => r.fcp))} ms | ${lcp} ms${range} ${lcp <= 2500 ? "✅" : "⚠️"} | ${avg(rs.map((r) => r.ready))} ms | ${f(avgFrames(rs.map((r) => r.idle)))} | ${f(avgFrames(rs.map((r) => r.open)))} | ${f(avgFrames(rs.map((r) => r.scroll)))} |`,
     );
   }
 }

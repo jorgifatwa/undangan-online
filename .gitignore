@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Referensi desain (aset & screenshot) — jangan di-commit
+/.reference/
+/public/_ref/

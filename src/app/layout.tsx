@@ -1,22 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  display: "swap",
-  axes: ["SOFT", "opsz"],
-});
+// Font website dipasang di layout grup (marketing/auth/dashboard), bukan di sini,
+// agar halaman undangan (/u, /preview) tidak ikut mengunduhnya. Lihat site-fonts.tsx.
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.appUrl),
@@ -36,7 +25,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body className={`${jakarta.variable} ${fraunces.variable} antialiased`}>
+      <body className="antialiased">
         {children}
         <Toaster position="top-center" />
       </body>

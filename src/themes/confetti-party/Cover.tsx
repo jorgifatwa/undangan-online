@@ -73,26 +73,19 @@ export function ConfettiCover({ onOpen }: CoverProps) {
         />
       ))}
 
-      <motion.div
-        className="relative z-10 flex flex-col items-center"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 0.7, 0.2, 1] }}
-      >
+      {/* Animasi masuk memakai CSS (bukan Framer Motion) agar berjalan sejak HTML
+          pertama tampil, tanpa menunggu JavaScript; hanya transform, tanpa opacity 0,
+          sehingga nama langsung terlihat (LCP tidak menunggu hidrasi). */}
+      <div className="cp-enter relative z-10 flex flex-col items-center">
         <p className="text-sm font-semibold tracking-[0.25em] uppercase opacity-95">
           Kamu diundang ke pesta
         </p>
 
         {c.age !== undefined && (
-          <motion.div
-            className="cp-age relative mt-5 grid size-40 place-items-center rounded-full"
-            initial={{ scale: 0.3, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 160, damping: 12, delay: 0.2 }}
-          >
+          <div className="cp-age cp-pop relative mt-5 grid size-40 place-items-center rounded-full">
             <span className="cp-age-number">{c.age}</span>
             <span className="cp-age-label">tahun</span>
-          </motion.div>
+          </div>
         )}
 
         <h1 className="cp-name mt-5">{c.nickname ?? c.name}</h1>
@@ -105,7 +98,7 @@ export function ConfettiCover({ onOpen }: CoverProps) {
         <button type="button" onClick={onOpen} className="cp-open-btn pointer-events-auto mt-8">
           🎉 Buka Undangan
         </button>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }

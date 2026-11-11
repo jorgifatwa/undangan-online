@@ -20,7 +20,10 @@
     "theme:new": "tsx scripts/theme-new.ts",
     "perf": "tsx scripts/perf.ts",
     "predev": "tsx scripts/themes-sync.ts",
-    "prebuild": "tsx scripts/themes-sync.ts"
+    "prebuild": "tsx scripts/themes-sync.ts",
+    "ref:assets": "tsx scripts/ref-assets.ts",
+    "ref:shots": "tsx scripts/ref-shots.ts",
+    "assets:sync": "tsx scripts/assets-sync.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

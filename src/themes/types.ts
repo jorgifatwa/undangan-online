@@ -5,6 +5,7 @@ import type { PackageFeatures } from "@/lib/packages";
 import type { SupportedEventType } from "@/schemas";
 import type { AnyInvitationData, SectionId } from "@/schemas/sections";
 
+import type { ThemeAssets } from "./_shared/assets";
 import type { WishItem } from "./_shared/runtime/context";
 
 export type ThemeCategory = "elegan" | "modern" | "islami" | "adat" | "anak" | "ceria" | "klasik";
@@ -92,6 +93,8 @@ export interface ThemeDefinition {
   Ambient?: ComponentType<{ opened: boolean }>;
   /** Latar dekoratif desktop di sisi kolom 440px. */
   Backdrop?: ComponentType;
+  /** Aset asli per slot (hasil `pnpm assets:sync`); slot tanpa aset → versi SVG. */
+  assets?: ThemeAssets;
   /** Elemen pembungkus tambahan (mis. style global tema). */
   children?: ReactNode;
 }
