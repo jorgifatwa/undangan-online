@@ -1,0 +1,180 @@
+/*
+ * Confetti Party — gaya tema. Semua selector dibatasi [data-theme="confetti-party"].
+ * Section memakai komponen default _shared; tampilan "stiker" ceria dibuat di sini.
+ */
+
+[data-theme="confetti-party"] {
+  --inv-font-display: var(--font-cp-display), system-ui, sans-serif;
+  --inv-font-script: var(--font-cp-display), system-ui, sans-serif;
+  --inv-font-body: var(--font-cp-body), system-ui, sans-serif;
+  --inv-radius: 1.25rem;
+}
+
+/* Latar desktop gradien ceria. */
+[data-theme="confetti-party"] .inv-backdrop {
+  background: var(--inv-backdrop);
+}
+
+/* Section bergantian: polkadot & gelombang. */
+[data-theme="confetti-party"] .inv-section {
+  background-image: radial-gradient(var(--inv-dots) 2.5px, transparent 3px);
+  background-size: 22px 22px;
+}
+[data-theme="confetti-party"] .inv-section:nth-of-type(even) {
+  background-color: var(--inv-bg-alt);
+}
+[data-theme="confetti-party"] .inv-section:nth-of-type(even)::before {
+  content: "";
+  position: absolute;
+  inset: -1px 0 auto;
+  height: 22px;
+  background: var(--inv-bg);
+  /* tepi bergelombang */
+  -webkit-mask: radial-gradient(14px 12px at 50% 0, #000 98%, transparent) 0 0 / 28px 22px repeat-x;
+  mask: radial-gradient(14px 12px at 50% 0, #000 98%, transparent) 0 0 / 28px 22px repeat-x;
+}
+
+/* Judul: tebal dengan bayangan offset warna aksen. */
+[data-theme="confetti-party"] .inv-title {
+  font-weight: 700;
+  font-size: 2.4rem !important;
+  letter-spacing: 0.01em;
+  text-shadow: 3px 3px 0 var(--inv-accent);
+}
+[data-theme="confetti-party"] .inv-kicker {
+  display: inline-block;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  background: var(--inv-accent-2);
+  color: #fff;
+  font-weight: 700;
+  opacity: 1 !important;
+}
+
+/* Kartu bergaya stiker: garis tebal + bayangan padat. */
+[data-theme="confetti-party"] .inv-card {
+  border: 2.5px solid var(--inv-border);
+  box-shadow: 5px 5px 0 var(--inv-accent);
+}
+[data-theme="confetti-party"] .inv-btn {
+  border: 2.5px solid var(--inv-border);
+  box-shadow: 3px 3px 0 var(--inv-border);
+  font-family: var(--inv-font-display);
+  font-weight: 600;
+}
+[data-theme="confetti-party"] .inv-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--inv-border);
+}
+[data-theme="confetti-party"] .inv-btn-outline {
+  background: var(--inv-surface);
+  color: var(--inv-surface-text);
+}
+[data-theme="confetti-party"] .inv-input {
+  border: 2px solid var(--inv-border);
+}
+[data-theme="confetti-party"] .inv-section h3 {
+  font-family: var(--inv-font-display) !important;
+  font-weight: 700;
+}
+
+/* ---------------- Cover ---------------- */
+[data-theme="confetti-party"] .cp-age {
+  background: var(--inv-accent);
+  /* Selalu gelap: lingkaran usia berwarna terang di semua varian. */
+  color: #2a1a4a;
+  box-shadow:
+    0 0 0 6px #fff,
+    0 0 0 10px var(--inv-primary),
+    0 18px 30px rgb(0 0 0 / 0.25);
+}
+[data-theme="confetti-party"] .cp-age-number {
+  font-family: var(--inv-font-display);
+  font-weight: 700;
+  font-size: 4.75rem;
+  line-height: 1;
+  margin-top: -0.6rem;
+}
+[data-theme="confetti-party"] .cp-age-label {
+  position: absolute;
+  bottom: 1.6rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+[data-theme="confetti-party"] .cp-name {
+  font-family: var(--inv-font-display);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 14vw, 3.75rem);
+  line-height: 1;
+  text-shadow: 3px 4px 0 rgb(0 0 0 / 0.18);
+  overflow-wrap: anywhere;
+}
+[data-theme="confetti-party"] .cp-open-btn {
+  min-height: 52px;
+  padding: 0.8rem 1.8rem;
+  border-radius: 999px;
+  background: var(--inv-accent);
+  color: #3b2a5a;
+  font-family: var(--inv-font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  border: 3px solid #3b2a5a;
+  box-shadow: 4px 4px 0 #3b2a5a;
+  animation: cp-wiggle 2.6s ease-in-out infinite;
+}
+[data-theme="confetti-party"] .cp-open-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #3b2a5a;
+}
+
+[data-theme="confetti-party"] .cp-float {
+  animation: cp-float 6s ease-in-out infinite;
+}
+[data-theme="confetti-party"] .cp-twinkle {
+  animation: cp-twinkle 1.8s ease-in-out infinite;
+}
+
+@keyframes cp-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-22px) rotate(3deg);
+  }
+}
+@keyframes cp-twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+@keyframes cp-wiggle {
+  0%,
+  86%,
+  100% {
+    rotate: 0deg;
+  }
+  90% {
+    rotate: -4deg;
+  }
+  94% {
+    rotate: 4deg;
+  }
+}
+
+/* Mode ringan: balon tidak melayang, tanpa blur. */
+[data-theme="confetti-party"][data-lite] .cp-float,
+[data-theme="confetti-party"][data-lite] .cp-twinkle {
+  animation: none;
+}
+[data-theme="confetti-party"][data-lite] .backdrop-blur-sm {
+  backdrop-filter: none;
+}

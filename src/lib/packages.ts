@@ -10,8 +10,6 @@ export interface PackageFeatures {
   /** Masa aktif dalam hari sejak publish; null = permanen. */
   activeDays: number | null;
   watermark: boolean;
-  /** Tingkat tema yang boleh dipakai (dicocokkan dengan manifest.minPackage). */
-  maxThemeTier: PackageTier;
   /** Batas foto galeri; null = tanpa batas. */
   galleryLimit: number | null;
   maps: boolean;
@@ -41,7 +39,6 @@ export const PACKAGE_ORDER: readonly PackageTier[] = ["FREE", "BASIC", "PREMIUM"
 const BASE_FREE: PackageFeatures = {
   activeDays: 3,
   watermark: true,
-  maxThemeTier: "FREE",
   galleryLimit: 6,
   maps: true,
   rsvp: true,
@@ -60,13 +57,11 @@ const BASIC: PackageFeatures = {
   ...BASE_FREE,
   activeDays: null,
   watermark: false,
-  maxThemeTier: "BASIC",
   galleryLimit: null,
 };
 
 const PREMIUM: PackageFeatures = {
   ...BASIC,
-  maxThemeTier: "PREMIUM",
   personalGuestNames: true,
   guestImportExcel: true,
   bulkWhatsapp: true,
@@ -77,7 +72,6 @@ const PREMIUM: PackageFeatures = {
 
 const EXCLUSIVE: PackageFeatures = {
   ...PREMIUM,
-  maxThemeTier: "EXCLUSIVE",
   interactiveThemes: true,
   prioritySupport: true,
 };
@@ -131,6 +125,46 @@ export class FeatureNotAllowedError extends Error {
     super(`Fitur "${feature}" tidak tersedia di paket ${PACKAGES[tier].label}.`);
     this.name = "FeatureNotAllowedError";
   }
+}
+
+// -----------------------------------------------------------------------------
+// Tema & paket
+// -----------------------------------------------------------------------------
+// Semua tema boleh DIPILIH dan DIPAKAI di paket mana pun, termasuk FREE (masa
+// aktif 3 hari + watermark), supaya calon pengguna bisa mencoba tema terbaik.
+// manifest.minPackage = paket minimum agar undangan dengan tema itu bisa AKTIF
+// PERMANEN. FREE tidak pernah permanen, jadi selalu lolos sebagai uji coba.
+
+/** true jika undangan berpaket `tier` boleh dipublikasikan dengan tema ber-`minPackage` ini. */
+export function canPublishWithTheme(tier: PackageTier, themeMinPackage: PackageTier): boolean {
+  if (tier === "FREE") return true;
+  return isTierAtLeast(tier, themeMinPackage);
+}
+
+/**
+ * Paket berbayar termurah yang membuat tema ini aktif permanen
+ * (dipakai halaman checkout untuk menyarankan paket).
+ */
+export function minimumPaidPackageForTheme(themeMinPackage: PackageTier): PackageTier {
+  return themeMinPackage === "FREE" ? "BASIC" : themeMinPackage;
+}
+
+export class ThemeNotAllowedError extends Error {
+  constructor(
+    public readonly tier: PackageTier,
+    public readonly themeMinPackage: PackageTier,
+  ) {
+    super(
+      `Tema ini membutuhkan paket minimal ${PACKAGES[themeMinPackage].label} untuk aktif permanen.`,
+    );
+    this.name = "ThemeNotAllowedError";
+  }
+}
+
+/** Guard sisi server untuk publish / pembayaran. */
+export function assertThemeAllowed(tier: PackageTier, themeMinPackage: PackageTier): void {
+  if (!canPublishWithTheme(tier, themeMinPackage))
+    throw new ThemeNotAllowedError(tier, themeMinPackage);
 }
 
 /** Guard sisi server: lempar error jika paket tidak punya fitur tersebut. */

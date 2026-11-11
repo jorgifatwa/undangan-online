@@ -2,3 +2,6 @@ pnpm-lock.yaml
 .next
 node_modules
 src/components/ui
+src/themes/*.generated.ts
+src/themes/*.generated.tsx
+public/placeholders/CREDITS.md

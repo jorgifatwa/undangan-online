@@ -1,0 +1,147 @@
+/*
+ * Gaya dasar runtime undangan. Semua selector dibatasi [data-inv-root] agar
+ * tidak bocor ke website; warna & font hanya dari token --inv-*.
+ */
+
+[data-inv-root] {
+  /* Default token: tema menimpanya lewat varian warna. */
+  --inv-bg: #fbf7f2;
+  --inv-bg-alt: #f3ebe1;
+  --inv-surface: #ffffff;
+  --inv-surface-text: #2b2420;
+  --inv-text: #2b2420;
+  --inv-text-muted: #6f625a;
+  --inv-primary: #8a4b3b;
+  --inv-primary-text: #ffffff;
+  --inv-accent: #c9a24d;
+  --inv-accent-2: #7a8f6b;
+  --inv-border: rgb(0 0 0 / 0.1);
+  --inv-backdrop: #1b1714;
+  --inv-radius: 1rem;
+  --inv-font-display: Georgia, serif;
+  --inv-font-body: system-ui, sans-serif;
+  --inv-font-script: cursive;
+  --inv-font-arabic: "Amiri", "Traditional Arabic", serif;
+
+  color: var(--inv-text);
+  font-family: var(--inv-font-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Kolom undangan: penuh di HP, 440px di tengah pada layar lebar. */
+[data-inv-root] .inv-column {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  background: var(--inv-bg);
+  overflow-x: clip;
+  box-shadow: 0 0 60px rgb(0 0 0 / 0.45);
+}
+
+[data-inv-root] .inv-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--inv-backdrop);
+}
+
+/* Lapisan yang menempel pada kolom (cover, tombol musik, efek). */
+[data-inv-root] .inv-fixed-column {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  max-width: 440px;
+  transform: translateX(-50%);
+}
+
+/* Section di luar layar dirender malas oleh browser. */
+[data-inv-root] [data-inv-section] {
+  position: relative;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Hemat baterai & CPU: animasi CSS berhenti saat tab tidak aktif dan saat
+ * section tidak terlihat di layar (atribut di-set oleh SectionShell).
+ * ------------------------------------------------------------------------- */
+[data-inv-root][data-inv-hidden] *,
+[data-inv-root] [data-inv-section]:not([data-inview]) * {
+  animation-play-state: paused !important;
+}
+
+/* Mode ringan: matikan efek mahal. Tema bisa menambah aturan sendiri. */
+[data-inv-root][data-lite] .inv-noise,
+[data-inv-root][data-lite] [data-parallax] {
+  display: none !important;
+}
+[data-inv-root][data-lite] .inv-blur {
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-inv-root] * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Util yang sering dipakai section default. */
+[data-inv-root] .inv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  background: var(--inv-primary);
+  color: var(--inv-primary-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+[data-inv-root] .inv-btn:active {
+  transform: scale(0.97);
+}
+[data-inv-root] .inv-btn:hover {
+  filter: brightness(1.06);
+}
+[data-inv-root] .inv-btn-outline {
+  background: transparent;
+  color: var(--inv-primary);
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+[data-inv-root] .inv-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.9rem;
+  border-radius: calc(var(--inv-radius) * 0.7);
+  border: 1px solid var(--inv-border);
+  background: var(--inv-surface);
+  color: var(--inv-surface-text);
+  /* ≥16px agar iOS tidak zoom saat fokus. */
+  font-size: 16px;
+}
+[data-inv-root] .inv-input:focus {
+  outline: 2px solid var(--inv-primary);
+  outline-offset: 1px;
+}
+[data-inv-root] .inv-card {
+  background: var(--inv-surface);
+  color: var(--inv-surface-text);
+  border-radius: var(--inv-radius);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 8px 24px rgb(0 0 0 / 0.06);
+}
