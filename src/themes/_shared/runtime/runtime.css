@@ -76,8 +76,8 @@
 }
 
 /* Mode ringan: matikan efek mahal. Tema bisa menambah aturan sendiri. */
-[data-inv-root][data-lite] .inv-noise,
-[data-inv-root][data-lite] [data-parallax] {
+/* (parallax tidak disembunyikan; skrip parallax tema sendiri berhenti di mode ringan) */
+[data-inv-root][data-lite] .inv-noise {
   display: none !important;
 }
 [data-inv-root][data-lite] .inv-blur {

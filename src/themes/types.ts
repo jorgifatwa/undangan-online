@@ -50,6 +50,12 @@ export interface ThemeManifest {
   variants: readonly ColorVariant[];
   /** Section yang didukung tema; section lain tidak pernah dirender. */
   sections: readonly SectionId[];
+  /**
+   * Section yang DIKUNCI tema: selalu tepat setelah cover (urutan ini), tidak
+   * bisa dipindah atau disembunyikan di editor, dan tetap tampil walau datanya
+   * kosong. Contoh: kartu ayat Tirai Beludru (tujuan transisi amplop).
+   */
+  lockedSections?: readonly SectionId[];
   /** Thumbnail galeri tema: path gambar, atau gradien CSS sementara. */
   thumbnail: { image?: string; background: string; foreground: string };
   /** Musik bawaan tema bila user belum memilih lagu. */
@@ -76,7 +82,15 @@ export interface ThemeProps {
 }
 
 export interface CoverProps {
+  /** Tampilkan isi undangan (cover akan dilepas dengan animasi keluarnya). */
   onOpen: () => void;
+  /**
+   * Mulai musik SEKARANG — panggil langsung di handler ketukan tamu (gesture),
+   * karena browser menolak autoplay bila dipanggil belakangan (mis. lewat timer).
+   */
+  startMusic: () => void;
+  /** Section pertama setelah cover (untuk transisi yang menyambung ke section itu). */
+  firstSection: string | null;
 }
 
 /** Bagian yang disediakan sebuah tema ke ThemeRoot. */
@@ -95,6 +109,13 @@ export interface ThemeDefinition {
   Backdrop?: ComponentType;
   /** Aset asli per slot (hasil `pnpm assets:sync`); slot tanpa aset → versi SVG. */
   assets?: ThemeAssets;
+  /**
+   * Render isi undangan di balik cover saat browser menganggur
+   * (requestIdleCallback, batas 2,5 s), agar membuka cover hanya menjalankan
+   * animasi. Section tema harus menunggu `opened` (context) sebelum memulai
+   * animasi masuknya. Cocok untuk cover yang membuka ke isi di baliknya.
+   */
+  prepareBehindCover?: boolean;
   /** Elemen pembungkus tambahan (mis. style global tema). */
   children?: ReactNode;
 }

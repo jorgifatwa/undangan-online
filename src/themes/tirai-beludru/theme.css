@@ -1,0 +1,345 @@
+/*
+ * Tirai Beludru — gaya tema. Selector dibatasi [data-theme="tirai-beludru"].
+ * Koreografi transisi amplop = port CSS desain referensi (satu jam dari ketukan).
+ */
+
+[data-theme="tirai-beludru"] {
+  --inv-font-display: var(--tb-body), serif;
+  --inv-font-body: var(--tb-body), serif;
+  --inv-font-script: var(--tb-script), cursive;
+  --inv-font-arabic: var(--tb-arabic), serif;
+  --inv-bg: #060e0a;
+  --inv-bg-alt: var(--inv-suede);
+  --inv-text: var(--inv-cream);
+  --inv-text-muted: rgb(250 243 237 / 0.7);
+  --inv-surface: rgb(10 22 15 / 0.35);
+  --inv-surface-text: var(--inv-cream);
+  --inv-primary: var(--inv-button);
+  --inv-primary-text: var(--inv-cream);
+  --inv-title: var(--inv-cream);
+  --inv-accent: var(--inv-gold);
+  --inv-border: rgb(250 243 237 / 0.45);
+  --inv-backdrop: #121212;
+}
+
+[data-theme="tirai-beludru"] .inv-column {
+  background: #060e0a;
+  box-shadow: 0 0 50px rgb(0 0 0 / 0.9);
+}
+
+/* Section default (love story, dress code, live streaming) di atas suede */
+[data-theme="tirai-beludru"] .inv-section:not(.tb-canvas) {
+  background: var(--inv-suede) !important;
+  color: var(--inv-cream);
+}
+[data-theme="tirai-beludru"] .inv-section:not(.tb-canvas) .inv-title {
+  font-size: 2.9rem !important;
+  font-weight: 400;
+}
+[data-theme="tirai-beludru"] .inv-section:not(.tb-canvas) .inv-card {
+  border: 1px solid rgb(250 243 237 / 0.35);
+  box-shadow: none;
+}
+
+/* ------------------------------ Seal & kilau ------------------------------ */
+[data-theme="tirai-beludru"] .tb-seal-spin {
+  animation: tb-spin 20s linear infinite;
+}
+@keyframes tb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* -------------------- Transisi amplop (satu jam dari ketukan) ------------- */
+[data-theme="tirai-beludru"] .tb-seal-shard,
+[data-theme="tirai-beludru"] .tb-seal-crack {
+  opacity: 0;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-seal-spin {
+  animation-play-state: paused;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-seal {
+  animation: tb-seal-tremble 0.22s linear both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-seal-crack {
+  animation: tb-crack-show 0.24s linear both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-seal-crack polyline {
+  stroke-dasharray: 1;
+  animation: tb-crack-run 0.2s cubic-bezier(0.3, 0, 0.6, 1) both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-seal-shard {
+  animation: tb-seal-shard 1s cubic-bezier(0.3, 0, 0.7, 0.6) both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-fade {
+  animation: tb-fade-out 0.4s ease both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-bouquet {
+  animation: tb-fade-out 0.6s ease 0.25s both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-flap {
+  transform-origin: 50% 1.9%;
+  animation: tb-flap-close 0.45s cubic-bezier(0.55, 0, 1, 0.45) 0.2s both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-closed-rest {
+  animation: tb-fade-out 0.3s ease 0.6s both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-open-scene {
+  animation:
+    tb-show 0.12s linear 0.2s both,
+    tb-travel 1.25s cubic-bezier(0.65, 0, 0.35, 1) 1.05s both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-open-flap {
+  transform-origin: 50% 100%;
+  animation: tb-flap-open 0.5s cubic-bezier(0, 0.55, 0.45, 1) 0.65s both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-card {
+  animation: tb-card-rise 1.2s cubic-bezier(0.3, 0.6, 0.2, 1) 1.05s both;
+}
+[data-theme="tirai-beludru"] .tb-opening .tb-section-bg {
+  animation: tb-show 1.2s ease 1.1s both;
+}
+
+@keyframes tb-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes tb-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes tb-flap-close {
+  from {
+    transform: perspective(70cqw) rotateX(0deg);
+  }
+  to {
+    transform: perspective(70cqw) rotateX(-90deg);
+  }
+}
+@keyframes tb-flap-open {
+  from {
+    transform: perspective(70cqw) rotateX(90deg);
+  }
+  to {
+    transform: perspective(70cqw) rotateX(0deg);
+  }
+}
+@keyframes tb-card-rise {
+  from {
+    translate: 0 var(--card-drop);
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes tb-travel {
+  from {
+    translate: var(--travel-x) var(--travel-y);
+    scale: var(--travel-sx) var(--travel-sy);
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@keyframes tb-seal-tremble {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -1.2px 0.6px;
+  }
+  40% {
+    translate: 1.2px -0.6px;
+  }
+  60% {
+    translate: -0.8px -0.8px;
+  }
+  80% {
+    translate: 0.8px 0.8px;
+  }
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tb-crack-show {
+  0%,
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tb-crack-run {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes tb-seal-shard {
+  0%,
+  21% {
+    opacity: 0;
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  22% {
+    opacity: 1;
+  }
+  45% {
+    translate: var(--dx) var(--dy);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: calc(var(--dx) * 1.4) calc(var(--dy) + 22cqw);
+    rotate: var(--spin);
+  }
+}
+
+/* Mode ringan: amplop tetap terbuka, tanpa efek 3D (lipat 2D) & tanpa retakan. */
+[data-theme="tirai-beludru"][data-lite] .tb-opening .tb-flap {
+  animation-name: tb-flap-close-2d;
+}
+[data-theme="tirai-beludru"][data-lite] .tb-opening .tb-open-flap {
+  animation-name: tb-flap-open-2d;
+}
+[data-theme="tirai-beludru"][data-lite] .tb-seal-crack {
+  display: none;
+}
+@keyframes tb-flap-close-2d {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+}
+@keyframes tb-flap-open-2d {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="tirai-beludru"] .tb-opening .tb-open-scene,
+  [data-theme="tirai-beludru"] .tb-opening .tb-section-bg,
+  [data-theme="tirai-beludru"] .tb-seal-shard,
+  [data-theme="tirai-beludru"] .tb-seal-crack {
+    display: none;
+  }
+}
+
+/* ------------------------- Detail section lain --------------------------- */
+[data-theme="tirai-beludru"] .tb-pulse {
+  animation: tb-pulse 2.4s ease-in-out infinite;
+}
+@keyframes tb-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+[data-theme="tirai-beludru"] .tb-tick {
+  display: inline-block;
+  animation: tb-tick 0.45s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+@keyframes tb-tick {
+  from {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+}
+
+/* Tutup kado terangkat sekali saat terlihat lalu jatuh kembali (memantul) */
+[data-theme="tirai-beludru"] [data-inview] .tb-gift-lid {
+  transform-origin: 20% 45%;
+  animation: tb-gift-lid 1.6s cubic-bezier(0.45, 0, 0.3, 1) 0.55s both;
+}
+@keyframes tb-gift-lid {
+  0% {
+    transform: none;
+  }
+  30% {
+    transform: translate(3%, -20%) rotate(-13deg);
+  }
+  58% {
+    transform: translate(3%, -20%) rotate(-13deg);
+  }
+  80% {
+    transform: translate(0, 2%) rotate(1.5deg);
+  }
+  90% {
+    transform: translate(0, -2%) rotate(-0.5deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* Kelopak yang jatuh dari buket penutup */
+[data-theme="tirai-beludru"] .tb-falling-petal {
+  position: absolute;
+  animation: tb-petal var(--duration) linear var(--delay) infinite;
+  opacity: 0;
+}
+@keyframes tb-petal {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  10% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate3d(var(--sway), calc(var(--fall) * 0.5), 0) rotate(180deg);
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--sway) * -0.5), var(--fall), 0) rotate(340deg);
+  }
+}
+
+/* Formulir ucapan */
+[data-theme="tirai-beludru"] .tb-field {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgb(10 22 15 / 0.35);
+  border: 1px solid rgb(250 243 237 / 0.45);
+  color: var(--inv-cream);
+  font-family: var(--tb-cormorant), serif;
+  line-height: 1.35;
+}
+[data-theme="tirai-beludru"] .tb-field::placeholder {
+  color: rgb(250 243 237 / 0.6);
+}
+[data-theme="tirai-beludru"] .tb-field:focus {
+  outline: 1px solid var(--inv-cream);
+}
+[data-theme="tirai-beludru"] .tb-field option {
+  color: #111;
+}

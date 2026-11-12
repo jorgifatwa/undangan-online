@@ -683,13 +683,7 @@ function HeartSvg({
 /* =============================================================================
  * Basmalah sebagai TEKS (font Amiri via --inv-font-arabic), bukan gambar.
  * ========================================================================== */
-export function Basmalah({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+function BasmalahText({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <p
       dir="rtl"
@@ -713,3 +707,4 @@ export const Tassel = withAsset<Parameters<typeof TasselSvg>[0]>(
 export const PearlStrands = withAsset("pearls", PearlStrandsSvg);
 export const CarvedCorner = withAsset("carved-corner", CarvedCornerSvg);
 export const Heart = withAsset("heart", HeartSvg);
+export const Basmalah = withAsset("basmalah", BasmalahText);

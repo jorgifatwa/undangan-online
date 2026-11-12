@@ -20,6 +20,29 @@ import { AUDIT_FILE, REFERENCES, type ReferenceSite } from "./lib/reference";
 
 type Theme = ReferenceSite["theme"];
 const ALLOWED = new Set(["free", "milik"]);
+
+/**
+ * Ukuran maksimum (sisi terpanjang, px) per slot, sesuai ukuran tampil di kolom
+ * 440 px pada layar 3× (cukup tajam, tidak boros). Default 1400.
+ * Next/Image tetap membuat varian lebih kecil per perangkat dari file ini.
+ */
+const MAX_SIDE: Record<string, number> = {
+  butterfly: 320, // tampil ±55 px
+  "wax-seal": 400,
+  "wax-seal-gold": 400,
+  heart: 400,
+  "sparkle-star": 300,
+  tassel: 700,
+  "tassel-alt": 700,
+  "calla-divider": 700,
+  vinyl: 600,
+  "city-tree-left": 400,
+  "city-tree-right": 400,
+  "lace-doily": 1300,
+  "lace-card": 560, // border-image (file dikirim apa adanya); irisan diskalakan di tema
+};
+/** Latar penuh: sedikit lebih kompres (tekstur menyamarkan artefak). */
+const TEXTURE = new Set(["drape-bg", "velvet-bg", "suede-bg", "leaf-bg", "card-texture"]);
 const HEADER =
   "// FILE DIBUAT OTOMATIS oleh scripts/assets-sync.ts dari ASSET-AUDIT.md — jangan diedit manual.\n";
 
@@ -94,6 +117,8 @@ async function syncTheme(theme: Theme, rows: Row[]) {
   // dirujuk lewat URL + ukuran; disajikan tanpa optimasi ulang (animasi tetap).
   const pubDir = path.join(process.cwd(), "public/theme-assets", theme);
   const written: string[] = []; // path relatif ke root proyek (untuk penghapusan)
+  let totalSrc = 0;
+  let totalOut = 0;
   const imports: string[] = [];
   const entries: string[] = [];
   for (const [slot, r] of [...chosen].sort(([a], [b]) => a.localeCompare(b))) {
@@ -111,8 +136,13 @@ async function syncTheme(theme: Theme, rows: Row[]) {
       await fs.mkdir(pubDir, { recursive: true });
       out = path.join(pubDir, `${slot}.anim.webp`);
       await sharp(src, { animated: true })
-        .resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true })
-        .webp({ quality: 80, effort: 5 })
+        .resize({
+          width: MAX_SIDE[slot] ?? 480,
+          height: MAX_SIDE[slot] ?? 480,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 78, alphaQuality: 90, effort: 6 })
         .toFile(out);
       const m = await sharp(out, { animated: true }).metadata();
       entries.push(
@@ -120,16 +150,32 @@ async function syncTheme(theme: Theme, rows: Row[]) {
       );
     } else {
       out = path.join(dir, `${slot}.webp`);
-      await sharp(src)
-        .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
-        .webp({ quality: 82, effort: 5 })
-        .toFile(out);
+      // Hasil harus lebih kecil dari sumber; bila tidak (mis. JPG tekstur penuh
+      // noise), turunkan kualitas bertahap sampai 64.
+      const srcBytes = (await fs.stat(src)).size;
+      let q = slot === "leaf-bg" ? 86 : TEXTURE.has(slot) ? 80 : 84;
+      for (;;) {
+        await sharp(src)
+          .resize({
+            width: MAX_SIDE[slot] ?? 1400,
+            height: MAX_SIDE[slot] ?? 1400,
+            fit: "inside",
+            withoutEnlargement: true,
+          })
+          .webp({ quality: q, alphaQuality: 90, smartSubsample: true, effort: 6 })
+          .toFile(out);
+        if ((await fs.stat(out)).size < srcBytes * 0.9 || q <= 64) break;
+        q -= 6;
+      }
       imports.push(`import ${camel(slot)} from "./${slot}.webp";`);
       entries.push(`  "${slot}": ${camel(slot)},`);
     }
     const rel = path.relative(process.cwd(), out);
     const kb = Math.round((await fs.stat(out)).size / 1024);
-    console.log(`  ✓ ${r.id} (${r.status}) → ${rel} (${kb} KB${animated ? ", animasi" : ""})`);
+    const srcKb = Math.round((await fs.stat(src)).size / 1024);
+    totalSrc += srcKb;
+    totalOut += kb;
+    console.log(`  ✓ ${r.id} → ${rel}: ${srcKb} KB → ${kb} KB${animated ? " (animasi)" : ""}`);
     written.push(rel);
   }
 
@@ -144,7 +190,9 @@ async function syncTheme(theme: Theme, rows: Row[]) {
     ? `${HEADER}import type { ThemeAssets } from "../../_shared/assets";\n${imports.length ? `\n${imports.join("\n")}\n` : ""}\nexport const THEME_ASSETS: ThemeAssets = {\n${entries.join("\n")}\n};\n\nexport const GENERATED_FILES = ${JSON.stringify(written)};\n`
     : `${HEADER}import type { ThemeAssets } from "../../_shared/assets";\n\n/** Belum ada aset berstatus free/milik → tema memakai versi SVG. */\nexport const THEME_ASSETS: ThemeAssets = {};\n\nexport const GENERATED_FILES = [];\n`;
   await fs.writeFile(path.join(dir, "index.generated.ts"), file);
-  console.log(`▶ ${theme}: ${written.length} aset asli dipakai, sisanya SVG`);
+  console.log(
+    `▶ ${theme}: ${written.length} aset asli dipakai, sisanya SVG — total ${totalSrc} KB → ${totalOut} KB`,
+  );
 }
 
 async function main() {

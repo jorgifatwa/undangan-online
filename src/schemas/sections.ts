@@ -129,11 +129,17 @@ export const SECTION_FEATURE: Partial<Record<SectionId, keyof PackageFeatures>> 
  * tema → filter visibilitas user → filter paket → filter data kosong.
  * Section yang didukung tema tapi belum tercantum di data.sections ditambahkan
  * di posisi default-nya (agar section baru di tema tidak hilang).
+ *
+ * `locked` (manifest.lockedSections): section yang dikunci tema selalu tepat
+ * setelah cover dengan urutan manifest, TIDAK bisa disembunyikan user dan
+ * tidak disembunyikan walau datanya kosong (tema yang menangani data kosong),
+ * mis. kartu ayat Tirai Beludru yang menjadi tujuan transisi amplop.
  */
 export function resolveSections(
   inv: AnyInvitationData,
   supported: readonly SectionId[],
   features: PackageFeatures | null,
+  locked: readonly SectionId[] = [],
 ): SectionId[] {
   const defaults = DEFAULT_SECTION_ORDER[inv.eventType];
   const configured = inv.data.sections.filter((s): s is { id: SectionId; visible: boolean } =>
@@ -142,19 +148,30 @@ export function resolveSections(
 
   let order: SectionId[];
   if (configured.length === 0) {
-    order = defaults;
+    order = [...defaults];
   } else {
     order = configured.map((s) => s.id);
     for (const id of defaults) if (!order.includes(id)) order.push(id);
   }
 
+  // Section terkunci: dipindah tepat setelah cover sesuai urutan manifest.
+  const lockedSet = new Set(locked);
+  const rest = order.filter((id) => id !== "cover" && !lockedSet.has(id));
+  order = [...(order.includes("cover") ? (["cover"] as SectionId[]) : []), ...locked.filter((id) => id !== "cover"), ...rest];
+
   const hidden = new Set(configured.filter((s) => !s.visible).map((s) => s.id));
 
   return order.filter((id) => {
     if (!supported.includes(id)) return false;
-    if (hidden.has(id) && id !== "cover") return false;
     const feature = SECTION_FEATURE[id];
     if (features && feature && !features[feature]) return false;
+    if (lockedSet.has(id)) return true;
+    if (hidden.has(id) && id !== "cover") return false;
     return !isSectionEmpty(id, inv);
   });
+}
+
+/** true jika section dikunci tema (editor tidak boleh memindah/menyembunyikannya). */
+export function isSectionLocked(id: SectionId, locked: readonly SectionId[] = []): boolean {
+  return id === "cover" || locked.includes(id);
 }

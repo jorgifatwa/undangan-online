@@ -38,12 +38,28 @@ if (errors.length) {
 
 const ident = (slug: string) => slug.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
 
+// Thumbnail screenshot (pnpm themes:thumbs) → public/theme-thumbs/{slug}.webp.
+// ?v= dari ukuran+waktu file agar cache browser ikut diperbarui.
+const thumbs = slugs.flatMap((s) => {
+  const file = path.join(process.cwd(), "public/theme-thumbs", `${s}.webp`);
+  if (!fs.existsSync(file)) return [];
+  const st = fs.statSync(file);
+  return [
+    `  "${s}": "/theme-thumbs/${s}.webp?v=${(st.size + Math.round(st.mtimeMs)).toString(36)}",`,
+  ];
+});
+
 const registry = `${HEADER}import type { ThemeManifest } from "./types";
 ${slugs.map((s) => `import { manifest as ${ident(s)} } from "./${s}/manifest";`).join("\n")}
 
 export const THEME_MANIFESTS: readonly ThemeManifest[] = [${slugs.map(ident).join(", ")}];
 
 export type ThemeId = ${slugs.map((s) => `"${s}"`).join(" | ") || "never"};
+
+/** Thumbnail screenshot cover (pnpm themes:thumbs); tema tanpa file memakai gradien manifest. */
+export const THEME_THUMBS: Record<string, string> = {
+${thumbs.join("\n")}
+};
 `;
 
 const components = `${HEADER}import dynamic from "next/dynamic";

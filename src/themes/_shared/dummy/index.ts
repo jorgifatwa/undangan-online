@@ -114,6 +114,11 @@ const weddingInput: WeddingInput = {
     text: "Mohon mengenakan busana formal dengan nuansa warna berikut.",
     colors: ["#1f3b2c", "#6b1d2a", "#e9dcc6"],
   },
+  liveStream: {
+    url: "https://www.youtube.com/",
+    platform: "YouTube",
+    note: "Bagi keluarga & sahabat yang berhalangan hadir, akad nikah kami siarkan langsung.",
+  },
   signature: {
     text: "Kami yang berbahagia",
     families: [

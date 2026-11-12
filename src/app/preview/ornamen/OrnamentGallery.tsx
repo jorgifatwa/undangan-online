@@ -185,7 +185,10 @@ const ITEMS: { group: string; items: Item[] }[] = [
       {
         name: "<Basmalah /> (teks Amiri)",
         render: () => (
-          <Basmalah className="text-xl whitespace-nowrap" style={{ color: "var(--inv-gold)" }} />
+          <Basmalah
+            className="w-44 text-xl whitespace-nowrap"
+            style={{ color: "var(--inv-gold)", filter: "drop-shadow(0 0 1px rgb(0 0 0 / .6))" }}
+          />
         ),
       },
     ],

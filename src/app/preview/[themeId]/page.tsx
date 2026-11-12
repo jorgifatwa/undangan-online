@@ -2,11 +2,22 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { sanitizeGuestName } from "@/lib/guest";
+import type { AnyInvitationData } from "@/schemas/sections";
 import { dummyFor, DUMMY_WISHES } from "@/themes/_shared/dummy";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
 
+import { PreviewFocus } from "./PreviewFocus";
 import { PreviewToolbar } from "./PreviewToolbar";
+
+/** Data contoh tanpa love story, dress code & live streaming (tidak ada di desain referensi). */
+function referenceLike(inv: AnyInvitationData): AnyInvitationData {
+  if (inv.eventType !== "WEDDING") return inv;
+  return {
+    ...inv,
+    data: { ...inv.data, loveStory: [], dressCode: undefined, liveStream: undefined },
+  };
+}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -23,6 +34,8 @@ export async function generateMetadata({
 /**
  * Preview tema dengan data dummy.
  * Query: ?variant=<id> &acara=wedding|ultah &to=<nama tamu> &lite=1 &open=1 &k=<remount>
+ *        &bare=1 (tanpa toolbar: thumbnail & /preview/banding) &focus=<sectionId>
+ *        &ref=1 (tanpa section yang tidak ada di desain referensi → urutan sama dengan desain)
  */
 export default async function PreviewPage({
   params,
@@ -50,7 +63,11 @@ export default async function PreviewPage({
     <>
       <Theme
         key={`${eventType}-${one("k") ?? ""}`}
-        invitation={dummyFor(eventType, manifest.defaultMusic)}
+        invitation={
+          one("ref") === "1"
+            ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
+            : dummyFor(eventType, manifest.defaultMusic)
+        }
         variantId={variantId}
         features={null}
         watermark={false}
@@ -60,17 +77,24 @@ export default async function PreviewPage({
         wishes={DUMMY_WISHES[eventType]}
         preview
       />
-      <PreviewToolbar
-        themeName={manifest.name}
-        variants={manifest.variants.map((v) => ({ id: v.id, name: v.name, swatch: [...v.swatch] }))}
-        eventTypes={[...manifest.eventTypes]}
-        current={{
-          variantId: variantId!,
-          eventType,
-          guest: sanitizeGuestName(sp.to) ?? "",
-          lite: one("lite") === "1",
-        }}
-      />
+      {one("focus") && <PreviewFocus section={one("focus")!} />}
+      {one("bare") !== "1" && (
+        <PreviewToolbar
+          themeName={manifest.name}
+          variants={manifest.variants.map((v) => ({
+            id: v.id,
+            name: v.name,
+            swatch: [...v.swatch],
+          }))}
+          eventTypes={[...manifest.eventTypes]}
+          current={{
+            variantId: variantId!,
+            eventType,
+            guest: sanitizeGuestName(sp.to) ?? "",
+            lite: one("lite") === "1",
+          }}
+        />
+      )}
     </>
   );
 }

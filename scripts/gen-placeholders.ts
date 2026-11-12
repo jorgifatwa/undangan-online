@@ -177,21 +177,21 @@ const PHOTOS: PhotoSource[] = [
 /** Musik Pixabay: TIDAK bisa diunduh otomatis (halaman memakai bot-check), unduh manual. */
 const MUSIC = [
   {
-    file: "tirai-beludru.mp3",
+    file: "tirai-beludru.m4a",
     title: "Wedding Music",
     artist: "ikoliks",
     page: "https://pixabay.com/music/wedding-wedding-music-329295/",
     theme: "Tirai Beludru",
   },
   {
-    file: "renda-rimba.mp3",
+    file: "renda-rimba.m4a",
     title: "Romantic Wedding Acoustic Guitar",
     artist: "Tunetank",
     page: "https://pixabay.com/music/small-emotions-romantic-wedding-acoustic-guitar-347266/",
     theme: "Renda Rimba",
   },
   {
-    file: "confetti-party.mp3",
+    file: "confetti-party.m4a",
     title: "Kids School - Happy Birthday Music",
     artist: "SigmaMusicArt",
     page: "https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/",
@@ -253,8 +253,8 @@ Lisensi: https://pixabay.com/service/license-summary/
 
 Pixabay memakai bot-check sehingga file tidak bisa diunduh otomatis.
 **Unduh manual** dari link di bawah, lalu simpan di \`public/placeholders/music/\`
-dengan nama file persis seperti kolom pertama. Selama file belum ada, player
-musik menampilkan status "Musik belum tersedia" tanpa error.
+dengan nama \`<tema>.mp3\`, lalu jalankan \`pnpm music:optimize\` (AAC 96 kbps → \`<tema>.m4a\`,
+nama di kolom pertama). Selama file belum ada, player menampilkan "Musik belum tersedia".
 
 | File | Tema | Judul — Artis | Sumber |
 |---|---|---|---|

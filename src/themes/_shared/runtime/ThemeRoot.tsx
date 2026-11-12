@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, MotionConfig } from "framer-motion";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { resolveSections } from "@/schemas/sections";
 import { siteConfig } from "@/lib/site";
@@ -60,8 +60,8 @@ function ThemeRootInner({
 
   const variant = manifest.variants.find((v) => v.id === variantId) ?? manifest.variants[0];
   const sections = useMemo(
-    () => resolveSections(invitation, manifest.sections, features),
-    [invitation, manifest.sections, features],
+    () => resolveSections(invitation, manifest.sections, features, manifest.lockedSections),
+    [invitation, manifest.sections, features, manifest.lockedSections],
   );
   const hasCover = sections.includes("cover");
   const [opened, setOpened] = useState(startOpened || !hasCover);
@@ -84,6 +84,25 @@ function ThemeRootInner({
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
 
+  // Tema dengan prepareBehindCover: isi undangan dirender di balik cover saat
+  // browser menganggur (setelah cover tampil & interaktif), sebagai transisi
+  // React yang bisa diinterupsi ketukan tamu. Saat cover dibuka, yang tersisa
+  // hanya animasinya — tidak ada render besar di tengah animasi pintu.
+  const [prepared, setPrepared] = useState(false);
+  const prepareBehindCover = theme.prepareBehindCover === true;
+  useEffect(() => {
+    if (!prepareBehindCover || opened || prepared) return;
+    const run = () => startTransition(() => setPrepared(true));
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(run, { timeout: 2500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    // Safari < 18 belum punya requestIdleCallback
+    const t = setTimeout(run, 1200);
+    return () => clearTimeout(t);
+  }, [prepareBehindCover, opened, prepared]);
+  const showSections = opened || prepared;
+
   // Kunci scroll halaman selama cover tampil.
   useEffect(() => {
     if (opened) return;
@@ -100,6 +119,10 @@ function ThemeRootInner({
     performance.mark("inv-ready");
     rootRef.current?.setAttribute("data-inv-ready", "");
   }, []);
+
+  const startMusic = useCallback(() => {
+    if (invitation.data.music?.autoplay !== false) audio.play();
+  }, [audio, invitation.data.music?.autoplay]);
 
   const handleOpen = useCallback(() => {
     // Dipanggil dari gesture tamu → browser mengizinkan audio diputar.
@@ -152,8 +175,13 @@ function ThemeRootInner({
               {Backdrop && <Backdrop />}
             </div>
 
-            <main className="inv-column">
-              {opened &&
+            <main
+              className="inv-column"
+              // disiapkan di balik cover: belum boleh disentuh/dibaca pembaca layar
+              aria-hidden={!opened || undefined}
+              inert={!opened || undefined}
+            >
+              {showSections &&
                 sections
                   .filter((id) => id !== "cover")
                   .map((id) => {
@@ -185,7 +213,11 @@ function ThemeRootInner({
             <AnimatePresence>
               {!opened && (
                 <div key="cover" className="inv-fixed-column z-50" data-inv-cover>
-                  <Cover onOpen={handleOpen} />
+                  <Cover
+                    onOpen={handleOpen}
+                    startMusic={startMusic}
+                    firstSection={sections.find((s) => s !== "cover") ?? null}
+                  />
                 </div>
               )}
             </AnimatePresence>

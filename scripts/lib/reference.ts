@@ -153,9 +153,9 @@ export const SLOT_MAP: Record<string, Record<string, SlotInfo>> = {
     },
     sec4_gift_box: { slot: "gift-box", svg: "GiftBox", role: "Sketsa kotak kado" },
     sec2_bismillah: {
-      slot: null,
+      slot: "basmalah",
       svg: "Basmalah (teks Amiri)",
-      role: "Kaligrafi Basmalah — diganti teks Amiri (keputusan)",
+      role: "Kaligrafi Basmalah (SVG asli bila milik/free, selain itu teks Amiri)",
     },
     tower: { slot: "city-tower", svg: "Tower", role: "Ilustrasi menara venue" },
     "skyline-left": { slot: "city-skyline-left", svg: "Skyline left", role: "Gedung kiri" },
@@ -233,9 +233,9 @@ export const SLOT_MAP: Record<string, Record<string, SlotInfo>> = {
       role: "Kartu renda persegi (mempelai/RSVP)",
     },
     "blob-1206374b": {
-      slot: "lace-line",
-      svg: "LaceBorder",
-      role: "Motif renda garis (border-image)",
+      slot: "gift-box",
+      svg: "GiftBox",
+      role: "Sketsa kotak kado",
     },
     f125f9f97be7490bf3b8c5abd8444bb6: {
       slot: "stamp-card",

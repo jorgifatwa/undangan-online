@@ -44,3 +44,6 @@ next-env.d.ts
 # Referensi desain (aset & screenshot) — jangan di-commit
 /.reference/
 /public/_ref/
+
+# sumber font OFL (unduhan scripts/fonts-build.ts)
+/.cache/

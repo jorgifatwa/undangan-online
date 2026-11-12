@@ -1,9 +1,10 @@
 # Catatan Aset Tema
 
-Semua ornamen tema dibuat **orisinal** sebagai SVG/CSS di kode — tidak ada file
-gambar, Lottie, font, atau musik yang disalin dari folder referensi
-(`undangan-jorgi-estetik`, `undangan-subagja`). Pratinjau semua ornamen:
-`/preview/ornamen` (hanya development).
+Setiap ornamen punya versi **SVG/CSS orisinal** di kode. File asli dari folder
+referensi (`undangan-jorgi-estetik`, `undangan-subagja`) hanya dipakai bila
+statusnya `free`/`milik` di `ASSET-AUDIT.md` (lihat README §7); font & musik
+referensi tidak pernah disalin. Pratinjau semua ornamen: `/preview/ornamen`
+(hanya development).
 
 ## Kandidat diganti ilustrasi buatan tangan
 

@@ -26,6 +26,9 @@ export const TIRAI_VARIANTS: readonly ColorVariant[] = [
     name: "Zamrud",
     swatch: ["#123524", "#5c0f1c", "#c9a24d"],
     tokens: {
+      "--inv-filter-drape": "none",
+      "--inv-filter-suede": "none",
+      "--inv-filter-velvet": "none",
       ...shared,
       "--inv-drape": "#123524",
       "--inv-drape-dark": "#05130c",
@@ -61,6 +64,9 @@ export const TIRAI_VARIANTS: readonly ColorVariant[] = [
     name: "Safir",
     swatch: ["#13213f", "#5c0f1c", "#d4b36a"],
     tokens: {
+      "--inv-filter-drape": "hue-rotate(108deg) saturate(1.05)",
+      "--inv-filter-suede": "hue-rotate(112deg) saturate(0.8) brightness(0.9)",
+      "--inv-filter-velvet": "none",
       ...shared,
       "--inv-drape": "#13213f",
       "--inv-drape-dark": "#070d1d",
@@ -96,6 +102,9 @@ export const TIRAI_VARIANTS: readonly ColorVariant[] = [
     name: "Anggur",
     swatch: ["#3a1430", "#6f7900", "#c9a24d"],
     tokens: {
+      "--inv-filter-drape": "hue-rotate(170deg) saturate(0.85) brightness(0.95)",
+      "--inv-filter-suede": "hue-rotate(-28deg) saturate(0.9)",
+      "--inv-filter-velvet": "hue-rotate(-28deg) saturate(0.9)",
       ...shared,
       "--inv-drape": "#3a1430",
       "--inv-drape-dark": "#1a0716",

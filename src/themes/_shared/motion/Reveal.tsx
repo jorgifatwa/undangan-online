@@ -45,58 +45,80 @@ interface VariantDef {
   transformOrigin?: string;
 }
 
+/**
+ * Nilai mengikuti CSS reveal desain Tirai Beludru (data-reveal di referensi):
+ * default naik 18 px; kiri/kanan 12%; rise 44 px; drop −36 px; sway −14 px +
+ * putar ±7° dari tepi atas (1,4 s); pop skala 0,4 + putar −14° (pegas);
+ * blur skala 1,08 + blur 8 px (1,2 s); swing −20 px, skala 0,85, putar −10°;
+ * flip rotateX 80°; wipe skala-X 0; tilt naik 26 px, skala 0,84, putar ±6°;
+ * popup-* = buku pop-up (rotateX/rotateY 88° → 0, pegas 1,5 s).
+ */
+const EASE_SWING = [0.34, 1.4, 0.64, 1] as const;
+const EASE_POPUP = [0.3, 1.3, 0.6, 1] as const;
+
 const VARIANTS: Record<RevealVariant, VariantDef> = {
-  fade: { hidden: { opacity: 0 }, duration: 0.8, ease: EASE_SOFT },
-  zoom: { hidden: { opacity: 0, scale: 0.92 }, duration: 0.9, ease: EASE_SOFT },
-  left: { hidden: { opacity: 0, x: -36 }, duration: 0.9, ease: EASE_SOFT },
-  right: { hidden: { opacity: 0, x: 36 }, duration: 0.9, ease: EASE_SOFT },
-  rise: { hidden: { opacity: 0, y: 40 }, duration: 0.9, ease: EASE_SOFT },
-  drop: { hidden: { opacity: 0, y: -30 }, duration: 0.9, ease: EASE_SOFT },
+  fade: { hidden: { opacity: 0, y: 18 }, duration: 0.9, ease: EASE_SOFT },
+  zoom: { hidden: { opacity: 0, scale: 0.94 }, duration: 0.9, ease: EASE_SOFT },
+  left: { hidden: { opacity: 0, x: "-12%" }, duration: 0.9, ease: EASE_SOFT },
+  right: { hidden: { opacity: 0, x: "12%" }, duration: 0.9, ease: EASE_SOFT },
+  rise: { hidden: { opacity: 0, y: 44 }, duration: 0.9, ease: EASE_SOFT },
+  drop: { hidden: { opacity: 0, y: -36 }, duration: 0.9, ease: EASE_SOFT },
   sway: {
-    hidden: { opacity: 0, rotate: -6 },
+    hidden: { opacity: 0, y: -14, rotate: -7 },
     duration: 1.4,
     ease: EASE_SOFT,
     transformOrigin: "50% 0%",
   },
   "sway-right": {
-    hidden: { opacity: 0, rotate: 6 },
+    hidden: { opacity: 0, y: -14, rotate: 7 },
     duration: 1.4,
     ease: EASE_SOFT,
     transformOrigin: "50% 0%",
   },
-  pop: { hidden: { opacity: 0, scale: 0.4 }, duration: 0.7, ease: EASE_BACK },
-  blur: { hidden: { opacity: 0, filter: "blur(10px)" }, duration: 1.2, ease: EASE_SOFT },
-  swing: {
-    hidden: { opacity: 0, rotate: -14 },
-    duration: 1.1,
-    ease: EASE_BACK,
-    transformOrigin: "0% 50%",
+  pop: { hidden: { opacity: 0, scale: 0.4, rotate: -14 }, duration: 0.9, ease: EASE_BACK },
+  blur: {
+    hidden: { opacity: 0, scale: 1.08, filter: "blur(8px)" },
+    duration: 1.2,
+    ease: EASE_SOFT,
   },
-  flip: { hidden: { opacity: 0, rotateX: 80 }, duration: 0.9, ease: EASE_SOFT },
-  wipe: { hidden: { clipPath: "inset(0 100% 0 0)" }, duration: 1, ease: EASE_SOFT },
-  "tilt-left": { hidden: { opacity: 0, x: -24, rotate: -4 }, duration: 1, ease: EASE_SOFT },
-  "tilt-right": { hidden: { opacity: 0, x: 24, rotate: 4 }, duration: 1, ease: EASE_SOFT },
+  swing: {
+    hidden: { opacity: 0, x: -20, scale: 0.85, rotate: -10 },
+    duration: 1.1,
+    ease: EASE_SWING,
+  },
+  flip: { hidden: { opacity: 0, rotateX: 80 }, duration: 1, ease: EASE_SOFT },
+  wipe: { hidden: { opacity: 0, scaleX: 0 }, duration: 0.9, ease: EASE_SOFT },
+  "tilt-left": {
+    hidden: { opacity: 0, y: 26, scale: 0.84, rotate: -6 },
+    duration: 0.9,
+    ease: EASE_SOFT,
+  },
+  "tilt-right": {
+    hidden: { opacity: 0, y: 26, scale: 0.84, rotate: 6 },
+    duration: 0.9,
+    ease: EASE_SOFT,
+  },
   "popup-up": {
-    hidden: { opacity: 0, scaleY: 0.05 },
-    duration: 0.8,
-    ease: EASE_BACK,
+    hidden: { opacity: 0, rotateX: -88 },
+    duration: 1.5,
+    ease: EASE_POPUP,
     transformOrigin: "50% 100%",
   },
   "popup-left": {
-    hidden: { opacity: 0, rotateY: 90 },
-    duration: 0.8,
-    ease: EASE_BACK,
-    transformOrigin: "100% 100%",
+    hidden: { opacity: 0, rotateY: 88 },
+    duration: 1.5,
+    ease: EASE_POPUP,
+    transformOrigin: "100% 70%",
   },
   "popup-right": {
-    hidden: { opacity: 0, rotateY: -90 },
-    duration: 0.8,
-    ease: EASE_BACK,
-    transformOrigin: "0% 100%",
+    hidden: { opacity: 0, rotateY: -88 },
+    duration: 1.5,
+    ease: EASE_POPUP,
+    transformOrigin: "0% 70%",
   },
   "popup-ground": {
-    hidden: { opacity: 0, scaleX: 0.2 },
-    duration: 0.7,
+    hidden: { opacity: 0, scaleX: 0.15 },
+    duration: 1.3,
     ease: EASE_SOFT,
     transformOrigin: "50% 100%",
   },

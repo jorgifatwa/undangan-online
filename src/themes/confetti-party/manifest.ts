@@ -99,7 +99,7 @@ export const manifest = {
     foreground: "#ffffff",
   },
   defaultMusic: {
-    url: "/placeholders/music/confetti-party.mp3",
+    url: "/placeholders/music/confetti-party.m4a",
     title: "Kids School - Happy Birthday Music",
     artist: "SigmaMusicArt",
   },

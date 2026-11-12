@@ -8,11 +8,13 @@ const amiri = Amiri({
   subsets: ["arabic"],
   weight: ["400", "700"],
   variable: "--font-amiri",
+  preload: false,
   display: "swap",
 });
 const notoSerif = Noto_Serif({
   subsets: ["latin"],
   variable: "--font-noto-serif",
+  preload: false,
   display: "swap",
 });
 

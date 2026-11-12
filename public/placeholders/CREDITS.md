@@ -36,11 +36,11 @@ Lisensi: https://pixabay.com/service/license-summary/
 
 Pixabay memakai bot-check sehingga file tidak bisa diunduh otomatis.
 **Unduh manual** dari link di bawah, lalu simpan di `public/placeholders/music/`
-dengan nama file persis seperti kolom pertama. Selama file belum ada, player
-musik menampilkan status "Musik belum tersedia" tanpa error.
+dengan nama `<tema>.mp3`, lalu jalankan `pnpm music:optimize` (AAC 96 kbps → `<tema>.m4a`,
+nama di kolom pertama). Selama file belum ada, player menampilkan "Musik belum tersedia".
 
 | File                       | Tema           | Judul — Artis                                        | Sumber                                                                                              |
 | -------------------------- | -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `music/tirai-beludru.mp3`  | Tirai Beludru  | "Wedding Music" — ikoliks                            | [Pixabay](https://pixabay.com/music/wedding-wedding-music-329295/)                                  |
-| `music/renda-rimba.mp3`    | Renda Rimba    | "Romantic Wedding Acoustic Guitar" — Tunetank        | [Pixabay](https://pixabay.com/music/small-emotions-romantic-wedding-acoustic-guitar-347266/)        |
-| `music/confetti-party.mp3` | Confetti Party | "Kids School - Happy Birthday Music" — SigmaMusicArt | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/) |
+| `music/tirai-beludru.m4a`  | Tirai Beludru  | "Wedding Music" — ikoliks                            | [Pixabay](https://pixabay.com/music/wedding-wedding-music-329295/)                                  |
+| `music/renda-rimba.m4a`    | Renda Rimba    | "Romantic Wedding Acoustic Guitar" — Tunetank        | [Pixabay](https://pixabay.com/music/small-emotions-romantic-wedding-acoustic-guitar-347266/)        |
+| `music/confetti-party.m4a` | Confetti Party | "Kids School - Happy Birthday Music" — SigmaMusicArt | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/) |

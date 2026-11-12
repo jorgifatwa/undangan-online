@@ -1,9 +1,14 @@
 import type { SupportedEventType } from "@/schemas";
 
-import { THEME_MANIFESTS } from "./registry.generated";
+import { THEME_MANIFESTS, THEME_THUMBS } from "./registry.generated";
 import type { ThemeCategory, ThemeManifest } from "./types";
 
 export { THEME_MANIFESTS };
+
+/** URL screenshot cover tema (pnpm themes:thumbs), atau undefined. */
+export function themeThumb(id: string): string | undefined {
+  return THEME_THUMBS[id];
+}
 
 export function getManifest(id: string): ThemeManifest | undefined {
   return THEME_MANIFESTS.find((m) => m.id === id);

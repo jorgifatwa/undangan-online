@@ -77,6 +77,9 @@ export function AudioProvider({
     const el = audioRef.current;
     if (!el || !current) return;
     wantPlaying.current = true;
+    // src baru dipasang saat pertama kali diputar → file musik TIDAK diunduh
+    // sebelum tamu membuka undangan (cover tidak terhambat).
+    if (!el.getAttribute("src")) el.src = current.url;
     el.play().catch(() => {
       // Ditolak browser (belum ada gesture) atau file tidak ada: diam saja.
     });
@@ -119,10 +122,11 @@ export function AudioProvider({
     el.currentTime = Math.min(Math.max(fraction, 0), 1) * el.duration;
   }, []);
 
-  // Ganti lagu → muat ulang, lanjut main jika sebelumnya main.
+  // Ganti lagu → muat ulang, lanjut main jika sebelumnya main. Selama musik
+  // belum pernah diputar, src sengaja dibiarkan kosong (lihat play()).
   useEffect(() => {
     const el = audioRef.current;
-    if (!el || !current) return;
+    if (!el || !current || !el.getAttribute("src")) return;
     el.src = current.url;
     el.load();
     setProgress(0);

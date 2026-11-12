@@ -28,13 +28,13 @@ async function main() {
   await new Promise((r) => setTimeout(r, num("wait", 1500)));
 
   if (flag("open")) {
-    await page.evaluate(() => {
-      const btn = [...document.querySelectorAll("button")].find((b) =>
-        /Buka Undangan/i.test(b.textContent ?? ""),
-      );
-      btn?.click();
-    });
-    await new Promise((r) => setTimeout(r, 2000));
+    // Tombol "Buka Undangan" atau elemen cover ber-aria-label "Buka undangan" (mis. amplop)
+    await page.evaluate(`(() => {
+      const btn = [...document.querySelectorAll("button")].find((b) => /Buka Undangan/i.test(b.textContent || ""))
+        || document.querySelector('[aria-label="Buka undangan"]');
+      btn && btn.click();
+    })()`);
+    await new Promise((r) => setTimeout(r, 3500));
     // Scroll bertahap supaya semua <Reveal> terpicu, lalu kembali ke atas.
     await page.evaluate(async () => {
       for (let y = 0; y < document.body.scrollHeight; y += 300) {

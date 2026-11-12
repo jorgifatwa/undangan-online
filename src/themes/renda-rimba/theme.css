@@ -1,0 +1,436 @@
+/*
+ * Renda Rimba — animasi CSS (port dari style.css desain referensi).
+ * Hanya transform/opacity/clip-path (dikerjakan compositor) kecuali disebut.
+ */
+
+[data-theme="renda-rimba"] {
+  --inv-font-body: var(--rr-body), "Lora", Georgia, serif;
+}
+
+/* ===== Cover: masuk (transform saja — teks langsung terlihat sejak HTML pertama) ===== */
+@keyframes rr-cover-rise {
+  from {
+    transform: translateY(14px);
+  }
+}
+@keyframes rr-cover-zoom {
+  from {
+    transform: scale(0.93);
+  }
+}
+@keyframes rr-cover-names {
+  from {
+    transform: rotate(-8deg) scale(0.9);
+  }
+}
+[data-theme="renda-rimba"] .rr-c-rise {
+  animation: rr-cover-rise 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+[data-theme="renda-rimba"] .rr-c-zoom {
+  animation: rr-cover-zoom 1.1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+[data-theme="renda-rimba"] .rr-c-names {
+  animation: rr-cover-names 1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* ===== Cover: dua daun pintu (salinan cover dipotong kiri/kanan) ===== */
+[data-theme="renda-rimba"] .rr-cover {
+  perspective: 1600px;
+}
+[data-theme="renda-rimba"] .rr-door {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+[data-theme="renda-rimba"] .rr-door--r {
+  visibility: hidden;
+}
+[data-theme="renda-rimba"] .rr-door::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+[data-theme="renda-rimba"] .rr-opening .rr-door--l {
+  clip-path: inset(0 50% 0 0);
+  transform-origin: 0 50%;
+  animation: rr-door-l 1.1s cubic-bezier(0.62, 0.02, 0.28, 1) forwards;
+}
+[data-theme="renda-rimba"] .rr-opening .rr-door--r {
+  visibility: visible;
+  clip-path: inset(0 0 0 50%);
+  transform-origin: 100% 50%;
+  animation: rr-door-r 1.1s cubic-bezier(0.62, 0.02, 0.28, 1) forwards;
+}
+[data-theme="renda-rimba"] .rr-opening .rr-door::after {
+  animation: rr-door-dim 1.1s cubic-bezier(0.62, 0.02, 0.28, 1) forwards;
+}
+/* bayangan 18 px di tepi tengah tiap daun */
+[data-theme="renda-rimba"] .rr-opening .rr-door::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  z-index: 2;
+  pointer-events: none;
+}
+[data-theme="renda-rimba"] .rr-opening .rr-door--l::before {
+  left: calc(50% - 18px);
+  background: linear-gradient(to left, rgb(0 0 0 / 0.35), transparent);
+}
+[data-theme="renda-rimba"] .rr-opening .rr-door--r::before {
+  left: 50%;
+  background: linear-gradient(to right, rgb(0 0 0 / 0.35), transparent);
+}
+@keyframes rr-door-l {
+  to {
+    transform: rotateY(-100deg);
+    opacity: 0.2;
+  }
+}
+@keyframes rr-door-r {
+  to {
+    transform: rotateY(100deg);
+    opacity: 0.2;
+  }
+}
+@keyframes rr-door-dim {
+  to {
+    opacity: 0.4;
+  }
+}
+[data-theme="renda-rimba"] .rr-skipped {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+/* ===== Animasi masuk per section (kelas rr-in dipasang saat section terlihat) ===== */
+[data-theme="renda-rimba"] .rr-sec:not(.rr-in) [data-a] {
+  opacity: 0;
+}
+[data-theme="renda-rimba"] .rr-in [data-a] {
+  animation-duration: 0.7s;
+  animation-timing-function: ease-out;
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+}
+[data-theme="renda-rimba"] .rr-in [data-a="up"] {
+  animation-name: rr-up;
+}
+[data-theme="renda-rimba"] .rr-in [data-a="soft"] {
+  animation-name: rr-soft;
+  animation-duration: 0.9s;
+}
+[data-theme="renda-rimba"] .rr-in [data-a="frame"] {
+  animation-name: rr-frame;
+  animation-duration: 0.95s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="pearls"] {
+  animation-name: rr-pearls;
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="right"] {
+  animation-name: rr-from-right;
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="left"] {
+  animation-name: rr-from-left;
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="roll"] {
+  animation-name: rr-roll;
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="unfold"] {
+  animation-name: rr-unfold;
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform-origin: 50% 0;
+}
+[data-theme="renda-rimba"] .rr-in [data-a="write"] {
+  animation-name: rr-write;
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.35, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="pop"] {
+  animation-name: rr-pop;
+  animation-duration: 0.6s;
+}
+[data-theme="renda-rimba"] .rr-in [data-a="bloom"] {
+  animation-name: rr-bloom;
+  animation-duration: 0.9s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="drop"] {
+  animation-name: rr-drop;
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="poldrop"] {
+  animation-name: rr-poldrop;
+  animation-duration: 1.1s;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+[data-theme="renda-rimba"] .rr-in [data-a="zoom"] {
+  animation-name: rr-zoom;
+  animation-duration: 0.9s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes rr-up {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+@keyframes rr-soft {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rr-frame {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+}
+@keyframes rr-pearls {
+  from {
+    opacity: 0;
+    translate: 0 -70px;
+  }
+}
+@keyframes rr-from-right {
+  from {
+    opacity: 0;
+    translate: 70px -20px;
+  }
+}
+@keyframes rr-from-left {
+  from {
+    opacity: 0;
+    translate: -70px -20px;
+  }
+}
+@keyframes rr-roll {
+  from {
+    opacity: 0;
+    translate: -150px 0;
+    rotate: -540deg;
+  }
+}
+@keyframes rr-unfold {
+  from {
+    opacity: 0;
+    scale: 1 0.25;
+  }
+}
+@keyframes rr-write {
+  from {
+    clip-path: inset(-20% 100% -20% 0);
+  }
+  to {
+    clip-path: inset(-20% -5% -20% 0);
+  }
+}
+@keyframes rr-pop {
+  0% {
+    opacity: 0;
+    scale: 0.2;
+  }
+  70% {
+    opacity: 1;
+    scale: 1.15;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes rr-bloom {
+  from {
+    opacity: 0;
+    scale: 0.15;
+  }
+}
+@keyframes rr-zoom {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+@keyframes rr-drop {
+  0% {
+    opacity: 0;
+    translate: 30px -160px;
+    rotate: 32deg;
+  }
+  60% {
+    opacity: 1;
+    translate: 0 6px;
+    rotate: 9deg;
+  }
+  80% {
+    translate: 0 -3px;
+    rotate: 12deg;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 11deg;
+  }
+}
+@keyframes rr-poldrop {
+  0% {
+    opacity: 0;
+    translate: -20px -120px;
+    rotate: -18deg;
+  }
+  60% {
+    opacity: 1;
+    translate: 0 4px;
+    rotate: -2deg;
+  }
+  80% {
+    translate: 0 -2px;
+    rotate: -5deg;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: -4deg;
+  }
+}
+
+/* ===== Animasi berulang ===== */
+@keyframes rr-sway {
+  from {
+    rotate: calc(var(--famp, 1.8deg) * -1);
+  }
+  to {
+    rotate: var(--famp, 1.8deg);
+  }
+}
+[data-theme="renda-rimba"] .rr-sway {
+  animation: rr-sway var(--fdur, 5s) ease-in-out var(--fdly, 0s) infinite alternate;
+}
+[data-theme="renda-rimba"] .rr-sway-hang {
+  transform-origin: 50% 0;
+}
+[data-theme="renda-rimba"] .rr-sway-stand {
+  transform-origin: 50% 100%;
+  --famp: 1.4deg;
+}
+
+@keyframes rr-twinkle {
+  0%,
+  100% {
+    scale: 0.75;
+    opacity: 0.55;
+  }
+  50% {
+    scale: 1.08;
+    opacity: 1;
+  }
+}
+[data-theme="renda-rimba"] .rr-twinkle {
+  animation: rr-twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes rr-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+[data-theme="renda-rimba"] .rr-disc {
+  animation: rr-spin 3.5s linear infinite paused;
+}
+[data-theme="renda-rimba"] .rr-playing .rr-disc {
+  animation-play-state: running;
+}
+
+@keyframes rr-heart-in {
+  0% {
+    scale: 0;
+    opacity: 0;
+  }
+  70% {
+    scale: 1.25;
+    opacity: 1;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+@keyframes rr-heart-beat {
+  0%,
+  40%,
+  100% {
+    scale: 1;
+  }
+  10% {
+    scale: 1.18;
+  }
+  20% {
+    scale: 1.02;
+  }
+  28% {
+    scale: 1.14;
+  }
+}
+[data-theme="renda-rimba"] .rr-sec:not(.rr-in) .rr-heart {
+  scale: 0;
+}
+[data-theme="renda-rimba"] .rr-in .rr-heart {
+  animation:
+    rr-heart-in 0.7s cubic-bezier(0.3, 0.8, 0.3, 1.3) 0.5s both,
+    rr-heart-beat 1.6s ease-in-out 1.3s infinite;
+}
+
+/* ===== Formulir RSVP ===== */
+[data-theme="renda-rimba"] .rr-field {
+  width: 100%;
+  border: 1px solid rgb(74 59 46 / 0.35);
+  background: rgb(255 255 255 / 0.55);
+  color: var(--inv-ink-dark);
+  outline: none;
+}
+[data-theme="renda-rimba"] .rr-field:focus {
+  border-color: var(--inv-maroon);
+  background: #fff;
+}
+[data-theme="renda-rimba"] .rr-field::placeholder {
+  color: rgb(74 59 46 / 0.55);
+}
+
+/* ===== Mode ringan & prefers-reduced-motion ===== */
+[data-theme="renda-rimba"][data-lite] .rr-sway,
+[data-theme="renda-rimba"][data-lite] .rr-twinkle {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="renda-rimba"] [data-a],
+  [data-theme="renda-rimba"] .rr-sway,
+  [data-theme="renda-rimba"] .rr-twinkle,
+  [data-theme="renda-rimba"] .rr-heart,
+  [data-theme="renda-rimba"] [class*="rr-c-"] {
+    animation: none !important;
+  }
+  [data-theme="renda-rimba"] .rr-sec:not(.rr-in) [data-a] {
+    opacity: 1;
+  }
+  [data-theme="renda-rimba"] .rr-sec .rr-heart {
+    scale: 1;
+  }
+}

@@ -100,15 +100,19 @@ async function measure(base: string, themeId: string, lite: boolean) {
   });
 
   const idle = await collectFrames(page, () => sleep(3000));
+  // prepareBehindCover: berapa section sudah dirender di balik cover sebelum diketuk
+  const prepared = (await page.evaluate(
+    "document.querySelectorAll('main [data-inv-section]').length",
+  )) as number;
 
   const open = await collectFrames(page, async () => {
-    await page.evaluate(() => {
-      const btn = [...document.querySelectorAll("button")].find((b) =>
-        /Buka Undangan/i.test(b.textContent ?? ""),
-      );
-      btn?.click();
-    });
-    await sleep(3000);
+    // Tombol "Buka Undangan" atau cover ber-aria-label "Buka undangan" (amplop Tirai Beludru)
+    await page.evaluate(`(() => {
+      const btn = [...document.querySelectorAll("button")].find((b) => /Buka Undangan/i.test(b.textContent || ""))
+        || document.querySelector('[aria-label="Buka undangan"]');
+      btn && btn.click();
+    })()`);
+    await sleep(3500);
   });
 
   const scroll = await collectFrames(page, async () => {
@@ -123,7 +127,7 @@ async function measure(base: string, themeId: string, lite: boolean) {
   });
 
   await browser.close();
-  return { themeId, mode: lite ? "ringan" : "normal", ...vitals, idle, open, scroll };
+  return { themeId, mode: lite ? "ringan" : "normal", ...vitals, idle, open, scroll, prepared };
 }
 
 type Result = Awaited<ReturnType<typeof measure>>;
@@ -148,7 +152,9 @@ async function main() {
       const results: Result[] = [];
       for (let i = 0; i < runs; i++) {
         const r = await measure(base, id, lite);
-        process.stdout.write(`… ${id} (${r.mode}) #${i + 1}: LCP ${r.lcp} ms ← ${r.lcpEl}\n`);
+        process.stdout.write(
+          `… ${id} (${r.mode}) #${i + 1}: LCP ${r.lcp} ms ← ${r.lcpEl} · disiapkan sebelum ketuk: ${r.prepared} section\n`,
+        );
         results.push(r);
       }
       rows.push({ themeId: id, mode: lite ? "ringan" : "normal", runs: results });
@@ -166,7 +172,7 @@ async function main() {
         ? ` (${Math.min(...rs.map((r) => r.lcp))}–${Math.max(...rs.map((r) => r.lcp))})`
         : "";
     console.log(
-      `| ${themeId} | ${mode} | ${avg(rs.map((r) => r.fcp))} ms | ${lcp} ms${range} ${lcp <= 2500 ? "✅" : "⚠️"} | ${avg(rs.map((r) => r.ready))} ms | ${f(avgFrames(rs.map((r) => r.idle)))} | ${f(avgFrames(rs.map((r) => r.open)))} | ${f(avgFrames(rs.map((r) => r.scroll)))} |`,
+      `| ${themeId} | ${mode} | ${avg(rs.map((r) => r.fcp))} ms | ${lcp} ms${range} ${lcp <= 2500 ? "✅" : "⚠️"} | ${avg(rs.map((r) => r.ready))} ms | ${f(avgFrames(rs.map((r) => r.idle)))} | ${f(avgFrames(rs.map((r) => r.open)))}${avgFrames(rs.map((r) => r.open)).fps >= 55 ? " ✅" : " ⚠️"} | ${f(avgFrames(rs.map((r) => r.scroll)))} |`,
     );
   }
 }
