@@ -30,7 +30,8 @@
     "e2e:dashboard": "tsx --env-file=.env scripts/e2e-dashboard.ts",
     "e2e:editor": "tsx --env-file=.env scripts/e2e-editor.ts",
     "media:cleanup": "tsx --env-file=.env --conditions=react-server scripts/media-cleanup.ts",
-    "e2e:media": "tsx --env-file=.env --conditions=react-server scripts/e2e-media.ts"
+    "e2e:media": "tsx --env-file=.env --conditions=react-server scripts/e2e-media.ts",
+    "e2e:retention": "tsx --env-file=.env --conditions=react-server scripts/e2e-retention.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

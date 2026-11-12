@@ -66,7 +66,11 @@ export async function deleteMediaAction(invitationId: string, urls: string[]) {
   }));
 }
 
-export async function storageInfoAction() {
+export async function storageInfoAction(invitationId: string) {
   const user = await requireUser();
-  return wrap(async () => storageUsage(user.id));
+  return wrap(async () => {
+    const inv = await db.invitation.findFirst({ where: { id: invitationId, userId: user.id } });
+    if (!inv) throw new UploadError("Undangan tidak ditemukan.", "NOT_FOUND");
+    return storageUsage(inv.id, inv.package);
+  });
 }

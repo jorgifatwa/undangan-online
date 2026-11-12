@@ -1,12 +1,15 @@
 import "server-only";
 
-import type { Media, PackageTier } from "@prisma/client";
+import type { Media, PackageTier, Prisma } from "@prisma/client";
+
+import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
 
 import { db } from "@/lib/db";
-import { getFeatures, PACKAGE_ORDER } from "@/lib/packages";
+import { getFeatures } from "@/lib/packages";
 import { storage } from "@/lib/storage";
 
 import { transcodeToAac } from "./audio";
+import { stripMediaUrls } from "./strip";
 import { detectFile } from "./detect";
 import { MediaError, processPhoto } from "./image";
 import {
@@ -43,24 +46,16 @@ const rawKey = (userId: string, mediaId: string) => `raw/${userId}/${mediaId}`;
 const finalKey = (invitationId: string, mediaId: string, ext: string) =>
   `m/${invitationId}/${mediaId}.${ext}`;
 
-/** Paket tertinggi di antara undangan user (kuota penyimpanan berlaku per akun). */
-export async function accountTier(userId: string): Promise<PackageTier> {
-  const rows = await db.invitation.findMany({ where: { userId }, select: { package: true } });
-  return rows.reduce<PackageTier>(
-    (best, r) =>
-      PACKAGE_ORDER.indexOf(r.package) > PACKAGE_ORDER.indexOf(best) ? r.package : best,
-    "FREE",
-  );
-}
-
-/** Pemakaian penyimpanan (byte): file final + upload yang sedang berjalan (ukuran yang diumumkan). */
-export async function storageUsage(userId: string) {
+/**
+ * Pemakaian penyimpanan satu UNDANGAN (byte): file final + upload yang sedang
+ * berjalan (ukuran yang diumumkan). Kuota mengikuti paket undangan itu.
+ */
+export async function storageUsage(invitationId: string, pkg: PackageTier) {
   const agg = await db.media.aggregate({
-    where: { userId, status: { not: "FAILED" } },
+    where: { invitationId, status: { not: "FAILED" } },
     _sum: { bytes: true },
   });
-  const tier = await accountTier(userId);
-  return { used: agg._sum.bytes ?? 0, quota: getFeatures(tier).storageQuotaMb * 1024 * 1024, tier };
+  return { used: agg._sum.bytes ?? 0, quota: getFeatures(pkg).storageQuotaMb * 1024 * 1024 };
 }
 
 async function ownedInvitation(userId: string, invitationId: string) {
@@ -125,10 +120,10 @@ export async function requestUpload(userId: string, invitationId: string, req: U
   if (pending >= MAX_PENDING_UPLOADS)
     throw new UploadError("Terlalu banyak unggahan yang sedang berjalan. Tunggu sebentar.");
 
-  const { used, quota } = await storageUsage(userId);
+  const { used, quota } = await storageUsage(invitationId, inv.package);
   if (used + size > quota)
     throw new UploadError(
-      `Kuota penyimpanan penuh (${mb(used)} dari ${mb(quota)}). Hapus foto yang tidak dipakai atau tingkatkan paket.`,
+      `Kuota penyimpanan undangan ini penuh (${mb(used)} dari ${mb(quota)}). Hapus foto yang tidak dipakai atau tingkatkan paket.`,
       "QUOTA",
     );
 
@@ -310,6 +305,8 @@ export async function deleteByUrls(userId: string, invitationId: string, urls: s
  *  - baris FAILED > 24 jam → dihapus
  *  - file final milik undangan yang sudah dihapus → dihapus
  *  - file di raw/ tanpa baris Media > 24 jam → dihapus
+ *  - RETENSI: undangan FREE yang kedaluwarsa > 30 hari → semua foto & musiknya
+ *    dihapus, URL-nya dikosongkan dari data undangan (teks tetap utuh)
  */
 export async function cleanupMedia(now = new Date()) {
   const day = new Date(now.getTime() - 24 * 3600_000);
@@ -321,6 +318,7 @@ export async function cleanupMedia(now = new Date()) {
     failedRows: 0,
     orphanFinals: 0,
     orphanRaw: 0,
+    retentionPurged: 0,
   };
 
   const stale = await db.media.findMany({ where: { status: "UPLOADING", createdAt: { lt: day } } });
@@ -361,6 +359,31 @@ export async function cleanupMedia(now = new Date()) {
       await s.delete(o.key).catch(() => undefined);
       report.orphanRaw++;
     }
+  }
+  // Retensi media undangan FREE (lib/invitations/retention.ts)
+  const due = await db.invitation.findMany({
+    where: {
+      package: "FREE",
+      mediaPurgedAt: null,
+      expiresAt: { lt: new Date(now.getTime() - MEDIA_RETENTION_DAYS * 86400_000) },
+    },
+    select: { id: true, data: true },
+  });
+  for (const inv of due) {
+    const files = await db.media.findMany({ where: { invitationId: inv.id } });
+    for (const m of files) {
+      if (m.key) await s.delete(m.key).catch(() => undefined);
+      if (m.rawKey) await s.delete(m.rawKey).catch(() => undefined);
+    }
+    await db.media.deleteMany({ where: { invitationId: inv.id } });
+    await db.invitation.update({
+      where: { id: inv.id },
+      data: {
+        data: stripMediaUrls(inv.data, (u) => s.keyFromUrl(u) !== null) as Prisma.InputJsonValue,
+        mediaPurgedAt: now,
+      },
+    });
+    report.retentionPurged++;
   }
   return report;
 }

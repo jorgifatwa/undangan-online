@@ -470,7 +470,7 @@ async function main() {
   await waitText(pc, "Simpan potongan");
   await sleep(500);
   await clickText(pc, "Simpan potongan");
-  check(await waitText(pc, "Kuota penyimpanan penuh", 15000), "kuota akun penuh → pesan jelas");
+  check(await waitText(pc, "Kuota penyimpanan undangan ini penuh", 15000), "kuota undangan penuh → pesan jelas");
   check((await text(pc)).includes("Lihat paket"), "kuota penuh → tawaran upgrade");
   await pc.screenshot({ path: `${shots ?? TMP}/mobile-10-kuota.png` });
   // user C mencoba meminta upload ke undangan user A (argumen action dirusak)

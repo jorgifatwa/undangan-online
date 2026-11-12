@@ -6,7 +6,9 @@ import { CopyLinkButton } from "@/components/dashboard/CopyLinkButton";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
+import { retentionStatus } from "@/lib/invitations/retention";
 import { displayStatus, summarize } from "@/lib/invitations/summary";
+import { formatTanggal } from "@/lib/format";
 import { PACKAGES } from "@/lib/packages";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -35,7 +37,9 @@ export default async function DashboardPage() {
       status: true,
       package: true,
       expiresAt: true,
+      mediaPurgedAt: true,
       updatedAt: true,
+      _count: { select: { media: true } },
     },
   });
 
@@ -95,6 +99,29 @@ export default async function DashboardPage() {
                   <p className="text-muted-foreground text-xs">
                     Tema {manifest?.name ?? inv.themeId} · Paket {PACKAGES[inv.package].label}
                   </p>
+                  {(() => {
+                    const r = retentionStatus(inv, inv._count.media > 0);
+                    if (!r) return null;
+                    return r.kind === "warning" ? (
+                      <div
+                        className="mt-2 rounded-lg bg-amber-50 px-2.5 py-2 text-xs text-amber-950"
+                        role="alert"
+                      >
+                        Foto & musik undangan ini akan{" "}
+                        <strong>dihapus pada {formatTanggal(r.deleteAt)}</strong> ({r.daysLeft} hari
+                        lagi) karena masa uji Gratis sudah berakhir.{" "}
+                        <Link href="/harga" className="font-semibold underline">
+                          Tingkatkan paket
+                        </Link>{" "}
+                        agar undangan aktif kembali dan foto tetap tersimpan.
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground mt-2 text-xs">
+                        Foto & musik dihapus otomatis pada {formatTanggal(r.at)} (masa uji Gratis
+                        berakhir lebih dari 30 hari). Teks undangan tetap tersimpan.
+                      </p>
+                    );
+                  })()}
                   <div className="mt-auto flex flex-wrap gap-2 pt-3">
                     <Button asChild size="sm">
                       <Link href={`/dashboard/undangan/${inv.id}/edit`}>Edit</Link>

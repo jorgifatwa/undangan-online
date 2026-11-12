@@ -150,28 +150,31 @@ model VerificationToken {
 // -----------------------------------------------------------------------------
 
 model Invitation {
-  id           String           @id @default(cuid())
-  userId       String
+  id            String           @id @default(cuid())
+  userId        String
   /// Dipakai untuk subdomain {slug}.domain.id dan fallback /u/{slug}.
-  slug         String           @unique
-  eventType    EventType
+  slug          String           @unique
+  eventType     EventType
   /// Merujuk ke manifest.id di src/themes/{theme-slug}.
-  themeId      String
+  themeId       String
   /// Kunci palet dari manifest tema (mis. "sage", "navy").
-  colorVariant String?
+  colorVariant  String?
   /// Data undangan; bentuknya ditentukan Zod schema sesuai eventType.
-  data         Json             @default("{}")
-  package      PackageTier      @default(FREE)
-  status       InvitationStatus @default(DRAFT)
+  data          Json             @default("{}")
+  package       PackageTier      @default(FREE)
+  status        InvitationStatus @default(DRAFT)
   /// Mode privat (Premium+): hanya tamu dengan link personal yang bisa membuka.
-  isPrivate    Boolean          @default(false)
+  isPrivate     Boolean          @default(false)
   /// Counter denormalisasi agar dashboard cepat; detail ada di InvitationView.
-  viewCount    Int              @default(0)
-  publishedAt  DateTime?
+  viewCount     Int              @default(0)
+  publishedAt   DateTime?
   /// Null = aktif permanen (paket berbayar). FREE diisi publishedAt + 3 hari.
-  expiresAt    DateTime?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  expiresAt     DateTime?
+  /// Retensi: waktu foto & musik undangan FREE kedaluwarsa dihapus otomatis
+  /// (expiresAt + 30 hari). Null = media masih ada.
+  mediaPurgedAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   guests Guest[]
