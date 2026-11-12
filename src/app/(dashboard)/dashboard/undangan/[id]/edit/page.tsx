@@ -53,6 +53,8 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       themeId={invitation.themeId}
       variantId={invitation.colorVariant}
       updatedAt={invitation.updatedAt.toISOString()}
+      publishedAt={invitation.publishedAt?.toISOString() ?? null}
+      expiresAt={invitation.expiresAt?.toISOString() ?? null}
       data={parsed.value.data as unknown as Record<string, unknown>}
       title={summarize(invitation.eventType, invitation.data).title}
       themes={THEME_MANIFESTS.filter((m) => m.eventTypes.includes(eventType))}

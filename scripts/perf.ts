@@ -82,16 +82,22 @@ async function measure(base: string, themeId: string, lite: boolean) {
     }).observe({ type: "largest-contentful-paint", buffered: true });
   });
 
-  const url = `${base}/preview/${themeId}?to=Bapak%20Budi${lite ? "&lite=1" : ""}`;
+  // "renda-rimba" → /preview/renda-rimba (data contoh); "/u/slug" → halaman publik dari DB
+  const path = themeId.startsWith("/") ? themeId : `/preview/${themeId}`;
+  const url = `${base}${path}?to=Bapak%20Budi${lite ? "&lite=1" : ""}`;
   await page.goto(url, { waitUntil: "load", timeout: 120000 });
   await page.waitForSelector("[data-inv-ready]", { timeout: 60000 });
   await sleep(1500);
 
   const vitals = await page.evaluate(() => {
     const fcp = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? 0;
+    const nav = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
+    const ttfb = nav ? nav.responseStart - nav.startTime : 0;
     const ready = performance.getEntriesByName("inv-ready")[0]?.startTime ?? 0;
     const w = window as unknown as { __lcp: number; __lcpEl: string };
     return {
+      ttfb: Math.round(ttfb),
       fcp: Math.round(fcp),
       lcp: Math.round(w.__lcp),
       ready: Math.round(ready),
@@ -166,8 +172,10 @@ async function main() {
 
   const f = (s: FrameStats) => `${s.fps} fps · p95 ${s.p95}ms · patah ${s.jankPct}%`;
   console.log(`\nCPU 4x + Fast 4G, cache kosong, viewport 390×844, rata-rata ${runs}× tes\n`);
-  console.log("| Tema | Mode | FCP | LCP (cover) | Siap klik | Cover diam | Buka cover | Scroll |");
-  console.log("|---|---|---|---|---|---|---|---|");
+  console.log(
+    "| Tema | Mode | TTFB | FCP | LCP (cover) | Siap klik | Cover diam | Buka cover | Scroll |",
+  );
+  console.log("|---|---|---|---|---|---|---|---|---|");
   for (const { themeId, mode, runs: rs } of rows) {
     const lcp = avg(rs.map((r) => r.lcp));
     const range =
@@ -175,7 +183,7 @@ async function main() {
         ? ` (${Math.min(...rs.map((r) => r.lcp))}–${Math.max(...rs.map((r) => r.lcp))})`
         : "";
     console.log(
-      `| ${themeId} | ${mode} | ${avg(rs.map((r) => r.fcp))} ms | ${lcp} ms${range} ${lcp <= 2500 ? "✅" : "⚠️"} | ${avg(rs.map((r) => r.ready))} ms | ${f(avgFrames(rs.map((r) => r.idle)))} | ${f(avgFrames(rs.map((r) => r.open)))}${avgFrames(rs.map((r) => r.open)).fps >= 55 ? " ✅" : " ⚠️"} | ${f(avgFrames(rs.map((r) => r.scroll)))} |`,
+      `| ${themeId} | ${mode} | ${avg(rs.map((r) => r.ttfb))} ms | ${avg(rs.map((r) => r.fcp))} ms | ${lcp} ms${range} ${lcp <= 2500 ? "✅" : "⚠️"} | ${avg(rs.map((r) => r.ready))} ms | ${f(avgFrames(rs.map((r) => r.idle)))} | ${f(avgFrames(rs.map((r) => r.open)))}${avgFrames(rs.map((r) => r.open)).fps >= 55 ? " ✅" : " ⚠️"} | ${f(avgFrames(rs.map((r) => r.scroll)))} |`,
     );
   }
 }

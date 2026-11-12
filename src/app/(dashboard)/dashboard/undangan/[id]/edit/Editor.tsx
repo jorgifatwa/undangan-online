@@ -32,6 +32,8 @@ import { QuoteForm } from "./forms/QuoteForm";
 import { ClosingForm, DressCodeForm, LiveStreamForm, SalamForm } from "./forms/SimpleForms";
 import { PreviewFrame } from "./PreviewFrame";
 import { SectionManager } from "./SectionManager";
+import { PublishDialog } from "./PublishDialog";
+import type { PublishState } from "./publish-actions";
 import { SlugField, ThemePicker } from "./ThemePicker";
 
 type EventType = "WEDDING" | "BIRTHDAY";
@@ -40,6 +42,10 @@ export interface EditorProps {
   id: string;
   slug: string;
   status: "DRAFT" | "PUBLISHED" | "EXPIRED";
+  /** ISO — terbit pertama (FREE: dasar masa uji). */
+  publishedAt: string | null;
+  /** ISO — akhir masa aktif (FREE); null = permanen / belum terbit. */
+  expiresAt: string | null;
   eventType: EventType;
   pkg: PackageTier;
   themeId: string;
@@ -188,6 +194,19 @@ export function Editor(p: EditorProps) {
   const [openGroup, setOpenGroup] = useState<string | null>("tema");
   const [restore, setRestore] = useState<LocalDraft | null>(null);
   const [showCover, setShowCover] = useState(false);
+  const [publish, setPublish] = useState<PublishState>({
+    status: p.status === "DRAFT" ? "DRAFT" : "PUBLISHED",
+    package: p.pkg,
+    slug: p.slug,
+    publishedAt: p.publishedAt,
+    expiresAt: p.expiresAt,
+    updatedAt: p.updatedAt,
+  });
+  const [publishOpen, setPublishOpen] = useState(false);
+  const publishExpired =
+    publish.status === "PUBLISHED" &&
+    !!publish.expiresAt &&
+    Date.parse(publish.expiresAt) <= Date.now();
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const base = useRef(p.updatedAt);
@@ -224,17 +243,17 @@ export function Editor(p: EditorProps) {
     });
   }, [form, p.eventType, post, schema]);
 
-  const save = useCallback(async () => {
+  const save = useCallback(async (): Promise<boolean> => {
     if (saving.current) {
       timers.current.save = window.setTimeout(() => void save(), 400);
-      return;
+      return false;
     }
     const raw = prune(form.getValues());
     const r = schema.safeParse(raw);
     if (!r.success) {
       setState({ kind: "invalid", count: r.error.issues.length });
       void form.trigger();
-      return;
+      return false;
     }
     const v = version.current;
     saving.current = true;
@@ -260,19 +279,30 @@ export function Editor(p: EditorProps) {
           setState({ kind: "saved" });
           removeDraft(p.id);
         }
+        return true;
       } else if (res.conflict) {
         setState({ kind: "conflict" });
+        return false;
       } else {
         setState({ kind: "error", message: res.error });
         for (const [name, message] of Object.entries(res.fieldErrors ?? {}))
           form.setError(name, { message });
+        return false;
       }
     } catch {
       setState({ kind: "error", message: "Koneksi terputus — dicoba lagi saat ada perubahan." });
+      return false;
     } finally {
       saving.current = false;
     }
   }, [form, p.id, schema]);
+
+  /** Simpan SEKARANG (dipakai sebelum terbit): tunggu simpanan berjalan, lalu simpan. */
+  const flushSave = useCallback(async () => {
+    window.clearTimeout(timers.current.save);
+    while (saving.current) await new Promise((r) => setTimeout(r, 100));
+    return save();
+  }, [save]);
 
   /** Setiap perubahan: cadangan lokal, pratinjau (250 ms), simpan (2 s setelah berhenti). */
   const onChange = useCallback(() => {
@@ -408,6 +438,7 @@ export function Editor(p: EditorProps) {
             slug={slug}
             onSaved={(s, updatedAt) => {
               setSlug(s);
+              setPublish((x) => ({ ...x, slug: s, updatedAt }));
               base.current = updatedAt;
             }}
           />
@@ -590,11 +621,39 @@ export function Editor(p: EditorProps) {
             <Link
               href={`/dashboard/undangan/${p.id}/pratinjau`}
               target="_blank"
-              className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm"
+              className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
             >
               Pratinjau penuh
             </Link>
+            <button
+              type="button"
+              onClick={() => setPublishOpen(true)}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-sm font-medium",
+                publish.status === "PUBLISHED" && !publishExpired
+                  ? "border border-emerald-600 text-emerald-700"
+                  : "bg-primary text-primary-foreground",
+              )}
+            >
+              {publishExpired
+                ? "Masa uji berakhir"
+                : publish.status === "PUBLISHED"
+                  ? "Terbit ✓"
+                  : "Terbitkan"}
+            </button>
           </header>
+          {publishOpen && (
+            <PublishDialog
+              id={p.id}
+              state={publish}
+              flushSave={flushSave}
+              onState={(st) => {
+                setPublish(st);
+                base.current = st.updatedAt;
+              }}
+              onClose={() => setPublishOpen(false)}
+            />
+          )}
 
           {state.kind === "conflict" && (
             <div className="flex flex-wrap items-center gap-3 bg-rose-50 px-4 py-2 text-sm text-rose-900">

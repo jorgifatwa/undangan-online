@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+import { auth } from "@/auth";
 
 import { db } from "@/lib/db";
 import { sanitizeGuestName } from "@/lib/guest";
@@ -7,8 +10,16 @@ import { parseInvitationData } from "@/schemas";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
 
+import { Expired } from "./Expired";
+
+/** Berisi data pribadi → jangan diindeks mesin pencari (lihat juga header X-Robots-Tag). */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+/** Selalu dirender dari database: perubahan setelah terbit langsung tampil. */
+export const dynamic = "force-dynamic";
+
 /**
  * Halaman undangan publik (fallback /u/{slug}; subdomain akan di-rewrite ke sini).
+ * Draf → 404. Masa aktif habis → halaman "tidak aktif" tanpa data pribadi.
  * Pembatasan fitur paket diterapkan DI SERVER lewat `features`.
  */
 export default async function InvitationPage({
@@ -16,10 +27,10 @@ export default async function InvitationPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ to?: string | string[] }>;
+  searchParams: Promise<{ to?: string | string[]; lite?: string }>;
 }) {
   const { slug } = await params;
-  const { to } = await searchParams;
+  const { to, lite } = await searchParams;
 
   const invitation = await db.invitation.findUnique({
     where: { slug },
@@ -32,10 +43,14 @@ export default async function InvitationPage({
       data: true,
       package: true,
       expiresAt: true,
+      userId: true,
     },
   });
   if (!invitation || invitation.status !== "PUBLISHED") notFound();
-  if (invitation.expiresAt && invitation.expiresAt < new Date()) notFound();
+  if (invitation.expiresAt && invitation.expiresAt <= new Date()) {
+    const session = await auth();
+    return <Expired owner={session?.user?.id === invitation.userId} invitationId={invitation.id} />;
+  }
 
   const manifest = getManifest(invitation.themeId);
   const Theme = THEME_COMPONENTS[invitation.themeId];
@@ -59,6 +74,7 @@ export default async function InvitationPage({
       features={features}
       watermark={features.watermark}
       guestName={sanitizeGuestName(to)}
+      forceLite={lite === "1"}
       wishes={wishes.map((w) => ({ ...w, createdAt: w.createdAt.toISOString() }))}
     />
   );

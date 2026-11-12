@@ -99,6 +99,16 @@ export default async function DashboardPage() {
                   <p className="text-muted-foreground text-xs">
                     Tema {manifest?.name ?? inv.themeId} · Paket {PACKAGES[inv.package].label}
                   </p>
+                  {inv.status === "PUBLISHED" &&
+                    inv.package === "FREE" &&
+                    inv.expiresAt &&
+                    inv.expiresAt > new Date() && (
+                      <p className="mt-1 text-xs text-amber-800">
+                        Masa uji aktif sampai {formatTanggal(inv.expiresAt)} · sisa{" "}
+                        {Math.max(1, Math.ceil((inv.expiresAt.getTime() - Date.now()) / 86400000))}{" "}
+                        hari
+                      </p>
+                    )}
                   {(() => {
                     const r = retentionStatus(inv, inv._count.media > 0);
                     if (!r) return null;
