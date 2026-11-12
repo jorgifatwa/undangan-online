@@ -16,7 +16,10 @@ const CANDIDATES = [
 export async function launchBrowser(): Promise<Browser> {
   const executablePath = CANDIDATES.find((p) => fs.existsSync(p));
   if (!executablePath) throw new Error("Chrome tidak ditemukan. Set env CHROME_PATH.");
-  return puppeteer.launch({ executablePath, headless: true, args: ["--hide-scrollbars"] });
+  // CHROME_ARGS: flag tambahan, mis. "--disable-frame-rate-limit" saat laptop
+  // memakai baterai (Chrome membatasi rAF ke 30 fps; halaman kosong pun 30 fps).
+  const extra = (process.env.CHROME_ARGS ?? "").split(/\s+/).filter(Boolean);
+  return puppeteer.launch({ executablePath, headless: true, args: ["--hide-scrollbars", ...extra] });
 }
 
 /** Profil HP Android kelas menengah-bawah untuk pengujian. */

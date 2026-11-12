@@ -14,6 +14,7 @@ import sharp from "sharp";
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { cleanupMedia, requestUpload, UploadError } from "../src/lib/media/service";
 import { launchBrowser } from "./lib/browser";
+import { assertSafeDatabase } from "./lib/guard";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -91,6 +92,7 @@ async function attachPhoto(userId: string, invId: string) {
 }
 
 async function main() {
+  assertSafeDatabase("e2e-retention");
   const u = await db.user.upsert({
     where: { email: "e2e-r@test.local" },
     update: {},

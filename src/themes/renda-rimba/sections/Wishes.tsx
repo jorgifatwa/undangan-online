@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { eventDateLabel, firstEvent } from "@/lib/datetime";
 
 import { Lily } from "../../_shared/ornaments";
 import { couple, shortName } from "../../_shared/format";
-import { useInvitation, type WishItem } from "../../_shared/runtime/context";
+import { useInvitation } from "../../_shared/runtime/context";
+import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
 import { F, Fleuron, Pic, Section, txt, u } from "../canvas";
 import { useLaceBorder } from "./Couple";
 
@@ -82,33 +83,33 @@ function Choice({
 }
 
 export function RendaWishes() {
-  const { inv, wishes: initial, guestName, showToast } = useInvitation();
+  const { inv, guestName, showToast } = useInvitation();
   const lace = useLaceBorder(30);
-  const [local, setLocal] = useState<WishItem[]>([]);
+  const guestbook = useGuestbook();
+  const [hp, setHp] = useState("");
+  const [busy, setBusy] = useState(false);
   const [name, setName] = useState(guestName ?? "");
   const [attendance, setAttendance] = useState<Attendance | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const wishes = useMemo(() => [...local, ...initial], [local, initial]);
+  const { wishes, stats } = guestbook;
   if (inv.eventType !== "WEDDING") return null;
   const [a, b] = couple(inv.data);
-  const present = wishes.filter((w) => w.attendance === "HADIR").length;
-  const absent = wishes.filter((w) => w.attendance === "TIDAK_HADIR").length;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return setError("Nama belum diisi.");
     if (!attendance) return setError("Pilih Hadir atau Tidak Hadir.");
+    setBusy(true);
+    const r = await guestbook.submit({
+      name,
+      attendance: attendance || undefined,
+      message: message.trim() || undefined,
+      website: hp,
+    });
+    setBusy(false);
+    if (!r.ok) return setError(r.error);
     setError(null);
-    setLocal((w) => [
-      {
-        name: name.trim(),
-        message: message.trim(),
-        attendance,
-        createdAt: new Date().toISOString(),
-      },
-      ...w,
-    ]);
     setMessage("");
     showToast("Terima kasih atas konfirmasi & doanya!");
   };
@@ -221,8 +222,10 @@ export function RendaWishes() {
                 {error}
               </p>
             )}
+            <Honeypot value={hp} onChange={setHp} />
             <button
               type="submit"
+              disabled={busy}
               style={{
                 padding: `${u(10)} 0`,
                 borderRadius: 99,
@@ -232,7 +235,7 @@ export function RendaWishes() {
                 ...txt(F.body, 13.5, 1, { weight: 600, color: "#fff", ls: 0.3 }),
               }}
             >
-              Kirim
+              {busy ? "Mengirim…" : "Kirim"}
             </button>
           </form>
 
@@ -242,7 +245,7 @@ export function RendaWishes() {
             <span style={{ flex: 1, borderTop: "1px dashed rgb(74 59 46 / .45)" }} />
           </div>
           <p style={{ ...txt(F.body, 10, 1.3, { color: "#7a6450" }), margin: `${u(2)} 0 ${u(6)}` }}>
-            {wishes.length} Ucapan · {present} Hadir · {absent} Tidak Hadir
+            {stats.ucapan} Ucapan · {stats.hadir} Hadir · {stats.tidakHadir} Tidak Hadir
           </p>
           {wishes.length === 0 ? (
             <p
@@ -267,7 +270,7 @@ export function RendaWishes() {
             >
               {wishes.map((w, i) => (
                 <li
-                  key={w.createdAt + i}
+                  key={w.id ?? w.createdAt + i}
                   style={{
                     padding: `${u(8)} 0`,
                     borderTop: i ? "1px dotted rgb(74 59 46 / .3)" : undefined,

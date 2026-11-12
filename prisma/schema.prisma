@@ -226,6 +226,8 @@ model Rsvp {
   /// Jumlah orang yang hadir.
   pax          Int        @default(1)
   message      String?
+  /// Hash harian IP (+ rahasia server) untuk rate limit — IP mentah tidak disimpan.
+  ipHash       String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -234,20 +236,26 @@ model Rsvp {
 
   @@index([invitationId, status])
   @@index([guestId])
+  @@index([invitationId, ipHash, createdAt])
 }
 
 model Wish {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   invitationId String
   name         String
   message      String
+  /// Konfirmasi kehadiran yang dikirim bersama ucapan (lencana di Dinding Tamu).
+  attendance   RsvpStatus?
   /// Pemilik undangan bisa menyembunyikan ucapan (spam/tidak pantas).
-  isHidden     Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  isHidden     Boolean     @default(false)
+  /// Hash harian IP (+ rahasia server) untuk rate limit — IP mentah tidak disimpan.
+  ipHash       String?
+  createdAt    DateTime    @default(now())
 
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
 
   @@index([invitationId, createdAt])
+  @@index([invitationId, ipHash, createdAt])
 }
 
 /// Log kunjungan ringan untuk statistik "dibuka". Tidak menyimpan IP mentah.

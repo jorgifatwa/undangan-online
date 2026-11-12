@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Sparkles } from "../../_shared/ornaments";
-import { useInvitation, type WishItem } from "../../_shared/runtime/context";
+import { useInvitation } from "../../_shared/runtime/context";
+import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
 import { SectionShell } from "../../_shared/runtime/SectionShell";
 import { SuedeTexture } from "../../_shared/textures";
 import { Art } from "../art";
@@ -52,31 +53,31 @@ function relative(iso: string) {
 }
 
 export function TiraiWishes() {
-  const { inv, wishes: initial, guestName, showToast } = useInvitation();
-  const [local, setLocal] = useState<WishItem[]>([]);
+  const { inv, guestName, showToast } = useInvitation();
+  const guestbook = useGuestbook();
+  const [hp, setHp] = useState("");
+  const [busy, setBusy] = useState(false);
   const [name, setName] = useState(guestName ?? "");
   const [attendance, setAttendance] = useState<Attendance | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const wishes = useMemo(() => [...local, ...initial], [local, initial]);
-  const present = wishes.filter((w) => w.attendance === "HADIR").length;
-  const absent = wishes.filter((w) => w.attendance === "TIDAK_HADIR").length;
+  const { wishes, stats } = guestbook;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return setError("Nama belum diisi.");
     if (!attendance) return setError("Pilih konfirmasi kehadiran.");
     if (!message.trim()) return setError("Ucapan belum diisi.");
+    setBusy(true);
+    const r = await guestbook.submit({
+      name,
+      attendance: attendance || undefined,
+      message: message.trim() || undefined,
+      website: hp,
+    });
+    setBusy(false);
+    if (!r.ok) return setError(r.error);
     setError(null);
-    setLocal((w) => [
-      {
-        name: name.trim(),
-        message: message.trim(),
-        attendance,
-        createdAt: new Date().toISOString(),
-      },
-      ...w,
-    ]);
     setMessage("");
     showToast("Terima kasih, ucapan Anda sudah terkirim!");
   };
@@ -222,8 +223,10 @@ export function TiraiWishes() {
           >
             {message.length}/{MAX_MSG}
           </div>
+          <Honeypot value={hp} onChange={setHp} />
           <button
             type="submit"
+            disabled={busy}
             style={{
               alignSelf: "center",
               width: u(160),
@@ -239,7 +242,7 @@ export function TiraiWishes() {
               boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
             }}
           >
-            Kirim Ucapan
+            {busy ? "Mengirim…" : "Kirim Ucapan"}
           </button>
           <div
             role="alert"
@@ -267,7 +270,7 @@ export function TiraiWishes() {
             lineHeight: u(20),
           }}
         >
-          {wishes.length} Ucapan · {present} Hadir · {absent} Tidak Hadir
+          {stats.ucapan} Ucapan · {stats.hadir} Hadir · {stats.tidakHadir} Tidak Hadir
         </p>
         <div
           style={{

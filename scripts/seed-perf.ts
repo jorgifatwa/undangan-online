@@ -7,9 +7,12 @@ import { PrismaClient, type Prisma } from "@prisma/client";
 import { dummyFor } from "../src/themes/_shared/dummy";
 import { THEME_MANIFESTS } from "../src/themes/registry.generated";
 
+import { assertSafeDatabase } from "./lib/guard";
+
 const db = new PrismaClient();
 
 async function main() {
+  assertSafeDatabase("seed-perf");
   const owner = await db.user.upsert({
     where: { email: "perf@test.local" },
     update: {},

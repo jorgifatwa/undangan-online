@@ -7,6 +7,8 @@ import type { AnyInvitationData } from "@/schemas/sections";
 import type { ColorVariant, ThemeManifest } from "../../types";
 
 export interface WishItem {
+  /** Id dari database (halaman publik); kosong untuk data contoh/preview. */
+  id?: string;
   name: string;
   message: string;
   /** ISO string */

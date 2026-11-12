@@ -10,6 +10,7 @@ import type { ThemeDefinition, ThemeProps } from "../../types";
 import { ThemeAssetsProvider } from "../assets";
 import { DEFAULT_SECTIONS, DefaultCover } from "../sections";
 import { AudioProvider, useAudio } from "./audio";
+import { GuestbookProvider } from "./guestbook";
 import { InvitationContext, type InvitationContextValue } from "./context";
 import { FloatingMusicButton } from "./FloatingMusicButton";
 import { detectLowEndDevice } from "./lite";
@@ -53,6 +54,7 @@ function ThemeRootInner({
   preview = false,
   startOpened = false,
   wishes = [],
+  guestbook,
 }: ThemeRootProps) {
   const { manifest } = theme;
   const audio = useAudio();
@@ -177,71 +179,78 @@ function ThemeRootInner({
   return (
     <InvitationContext.Provider value={ctx}>
       <ThemeAssetsProvider assets={theme.assets}>
-        <MotionConfig reducedMotion="user">
-          <div
-            ref={rootRef}
-            data-inv-root
-            data-theme={manifest.id}
-            data-variant={variant.id}
-            data-lite={lite ? "" : undefined}
-            className={theme.fontClassName}
-            style={variant.tokens as React.CSSProperties}
-          >
-            <div className="inv-backdrop" aria-hidden>
-              {Backdrop && <Backdrop />}
-            </div>
-
-            <main
-              className="inv-column"
-              // disiapkan di balik cover: belum boleh disentuh/dibaca pembaca layar
-              aria-hidden={!opened || undefined}
-              inert={!opened || undefined}
-              // Disiapkan tapi belum di-paint sampai tamu menyentuh layar: gambar di
-              // balik cover tidak boleh jadi kandidat LCP (Chrome tak menghitung oklusi).
-              style={!opened && !touched ? { visibility: "hidden" } : undefined}
+        <GuestbookProvider
+          slug={guestbook?.slug ?? null}
+          live={!!guestbook && !preview}
+          initialWishes={wishes}
+          initialStats={guestbook?.stats}
+        >
+          <MotionConfig reducedMotion="user">
+            <div
+              ref={rootRef}
+              data-inv-root
+              data-theme={manifest.id}
+              data-variant={variant.id}
+              data-lite={lite ? "" : undefined}
+              className={theme.fontClassName}
+              style={variant.tokens as React.CSSProperties}
             >
-              {showSections &&
-                sections
-                  .filter((id) => id !== "cover")
-                  .map((id) => {
-                    const Section =
-                      theme.sections?.[id as Exclude<typeof id, "cover">] ?? DEFAULT_SECTIONS[id];
-                    return Section ? <Section key={id} /> : null;
-                  })}
-              {watermark && <Watermark />}
-            </main>
+              <div className="inv-backdrop" aria-hidden>
+                {Backdrop && <Backdrop />}
+              </div>
 
-            {/* Lapisan tetap di atas kolom: efek, kontrol musik, toast, cover. */}
-            <div className="inv-fixed-column pointer-events-none z-40">
-              {Ambient && <Ambient opened={opened} />}
-              {opened && <MusicControl />}
+              <main
+                className="inv-column"
+                // disiapkan di balik cover: belum boleh disentuh/dibaca pembaca layar
+                aria-hidden={!opened || undefined}
+                inert={!opened || undefined}
+                // Disiapkan tapi belum di-paint sampai tamu menyentuh layar: gambar di
+                // balik cover tidak boleh jadi kandidat LCP (Chrome tak menghitung oklusi).
+                style={!opened && !touched ? { visibility: "hidden" } : undefined}
+              >
+                {showSections &&
+                  sections
+                    .filter((id) => id !== "cover")
+                    .map((id) => {
+                      const Section =
+                        theme.sections?.[id as Exclude<typeof id, "cover">] ?? DEFAULT_SECTIONS[id];
+                      return Section ? <Section key={id} /> : null;
+                    })}
+                {watermark && <Watermark />}
+              </main>
+
+              {/* Lapisan tetap di atas kolom: efek, kontrol musik, toast, cover. */}
+              <div className="inv-fixed-column pointer-events-none z-40">
+                {Ambient && <Ambient opened={opened} />}
+                {opened && <MusicControl />}
+                <AnimatePresence>
+                  {toast && (
+                    <div
+                      key={toast.id}
+                      role="status"
+                      className="absolute top-4 left-1/2 max-w-[90%] -translate-x-1/2 rounded-full px-4 py-2 text-center text-sm shadow-lg"
+                      style={{ background: "var(--inv-surface-text)", color: "var(--inv-surface)" }}
+                    >
+                      {toast.message}
+                    </div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <AnimatePresence>
-                {toast && (
-                  <div
-                    key={toast.id}
-                    role="status"
-                    className="absolute top-4 left-1/2 max-w-[90%] -translate-x-1/2 rounded-full px-4 py-2 text-center text-sm shadow-lg"
-                    style={{ background: "var(--inv-surface-text)", color: "var(--inv-surface)" }}
-                  >
-                    {toast.message}
+                {!opened && (
+                  <div key="cover" className="inv-fixed-column z-50" data-inv-cover>
+                    <Cover
+                      onOpen={handleOpen}
+                      startMusic={startMusic}
+                      firstSection={sections.find((s) => s !== "cover") ?? null}
+                    />
                   </div>
                 )}
               </AnimatePresence>
             </div>
-
-            <AnimatePresence>
-              {!opened && (
-                <div key="cover" className="inv-fixed-column z-50" data-inv-cover>
-                  <Cover
-                    onOpen={handleOpen}
-                    startMusic={startMusic}
-                    firstSection={sections.find((s) => s !== "cover") ?? null}
-                  />
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
-        </MotionConfig>
+          </MotionConfig>
+        </GuestbookProvider>
       </ThemeAssetsProvider>
     </InvitationContext.Provider>
   );

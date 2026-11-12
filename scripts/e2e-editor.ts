@@ -22,6 +22,7 @@ import type { Frame, HTTPRequest, Page } from "puppeteer-core";
 
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { launchBrowser } from "./lib/browser";
+import { assertSafeDatabase } from "./lib/guard";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -103,6 +104,7 @@ async function waitStatus(page: Page, s: string, ms = 8000) {
 }
 
 async function main() {
+  assertSafeDatabase("e2e-editor");
   const a = await user("e2e-a@test.local", "Uji A");
   const b = await user("e2e-b@test.local", "Uji B");
   const invA = await makeInvitation(a.u.id, "uji-editor-a", "renda-rimba");

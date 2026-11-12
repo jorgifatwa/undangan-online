@@ -23,6 +23,7 @@ import sharp from "sharp";
 
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { launchBrowser } from "./lib/browser";
+import { assertSafeDatabase } from "./lib/guard";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -178,6 +179,7 @@ async function waitDb(fn: () => Promise<boolean>, ms = 30000) {
 const fileOf = (url: string) => path.join(UPLOADS, url.replace(/^\/media\//, ""));
 
 async function main() {
+  assertSafeDatabase("e2e-media");
   const f = await makeFiles();
   const a = await user("e2e-a@test.local", "Uji A");
   const c = await user("e2e-c@test.local", "Uji C");

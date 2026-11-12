@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 
 import { db } from "@/lib/db";
 import { sanitizeGuestName } from "@/lib/guest";
+import { guestbookStats } from "@/lib/guestbook/service";
 import { getFeatures } from "@/lib/packages";
 import { parseInvitationData } from "@/schemas";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
@@ -58,14 +59,17 @@ export default async function InvitationPage({
   if (!manifest || !Theme || !parsed.ok) notFound();
 
   const features = getFeatures(invitation.package);
-  const wishes = features.wishes
-    ? await db.wish.findMany({
-        where: { invitationId: invitation.id, isHidden: false },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-        select: { name: true, message: true, createdAt: true },
-      })
-    : [];
+  const [wishes, stats] = await Promise.all([
+    features.wishes
+      ? db.wish.findMany({
+          where: { invitationId: invitation.id, isHidden: false },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          select: { id: true, name: true, message: true, attendance: true, createdAt: true },
+        })
+      : [],
+    guestbookStats(invitation.id),
+  ]);
 
   return (
     <Theme
@@ -75,7 +79,12 @@ export default async function InvitationPage({
       watermark={features.watermark}
       guestName={sanitizeGuestName(to)}
       forceLite={lite === "1"}
-      wishes={wishes.map((w) => ({ ...w, createdAt: w.createdAt.toISOString() }))}
+      wishes={wishes.map((w) => ({
+        ...w,
+        attendance: w.attendance ?? undefined,
+        createdAt: w.createdAt.toISOString(),
+      }))}
+      guestbook={{ slug, stats }}
     />
   );
 }

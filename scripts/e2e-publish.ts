@@ -17,6 +17,7 @@ import type { Page } from "puppeteer-core";
 
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { launchBrowser } from "./lib/browser";
+import { assertSafeDatabase } from "./lib/guard";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -81,6 +82,7 @@ const html = async (path: string, cookie?: string) =>
   (await fetch(`${base}${path}`, { headers: cookie ? { cookie } : {} })).text();
 
 async function main() {
+  assertSafeDatabase("e2e-publish");
   const a = await user("e2e-a@test.local", "Uji A");
   const b = await user("e2e-b@test.local", "Uji B");
   const inv = await invitation(a.u.id, "kirana-galih-uji", "FREE", "renda-rimba");

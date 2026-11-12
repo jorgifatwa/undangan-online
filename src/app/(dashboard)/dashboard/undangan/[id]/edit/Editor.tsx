@@ -32,6 +32,7 @@ import { QuoteForm } from "./forms/QuoteForm";
 import { ClosingForm, DressCodeForm, LiveStreamForm, SalamForm } from "./forms/SimpleForms";
 import { PreviewFrame } from "./PreviewFrame";
 import { SectionManager } from "./SectionManager";
+import { GuestbookPanel } from "./GuestbookPanel";
 import { PublishDialog } from "./PublishDialog";
 import type { PublishState } from "./publish-actions";
 import { SlugField, ThemePicker } from "./ThemePicker";
@@ -577,6 +578,11 @@ export function Editor(p: EditorProps) {
       section: "penutup",
       title: "Penutup",
       body: <ClosingForm eventType={p.eventType} />,
+    },
+    {
+      key: "bukutamu",
+      title: "RSVP & ucapan tamu",
+      body: <GuestbookPanel invitationId={p.id} />,
     },
     {
       key: "musik",

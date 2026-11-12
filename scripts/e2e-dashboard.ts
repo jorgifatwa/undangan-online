@@ -17,6 +17,7 @@ import { encode } from "next-auth/jwt";
 import type { Page } from "puppeteer-core";
 
 import { launchBrowser } from "./lib/browser";
+import { assertSafeDatabase } from "./lib/guard";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -106,6 +107,7 @@ async function createViaWizard(page: Page, themeName: string) {
 }
 
 async function main() {
+  assertSafeDatabase("e2e-dashboard");
   const a = await userWithCookie("e2e-a@test.local", "Uji A");
   const b = await userWithCookie("e2e-b@test.local", "Uji B");
 

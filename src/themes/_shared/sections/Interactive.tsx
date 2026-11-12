@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Reveal } from "../motion/Reveal";
-import { useInvitation, type WishItem } from "../runtime/context";
+import { useInvitation } from "../runtime/context";
+import { Honeypot, useGuestbook } from "../runtime/guestbook";
 import { SectionShell } from "../runtime/SectionShell";
 import { SectionTitle } from "./ui";
 
@@ -27,14 +28,23 @@ export const ATTENDANCE_LABEL: Record<Attendance, string> = {
 
 export function DefaultRsvp() {
   const { guestName, showToast } = useInvitation();
+  const guestbook = useGuestbook();
   const [name, setName] = useState(guestName ?? "");
   const [status, setStatus] = useState<Attendance>("HADIR");
   const [pax, setPax] = useState(1);
   const [sent, setSent] = useState(false);
+  const [hp, setHp] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) return setError("Nama belum diisi.");
+    setBusy(true);
+    const r = await guestbook.submit({ name, attendance: status, pax, website: hp });
+    setBusy(false);
+    if (!r.ok) return setError(r.error);
+    setError(null);
     setSent(true);
     showToast("Terima kasih atas konfirmasinya");
   };
@@ -99,8 +109,14 @@ export function DefaultRsvp() {
                 </select>
               </label>
             )}
-            <button type="submit" className="inv-btn mt-2">
-              Kirim Konfirmasi
+            <Honeypot value={hp} onChange={setHp} />
+            {error && (
+              <p role="alert" className="text-sm" style={{ color: "var(--inv-primary)" }}>
+                {error}
+              </p>
+            )}
+            <button type="submit" className="inv-btn mt-2" disabled={busy}>
+              {busy ? "Mengirim…" : "Kirim Konfirmasi"}
             </button>
           </form>
         )}
@@ -118,19 +134,22 @@ const timeAgo = (iso: string) => {
 };
 
 export function DefaultUcapan() {
-  const { wishes: initial, guestName, showToast } = useInvitation();
-  const [local, setLocal] = useState<WishItem[]>([]);
+  const { guestName, showToast } = useInvitation();
+  const { wishes, submit: send } = useGuestbook();
   const [name, setName] = useState(guestName ?? "");
   const [message, setMessage] = useState("");
-  const wishes = useMemo(() => [...local, ...initial], [local, initial]);
+  const [hp, setHp] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
-    setLocal((w) => [
-      { name: name.trim(), message: message.trim(), createdAt: new Date().toISOString() },
-      ...w,
-    ]);
+    if (!name.trim() || !message.trim()) return setError("Nama dan ucapan wajib diisi.");
+    setBusy(true);
+    const r = await send({ name, message, website: hp });
+    setBusy(false);
+    if (!r.ok) return setError(r.error);
+    setError(null);
     setMessage("");
     showToast("Ucapan terkirim, terima kasih!");
   };
@@ -156,10 +175,16 @@ export function DefaultUcapan() {
             required
             placeholder="Tulis ucapan & doa terbaik…"
           />
+          <Honeypot value={hp} onChange={setHp} />
+          {error && (
+            <p role="alert" className="text-sm" style={{ color: "var(--inv-primary)" }}>
+              {error}
+            </p>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-xs opacity-60">{message.length}/300</span>
-            <button type="submit" className="inv-btn">
-              Kirim Ucapan
+            <button type="submit" className="inv-btn" disabled={busy}>
+              {busy ? "Mengirim…" : "Kirim Ucapan"}
             </button>
           </div>
         </form>
@@ -168,7 +193,7 @@ export function DefaultUcapan() {
         <div className="inv-card mt-8 max-h-96 overflow-y-auto px-5">
           {wishes.map((w, i) => (
             <div
-              key={i}
+              key={w.id ?? i}
               className="border-t py-4 first:border-t-0"
               style={{
                 borderColor: "color-mix(in srgb, var(--inv-surface-text) 15%, transparent)",

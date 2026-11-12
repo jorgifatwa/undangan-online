@@ -7,6 +7,7 @@ import type { AnyInvitationData, SectionId } from "@/schemas/sections";
 
 import type { ThemeAssets } from "./_shared/assets";
 import type { WishItem } from "./_shared/runtime/context";
+import type { GuestbookStats } from "@/lib/guestbook/schema";
 
 export type ThemeCategory = "elegan" | "modern" | "islami" | "adat" | "anak" | "ceria" | "klasik";
 
@@ -79,6 +80,8 @@ export interface ThemeProps {
   startOpened?: boolean;
   /** Ucapan yang sudah ada (dari DB, atau dummy saat preview). */
   wishes?: WishItem[];
+  /** Halaman publik: slug untuk API buku tamu + rekap awal. Tanpa ini = mode lokal. */
+  guestbook?: { slug: string; stats: GuestbookStats };
 }
 
 export interface CoverProps {
