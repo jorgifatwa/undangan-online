@@ -47,3 +47,6 @@ next-env.d.ts
 
 # sumber font OFL (unduhan scripts/fonts-build.ts)
 /.cache/
+
+# file upload driver STORAGE_DRIVER=local (development)
+/.uploads/

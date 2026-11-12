@@ -8,7 +8,7 @@ import { FormProvider, useForm, useWatch, type FieldValues, type Resolver } from
 
 import { prune } from "@/lib/editor/prune";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
-import { getFeatures } from "@/lib/packages";
+import { PACKAGES, getFeatures } from "@/lib/packages";
 import { cn } from "@/lib/utils";
 import {
   birthdayDataSchema,
@@ -20,6 +20,11 @@ import {
 import type { ThemeManifest } from "@/themes/types";
 
 import { saveInvitation } from "./actions";
+import { deleteMediaAction } from "./media-actions";
+import { GalleryField } from "./media/GalleryField";
+import { MediaContext, type MediaCtx } from "./media/MediaContext";
+import { MusicPicker, type LibraryTrack, type UploadedAudio } from "./media/MusicPicker";
+import { PhotoField } from "./media/PhotoField";
 import { EventsForm } from "./forms/EventsForm";
 import { GiftForm, LoveStoryForm, WishlistForm } from "./forms/ListForms";
 import { CelebrantForm, CoupleForm } from "./forms/PersonForms";
@@ -44,6 +49,10 @@ export interface EditorProps {
   data: Record<string, unknown>;
   title: string;
   themes: ThemeManifest[];
+  /** Koleksi musik bawaan (tabel MusicTrack aktif). */
+  library: LibraryTrack[];
+  /** Musik yang pernah diunggah untuk undangan ini (termasuk yang masih diproses). */
+  uploadedAudio: UploadedAudio[];
 }
 
 type SaveState =
@@ -187,6 +196,8 @@ export function Editor(p: EditorProps) {
   const version = useRef(0);
   const saving = useRef(false);
   const timers = useRef<{ save?: number; preview?: number; draft?: number }>({});
+  /** File lama (foto diganti/dihapus) yang dihapus dari penyimpanan SETELAH data baru tersimpan. */
+  const pendingDeletes = useRef<Set<string>>(new Set());
 
   const manifest = p.themes.find((t) => t.id === themeId) ?? p.themes[0];
   const features = getFeatures(p.pkg);
@@ -236,6 +247,15 @@ export function Editor(p: EditorProps) {
       );
       if (res.ok) {
         base.current = res.updatedAt;
+        // Hapus file lama yang tidak lagi dirujuk data yang BARU SAJA tersimpan.
+        const savedJson = JSON.stringify(raw);
+        const urls = [...pendingDeletes.current].filter(
+          (u) => !savedJson.includes(JSON.stringify(u)),
+        );
+        if (urls.length) {
+          urls.forEach((u) => pendingDeletes.current.delete(u));
+          void deleteMediaAction(p.id, urls);
+        }
         if (version.current === v) {
           setState({ kind: "saved" });
           removeDraft(p.id);
@@ -320,6 +340,21 @@ export function Editor(p: EditorProps) {
       window.clearTimeout(t.draft);
     };
   }, []);
+
+  const mediaCtx = useMemo<MediaCtx>(
+    () => ({
+      invitationId: p.id,
+      galleryLimit: features.galleryLimit,
+      customMusic: features.customMusic,
+      packageLabel: PACKAGES[p.pkg].label,
+      releaseUrl: (url) => pendingDeletes.current.add(url),
+      saveSoon: () => {
+        window.clearTimeout(timers.current.save);
+        timers.current.save = window.setTimeout(() => void save(), 300);
+      },
+    }),
+    [p.id, p.pkg, features.galleryLimit, features.customMusic, save],
+  );
 
   const changeTheme = (id: string) => {
     themeRef.current = id;
@@ -408,6 +443,50 @@ export function Editor(p: EditorProps) {
       body: wedding ? <CoupleForm /> : <CelebrantForm />,
     },
     {
+      key: "foto",
+      focus: "profil",
+      title: wedding ? "Foto sampul, photo strip & penutup" : "Foto",
+      body: wedding ? (
+        <div className="space-y-5">
+          <PhotoField
+            name="photos.cover"
+            slot="cover"
+            label="Foto sampul (cover)"
+            aspect={4 / 5}
+            hint="Tampil di cover."
+          />
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <PhotoField
+                key={i}
+                name={`photos.strip.${i}`}
+                slot="strip"
+                label={`Photo strip ${i + 1}`}
+                aspect={4 / 3}
+              />
+            ))}
+          </div>
+          <PhotoField
+            name="photos.closing"
+            slot="closing"
+            label="Foto penutup"
+            aspect={1}
+            hint="Polaroid di bagian penutup."
+          />
+        </div>
+      ) : (
+        <div className="space-y-5">
+          <PhotoField
+            name="celebrant.photo"
+            slot="celebrant"
+            label="Foto yang berulang tahun"
+            aspect={4 / 5}
+          />
+          <PhotoField name="closingPhoto" slot="closing" label="Foto penutup" aspect={1} />
+        </div>
+      ),
+    },
+    {
       // Teks salam/pembuka juga dipakai di kartu mempelai & cover tema (bukan hanya
       // section "salam"), jadi tidak diberi label "tidak tampil di tema ini".
       key: "salam",
@@ -441,11 +520,7 @@ export function Editor(p: EditorProps) {
       key: "galeri",
       section: "galeri",
       title: "Galeri foto",
-      body: (
-        <p className="text-muted-foreground text-sm">
-          Unggah foto tersedia di tahap berikutnya (3c).
-        </p>
-      ),
+      body: <GalleryField />,
     },
     {
       key: "amplop",
@@ -476,152 +551,155 @@ export function Editor(p: EditorProps) {
       key: "musik",
       title: "Musik",
       body: (
-        <p className="text-muted-foreground text-sm">
-          Saat ini memakai musik bawaan tema. Pilihan koleksi & unggah musik hadir di tahap
-          berikutnya (3c).
-        </p>
+        <MusicPicker
+          library={p.library}
+          themeDefault={manifest.defaultMusic}
+          uploaded={p.uploadedAudio}
+        />
       ),
     },
   ];
 
   return (
     <FormProvider {...form}>
-      <div className="flex h-dvh flex-col bg-neutral-50">
-        <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-3 sm:px-4">
-          <Link
-            href="/dashboard"
-            className="text-muted-foreground hover:text-foreground text-sm"
-            aria-label="Kembali ke dashboard"
-          >
-            ←
-          </Link>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{p.title}</p>
-            <StatusPill state={state} />
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              const next = !showCover;
-              setShowCover(next);
-              post({ ns: "undangku", type: "cover", show: next });
-            }}
-            className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
-          >
-            {showCover ? "Lihat isi" : "Lihat cover"}
-          </button>
-          <Link
-            href={`/dashboard/undangan/${p.id}/pratinjau`}
-            target="_blank"
-            className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm"
-          >
-            Pratinjau penuh
-          </Link>
-        </header>
-
-        {state.kind === "conflict" && (
-          <div className="flex flex-wrap items-center gap-3 bg-rose-50 px-4 py-2 text-sm text-rose-900">
-            Undangan ini diubah di tab atau perangkat lain. Perubahan Anda di sini tersimpan sebagai
-            draf di browser.
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="font-semibold underline"
+      <MediaContext.Provider value={mediaCtx}>
+        <div className="flex h-dvh flex-col bg-neutral-50">
+          <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-3 sm:px-4">
+            <Link
+              href="/dashboard"
+              className="text-muted-foreground hover:text-foreground text-sm"
+              aria-label="Kembali ke dashboard"
             >
-              Muat ulang data terbaru
-            </button>
-          </div>
-        )}
-        {restore && (
-          <div className="flex flex-wrap items-center gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-950">
-            Ada perubahan yang belum tersimpan dari{" "}
-            {new Date(restore.savedAt).toLocaleString("id-ID", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}
-            .
+              ←
+            </Link>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{p.title}</p>
+              <StatusPill state={state} />
+            </div>
             <button
               type="button"
-              className="font-semibold underline"
               onClick={() => {
-                themeRef.current = restore.themeId;
-                variantRef.current = restore.variantId;
-                setThemeId(restore.themeId);
-                setVariantId(restore.variantId);
-                form.reset(restore.values, { keepDefaultValues: true });
-                setRestore(null);
-                onChange();
+                const next = !showCover;
+                setShowCover(next);
+                post({ ns: "undangku", type: "cover", show: next });
               }}
+              className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
             >
-              Pulihkan perubahan yang belum tersimpan
+              {showCover ? "Lihat isi" : "Lihat cover"}
             </button>
-            <button
-              type="button"
-              className="underline"
-              onClick={() => {
-                removeDraft(p.id);
-                setRestore(null);
-              }}
+            <Link
+              href={`/dashboard/undangan/${p.id}/pratinjau`}
+              target="_blank"
+              className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm"
             >
-              Buang
-            </button>
-          </div>
-        )}
+              Pratinjau penuh
+            </Link>
+          </header>
 
-        {/* Tab mobile */}
-        <div className="bg-background flex shrink-0 border-b lg:hidden" role="tablist">
-          {(["edit", "preview"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tab === t}
-              onClick={() => setTab(t)}
+          {state.kind === "conflict" && (
+            <div className="flex flex-wrap items-center gap-3 bg-rose-50 px-4 py-2 text-sm text-rose-900">
+              Undangan ini diubah di tab atau perangkat lain. Perubahan Anda di sini tersimpan
+              sebagai draf di browser.
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="font-semibold underline"
+              >
+                Muat ulang data terbaru
+              </button>
+            </div>
+          )}
+          {restore && (
+            <div className="flex flex-wrap items-center gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-950">
+              Ada perubahan yang belum tersimpan dari{" "}
+              {new Date(restore.savedAt).toLocaleString("id-ID", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+              .
+              <button
+                type="button"
+                className="font-semibold underline"
+                onClick={() => {
+                  themeRef.current = restore.themeId;
+                  variantRef.current = restore.variantId;
+                  setThemeId(restore.themeId);
+                  setVariantId(restore.variantId);
+                  form.reset(restore.values, { keepDefaultValues: true });
+                  setRestore(null);
+                  onChange();
+                }}
+              >
+                Pulihkan perubahan yang belum tersimpan
+              </button>
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  removeDraft(p.id);
+                  setRestore(null);
+                }}
+              >
+                Buang
+              </button>
+            </div>
+          )}
+
+          {/* Tab mobile */}
+          <div className="bg-background flex shrink-0 border-b lg:hidden" role="tablist">
+            {(["edit", "preview"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={tab === t}
+                onClick={() => setTab(t)}
+                className={cn(
+                  "flex-1 py-2.5 text-sm font-medium",
+                  tab === t ? "border-primary text-primary border-b-2" : "text-muted-foreground",
+                )}
+              >
+                {t === "edit" ? "Edit" : "Pratinjau"}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex min-h-0 flex-1">
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              noValidate
               className={cn(
-                "flex-1 py-2.5 text-sm font-medium",
-                tab === t ? "border-primary text-primary border-b-2" : "text-muted-foreground",
+                "min-h-0 w-full overflow-y-auto px-3 py-4 sm:px-5 lg:w-[540px] lg:shrink-0 lg:border-r",
+                tab !== "edit" && "hidden lg:block",
               )}
             >
-              {t === "edit" ? "Edit" : "Pratinjau"}
-            </button>
-          ))}
+              <div className="mx-auto max-w-xl space-y-3 pb-24">
+                {groups.map((g) => (
+                  <Group
+                    key={g.key}
+                    title={g.title}
+                    open={openGroup === g.key}
+                    onToggle={() => toggleGroup(g.key, g.focus ?? g.section)}
+                    chips={chips(g.section)}
+                  >
+                    {g.body}
+                  </Group>
+                ))}
+              </div>
+            </form>
+            <section
+              aria-label="Pratinjau undangan"
+              className={cn("min-h-0 flex-1 p-3", tab !== "preview" && "hidden lg:block")}
+            >
+              <PreviewFrame
+                ref={iframeRef}
+                src={`/dashboard/undangan/${p.id}/pratinjau?editor=1`}
+                title="Pratinjau undangan"
+              />
+            </section>
+          </div>
         </div>
-
-        <div className="flex min-h-0 flex-1">
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            noValidate
-            className={cn(
-              "min-h-0 w-full overflow-y-auto px-3 py-4 sm:px-5 lg:w-[540px] lg:shrink-0 lg:border-r",
-              tab !== "edit" && "hidden lg:block",
-            )}
-          >
-            <div className="mx-auto max-w-xl space-y-3 pb-24">
-              {groups.map((g) => (
-                <Group
-                  key={g.key}
-                  title={g.title}
-                  open={openGroup === g.key}
-                  onToggle={() => toggleGroup(g.key, g.focus ?? g.section)}
-                  chips={chips(g.section)}
-                >
-                  {g.body}
-                </Group>
-              ))}
-            </div>
-          </form>
-          <section
-            aria-label="Pratinjau undangan"
-            className={cn("min-h-0 flex-1 p-3", tab !== "preview" && "hidden lg:block")}
-          >
-            <PreviewFrame
-              ref={iframeRef}
-              src={`/dashboard/undangan/${p.id}/pratinjau?editor=1`}
-              title="Pratinjau undangan"
-            />
-          </section>
-        </div>
-      </div>
+      </MediaContext.Provider>
     </FormProvider>
   );
 }

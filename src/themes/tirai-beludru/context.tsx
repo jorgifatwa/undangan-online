@@ -32,7 +32,8 @@ export function TiraiProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={value}>
       {children}
-      <PetalBurst ref={ref} count={22} />
+      {/* 12 kelopak: cukup ramai, ringan selama transisi amplop (sebelumnya 22) */}
+      <PetalBurst ref={ref} count={12} />
     </Ctx.Provider>
   );
 }

@@ -318,32 +318,35 @@ model MusicTrack {
 // -----------------------------------------------------------------------------
 
 model Media {
-  id               String      @id @default(cuid())
-  userId           String
+  id                  String      @id @default(cuid())
+  userId              String
   /// Null bila undangannya sudah dihapus (file dibersihkan oleh job pembersih).
-  invitationId     String?
-  kind             MediaKind
+  invitationId        String?
+  kind                MediaKind
   /// Slot pemakaian, mis. "cover", "bride", "groom", "gallery", "strip",
   /// "closing", "loveStory", "qris", "music".
-  slot             String
-  status           MediaStatus @default(UPLOADING)
+  slot                String
+  status              MediaStatus @default(UPLOADING)
   /// Key file final di storage (terisi saat READY).
-  key              String?
+  key                 String?
   /// Key file mentah sebelum diproses (dihapus setelah READY/FAILED).
-  rawKey           String?
+  rawKey              String?
   /// Tipe hasil deteksi magic bytes (bukan dari nama file / Content-Type).
-  mime             String?
+  mime                String?
   /// Ukuran file final (byte) — dihitung ke kuota penyimpanan user.
-  bytes            Int         @default(0)
-  width            Int?
-  height           Int?
-  durationSec      Int?
+  bytes               Int         @default(0)
+  width               Int?
+  height              Int?
+  durationSec         Int?
   /// Upload musik sendiri: waktu user mencentang pernyataan hak penggunaan lagu.
-  rightsAcceptedAt DateTime?
+  rightsAcceptedAt    DateTime?
+  /// Kunci pemrosesan asinkron (musik): diisi saat route proses mengambil tugas,
+  /// mencegah file yang sama diproses dua kali; job pembersih menggagalkan yang macet.
+  processingStartedAt DateTime?
   /// Pesan galat untuk ditampilkan di editor bila FAILED.
-  error            String?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  error               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: SetNull)

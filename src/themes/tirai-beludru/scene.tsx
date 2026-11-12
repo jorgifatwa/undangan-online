@@ -1,5 +1,7 @@
 "use client";
 
+import { useLayoutEffect, useRef, useState } from "react";
+
 import { DriedBouquet } from "../_shared/ornaments";
 import {
   EnvelopeBody,
@@ -13,6 +15,7 @@ import { VelvetDrape } from "../_shared/textures";
 import type { RevealVariant } from "../_shared/motion/Reveal";
 import { Art } from "./art";
 import { CText, F, Placed, canvasText, u, type Box } from "./canvas";
+import { Reveal } from "../_shared/motion/Reveal";
 
 /**
  * Adegan amplop terbuka + kartu renda (koordinat kanvas Section 1, 440 × 903.8).
@@ -120,27 +123,116 @@ export function LaceCard({ skip }: { skip?: boolean }) {
   );
 }
 
-const verseStyle = (top: number): React.CSSProperties => ({
-  ...canvasText([123.9, top, 192.2], F.verse, 10.526, 14.488, {
-    renderScale: 1,
-    color: "var(--inv-ink, #2d110e)",
-    wrap: true,
-  }),
-});
+/**
+ * Geometri kartu renda (koordinat kanvas 440): kolom teks x 123,9–316,1.
+ * Ekor buket gantung menutupi sisi kiri kartu (x < 205) sampai y ≈ 318;
+ * di bawah y ≈ 452 kartu mulai tertutup amplop.
+ */
+const VERSE = { x: 123.9, w: 192.2, top: 255, clearTop: 318, bottom: 452, tailRight: 205 } as const;
 
-/** Ayat di kartu renda: terjemahan + sumber (teks mengecil otomatis bila panjang). */
+/**
+ * Ayat di kartu renda. Posisi menyesuaikan panjang kutipan agar tidak ada
+ * baris yang tertutup ekor buket:
+ *  - pendek → ditengahkan di area bersih di bawah buket (318–452)
+ *  - panjang → mulai y 255, baris di samping buket mengalir di kanannya
+ *    (float tak terlihat seukuran area ekor), font dikecilkan bila perlu
+ * Sumber ayat mengalir di bawah teks. Diuji dengan 1 Korintus 13:4-7.
+ */
 export function Verse({ text, source, skip }: { text: string; source?: string; skip?: boolean }) {
-  return (
-    <>
-      <CText style={verseStyle(255.3)} reveal={skip ? undefined : "blur"} maxLines={11}>
-        &ldquo;{text}&rdquo;
-      </CText>
-      {source && (
-        <CText style={verseStyle(429.3)} reveal={skip ? undefined : "blur"}>
-          {source}
-        </CText>
-      )}
-    </>
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [layout, setLayout] = useState<{ top: number; float: boolean; fit: number }>({
+    top: VERSE.top,
+    float: true,
+    fit: 1,
+  });
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const unit = el.offsetWidth / VERSE.w || 1; // px per unit kanvas
+      const heightAt = (float: boolean, fit: number) => {
+        el.style.setProperty("--vfit", String(fit));
+        el.style.setProperty("--vfloat", float ? "1" : "0");
+        return el.scrollHeight / unit;
+      };
+      const clear = VERSE.bottom - VERSE.clearTop;
+      // 1) muat di area bersih di bawah buket (font boleh mengecil sampai 90%)
+      for (const f of [1, 0.95, 0.9]) {
+        const h0 = heightAt(false, f);
+        if (h0 <= clear) {
+          setLayout({ top: VERSE.clearTop + (clear - h0) / 2, float: false, fit: f });
+          return;
+        }
+      }
+      // 2) kutipan panjang: mulai lebih atas, baris di samping buket mengalir ke kanan
+      let h = 0;
+      const room = VERSE.bottom - VERSE.top;
+      let fit = 1;
+      h = heightAt(true, fit);
+      while (h > room && fit > 0.72) {
+        fit -= 0.04;
+        h = heightAt(true, fit);
+      }
+      setLayout({ top: VERSE.top, float: true, fit });
+    };
+    measure();
+    document.fonts?.ready.then(measure).catch(() => undefined);
+  }, [text, source]);
+
+  const fs = (px: number) => `calc(${u(px)} * var(--vfit, 1))`;
+  const body = (
+    <div
+      ref={ref}
+      style={{
+        ["--vfit" as string]: layout.fit,
+        ["--vfloat" as string]: layout.float ? 1 : 0,
+        width: u(VERSE.w),
+        textAlign: "center",
+        color: "var(--inv-ink, #2d110e)",
+        fontFamily: F.verse,
+        fontSize: fs(10.526),
+        lineHeight: fs(14.488),
+        overflowWrap: "anywhere",
+      }}
+    >
+      {/* area ekor buket: baris di sampingnya bergeser ke kanan */}
+      <span
+        aria-hidden
+        style={{
+          display: "block",
+          float: "left",
+          width: `calc(${u(VERSE.tailRight - VERSE.x)} * var(--vfloat, 1))`,
+          height: `calc(${u(VERSE.clearTop - VERSE.top)} * var(--vfloat, 1))`,
+        }}
+      />
+      {/* lekukan oval di kanan atas */}
+      <span
+        aria-hidden
+        style={{
+          display: "block",
+          float: "right",
+          width: `calc(${u(14)} * var(--vfloat, 1))`,
+          height: `calc(${u(40)} * var(--vfloat, 1))`,
+        }}
+      />
+      <p style={{ margin: 0 }}>&ldquo;{text}&rdquo;</p>
+      {source && <p style={{ margin: `${u(12)} 0 0`, clear: "both" }}>{source}</p>}
+    </div>
+  );
+  const pos: React.CSSProperties = {
+    position: "absolute",
+    left: u(VERSE.x),
+    top: u(layout.top),
+    width: u(VERSE.w),
+    pointerEvents: "none",
+  };
+  return skip ? (
+    <div style={pos}>{body}</div>
+  ) : (
+    <Reveal variant="blur" style={pos}>
+      {body}
+    </Reveal>
   );
 }
 

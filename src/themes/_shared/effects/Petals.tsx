@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 
 import { rng } from "../ornaments/geom";
@@ -134,25 +133,41 @@ function BurstGroup({ x, y, count, seed }: { x: number; y: number; count: number
     });
   }, [count, seed]);
 
+  // Animasi CSS murni (translate/rotate/scale/opacity → compositor), bukan
+  // framer-motion per frame di main thread: semburan berjalan bersamaan
+  // dengan transisi cover, jadi tidak boleh berebut main thread.
   return (
     <>
       {petals.map((p, i) => (
-        <motion.div
+        <div
           key={i}
-          style={{ position: "absolute", left: x, top: y, width: p.size, marginLeft: -p.size / 2 }}
-          initial={{ x: 0, y: 0, rotate: 0, opacity: 0, scale: 0.4 }}
-          animate={{
-            x: [0, p.dx, p.dx * 1.25],
-            y: [0, p.dy, p.dy + p.fall],
-            rotate: [0, p.rot * 0.4, p.rot],
-            opacity: [0, 1, 0],
-            scale: [0.4, 1, 1],
+          className="inv-burst-petal"
+          style={{
+            position: "absolute",
+            left: x,
+            top: y,
+            width: p.size,
+            marginLeft: -p.size / 2,
+            animationDuration: `${p.dur}s`,
+            ["--dx" as string]: `${p.dx.toFixed(1)}px`,
+            ["--dy" as string]: `${p.dy.toFixed(1)}px`,
+            ["--dx2" as string]: `${(p.dx * 1.25).toFixed(1)}px`,
+            ["--dy2" as string]: `${(p.dy + p.fall).toFixed(1)}px`,
+            ["--r1" as string]: `${(p.rot * 0.4).toFixed(0)}deg`,
+            ["--r2" as string]: `${p.rot.toFixed(0)}deg`,
           }}
-          transition={{ duration: p.dur, times: [0, 0.32, 1], ease: [0.2, 0.6, 0.4, 1] }}
         >
           <Petal style={{ width: "100%" }} />
-        </motion.div>
+        </div>
       ))}
+      <style>{`
+        .inv-burst-petal { opacity: 0; animation-name: inv-burst; animation-timing-function: cubic-bezier(.2,.6,.4,1); animation-fill-mode: both; will-change: translate, rotate, opacity; }
+        @keyframes inv-burst {
+          0% { translate: 0 0; rotate: 0deg; scale: .4; opacity: 0; }
+          32% { translate: var(--dx) var(--dy); rotate: var(--r1); scale: 1; opacity: 1; }
+          100% { translate: var(--dx2) var(--dy2); rotate: var(--r2); scale: 1; opacity: 0; }
+        }
+      `}</style>
     </>
   );
 }

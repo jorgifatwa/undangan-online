@@ -1,29 +1,52 @@
 /**
- * Seed data awal. Jalankan: pnpm db:seed
- * URL musik masih placeholder — ganti dengan file di R2 setelah tahap upload.
+ * Seed data awal. Jalankan: pnpm db:seed (idempoten).
+ *
+ * Koleksi musik bawaan = 3 musik placeholder tema (public/placeholders/music,
+ * AAC 96 kbps hasil `pnpm music:optimize`, kredit di CREDITS.md).
+ * PLACEHOLDER: wajib diganti perpustakaan musik berlisensi komersial sebelum
+ * peluncuran publik (docs/TAHAP-2.md). Baris lama berisi URL contoh
+ * (example.com) dinonaktifkan.
  */
 import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
 
 const tracks = [
-  { title: "Instrumental Romantis 1", category: "romantis", sortOrder: 1 },
-  { title: "Instrumental Romantis 2", category: "romantis", sortOrder: 2 },
-  { title: "Nasyid Pernikahan", category: "islami", sortOrder: 3 },
-  { title: "Piano Lembut", category: "instrumental", sortOrder: 4 },
-  { title: "Selamat Ulang Tahun (Ceria)", category: "anak", sortOrder: 5 },
+  {
+    title: "Romantic Wedding Acoustic Guitar",
+    artist: "Tunetank",
+    url: "/placeholders/music/renda-rimba.m4a",
+    category: "romantis",
+    sortOrder: 1,
+  },
+  {
+    title: "Wedding Music",
+    artist: "ikoliks",
+    url: "/placeholders/music/tirai-beludru.m4a",
+    category: "romantis",
+    sortOrder: 2,
+  },
+  {
+    title: "Kids School - Happy Birthday Music",
+    artist: "SigmaMusicArt",
+    url: "/placeholders/music/confetti-party.m4a",
+    category: "anak",
+    sortOrder: 3,
+  },
 ];
 
 async function main() {
-  // Idempotent: hanya isi jika tabel masih kosong.
-  if ((await db.musicTrack.count()) > 0) {
-    console.log("MusicTrack sudah berisi, seed dilewati.");
-    return;
-  }
-  await db.musicTrack.createMany({
-    data: tracks.map((t, i) => ({ ...t, url: `https://example.com/music/track-${i + 1}.mp3` })),
+  const off = await db.musicTrack.updateMany({
+    where: { url: { startsWith: "https://example.com/" } },
+    data: { isActive: false },
   });
-  console.log(`Seed ${tracks.length} MusicTrack selesai.`);
+  for (const t of tracks) {
+    const existing = await db.musicTrack.findFirst({ where: { url: t.url } });
+    if (existing)
+      await db.musicTrack.update({ where: { id: existing.id }, data: { ...t, isActive: true } });
+    else await db.musicTrack.create({ data: t });
+  }
+  console.log(`MusicTrack: ${tracks.length} aktif, ${off.count} contoh lama dinonaktifkan.`);
 }
 
 main()

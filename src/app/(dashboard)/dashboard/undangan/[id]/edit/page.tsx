@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
+import { db } from "@/lib/db";
 import { requireOwnedInvitation } from "@/lib/invitations/access";
+import { storage } from "@/lib/storage";
 import { displayStatus, summarize } from "@/lib/invitations/summary";
 import { parseInvitationData } from "@/schemas";
 import { THEME_MANIFESTS } from "@/themes/registry";
@@ -25,6 +27,22 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     );
   }
   const eventType = parsed.value.eventType;
+  const [library, audio] = await Promise.all([
+    db.musicTrack.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { title: "asc" }],
+      select: { id: true, title: true, artist: true, url: true, category: true },
+    }),
+    db.media.findMany({
+      where: {
+        invitationId: invitation.id,
+        kind: "AUDIO",
+        status: { in: ["UPLOADING", "PROCESSING", "READY", "FAILED"] },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+  ]);
   return (
     <Editor
       id={invitation.id}
@@ -38,6 +56,14 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       data={parsed.value.data as unknown as Record<string, unknown>}
       title={summarize(invitation.eventType, invitation.data).title}
       themes={THEME_MANIFESTS.filter((m) => m.eventTypes.includes(eventType))}
+      library={library}
+      uploadedAudio={audio.map((m) => ({
+        id: m.id,
+        status: m.status,
+        url: m.key ? storage().publicUrl(m.key) : null,
+        error: m.error,
+        title: "Musik saya",
+      }))}
     />
   );
 }

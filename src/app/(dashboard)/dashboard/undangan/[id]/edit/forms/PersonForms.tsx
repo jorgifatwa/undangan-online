@@ -1,5 +1,6 @@
 "use client";
 
+import { PhotoField } from "../media/PhotoField";
 import { CheckField, SelectField, TextField, grid2 } from "./fields";
 
 /** Mempelai (bride / groom). Foto diunggah di tahap 3c. */
@@ -8,6 +9,7 @@ function PersonFields({ prefix, who }: { prefix: "bride" | "groom"; who: string 
   return (
     <fieldset className="space-y-3">
       <legend className="font-heading text-lg">{who}</legend>
+      <PhotoField name={`${prefix}.photo`} slot={prefix} label="Foto" aspect={4 / 5} />
       <TextField name={`${prefix}.fullName`} label="Nama lengkap" maxLength={120} />
       <div className={grid2}>
         <TextField
@@ -63,9 +65,6 @@ export function CoupleForm() {
       />
       <PersonFields prefix="bride" who="Mempelai wanita" />
       <PersonFields prefix="groom" who="Mempelai pria" />
-      <p className="text-muted-foreground text-xs">
-        Foto mempelai bisa diunggah di tahap berikutnya.
-      </p>
     </div>
   );
 }

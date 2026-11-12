@@ -23,6 +23,10 @@ export interface PackageFeatures {
   privateMode: boolean;
   interactiveThemes: boolean;
   prioritySupport: boolean;
+  /** Unggah musik sendiri (dikompres otomatis ke AAC 96 kbps). */
+  customMusic: boolean;
+  /** Kuota total penyimpanan foto & musik per akun (MB). */
+  storageQuotaMb: number;
 }
 
 export interface PackageDefinition {
@@ -51,6 +55,8 @@ const BASE_FREE: PackageFeatures = {
   privateMode: false,
   interactiveThemes: false,
   prioritySupport: false,
+  customMusic: false,
+  storageQuotaMb: 50,
 };
 
 const BASIC: PackageFeatures = {
@@ -58,6 +64,8 @@ const BASIC: PackageFeatures = {
   activeDays: null,
   watermark: false,
   galleryLimit: null,
+  customMusic: true,
+  storageQuotaMb: 300,
 };
 
 const PREMIUM: PackageFeatures = {
@@ -68,12 +76,14 @@ const PREMIUM: PackageFeatures = {
   digitalEnvelope: true,
   qrCheckIn: true,
   privateMode: true,
+  storageQuotaMb: 1000,
 };
 
 const EXCLUSIVE: PackageFeatures = {
   ...PREMIUM,
   interactiveThemes: true,
   prioritySupport: true,
+  storageQuotaMb: 2000,
 };
 
 export const PACKAGES: Record<PackageTier, PackageDefinition> = {

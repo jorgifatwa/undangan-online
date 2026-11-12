@@ -101,6 +101,21 @@
   animation: tb-show 1.2s ease 1.1s both;
 }
 
+/* will-change HANYA selama transisi (kelas tb-opening), agar lapisan yang
+   di-scale/translate tidak dirasterisasi ulang tiap frame; tidak dipasang
+   permanen supaya tidak menahan memori GPU. */
+[data-theme="tirai-beludru"] .tb-opening :is(.tb-open-scene, .tb-card) {
+  will-change: translate, scale, opacity;
+}
+[data-theme="tirai-beludru"] .tb-opening :is(.tb-flap, .tb-open-flap, .tb-seal, .tb-seal-shard) {
+  will-change: transform, opacity;
+}
+[data-theme="tirai-beludru"]
+  .tb-opening
+  :is(.tb-fade, .tb-bouquet, .tb-closed-rest, .tb-section-bg) {
+  will-change: opacity;
+}
+
 @keyframes tb-fade-out {
   to {
     opacity: 0;

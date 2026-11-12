@@ -2,6 +2,7 @@
 
 import { useFieldArray, useFormContext } from "react-hook-form";
 
+import { PhotoField } from "../media/PhotoField";
 import { AddButton, ItemCard, TextField, grid2 } from "./fields";
 
 export function LoveStoryForm() {
@@ -32,6 +33,12 @@ export function LoveStoryForm() {
             />
           </div>
           <TextField name={`loveStory.${i}.text`} label="Cerita" rows={3} maxLength={800} />
+          <PhotoField
+            name={`loveStory.${i}.photo`}
+            slot="loveStory"
+            label="Foto (opsional)"
+            aspect={4 / 5}
+          />
         </ItemCard>
       ))}
       {fields.length < 12 && (
@@ -60,6 +67,14 @@ export function GiftForm({ featureNote }: { featureNote?: string }) {
         rows={3}
         maxLength={600}
         hint="Kosongkan untuk memakai teks bawaan tema."
+      />
+      <PhotoField
+        name="gift.qris"
+        slot="qris"
+        label="QRIS (opsional)"
+        aspect={1}
+        crop={false}
+        hint="Gambar kode QRIS dari aplikasi bank/e-wallet."
       />
       <p className="text-sm font-medium">Rekening / e-wallet</p>
       {accounts.fields.map((f, i) => (
