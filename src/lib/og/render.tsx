@@ -4,13 +4,15 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import type { ShareInfo } from "@/lib/invitations/share";
+import { OG_PHOTO } from "@/lib/og/photo";
 import { siteConfig } from "@/lib/site";
 
 /**
  * Gambar pratinjau link 1200×630 (WhatsApp, Telegram, Facebook) dirender
- * satori (next/og). Desain tipografis memakai gradien & font tema — tanpa foto
- * agar ringan (< 300 KB, batas aman WhatsApp) dan tidak membocorkan foto
- * pribadi lebih jauh dari isi undangan.
+ * satori (next/og), memakai gradien & font tema:
+ *  - ada foto cover → foto di panel kiri, nama & tanggal di kanan
+ *  - tanpa foto     → versi teks penuh
+ * Target JPEG < 150 KB. Undangan kedaluwarsa → genericOg (tanpa foto & nama).
  */
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 
@@ -74,9 +76,9 @@ async function fonts(style: OgStyle) {
   return out;
 }
 
-/** Ukuran nama menyesuaikan panjangnya agar tetap satu–dua baris. */
-function nameSize(base: number, names: string) {
-  const n = names.length;
+/** Ukuran nama menyesuaikan panjangnya (dan lebar ruang teks) agar tetap satu–dua baris. */
+function nameSize(base: number, names: string, narrow = false) {
+  const n = names.length * (narrow ? 1.45 : 1);
   return n <= 16
     ? base
     : n <= 24
@@ -89,9 +91,12 @@ function nameSize(base: number, names: string) {
 export async function invitationOg(
   info: ShareInfo,
   theme: { id: string; background: string; foreground: string },
+  /** data URI foto cover (panel kiri) — null = versi teks. */
+  photo: string | null = null,
 ) {
   const s = STYLES[theme.id] ?? DEFAULT_STYLE;
   const fg = theme.foreground;
+  if (photo) return { node: photoLayout(info, theme, s, photo), fonts: await fonts(s) };
   const node = (
     <div
       style={{
@@ -165,6 +170,101 @@ export async function invitationOg(
     </div>
   );
   return { node, fonts: await fonts(s) };
+}
+
+function photoLayout(
+  info: ShareInfo,
+  theme: { background: string; foreground: string },
+  s: OgStyle,
+  photo: string,
+) {
+  const fg = theme.foreground;
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        backgroundImage: theme.background,
+        backgroundColor: "#222",
+        color: fg,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- satori, bukan DOM */}
+      <img src={photo} width={OG_PHOTO.width} height={OG_PHOTO.height} alt="" />
+      {/* garis tepi foto bergaya tema */}
+      <div
+        style={{
+          position: "absolute",
+          left: OG_PHOTO.width - 6,
+          top: 0,
+          width: 6,
+          height: OG_PHOTO.height,
+          backgroundColor: `${fg}aa`,
+        }}
+      />
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          margin: 28,
+          border: `2px solid ${fg}55`,
+          borderRadius: 24,
+          padding: "32px 36px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: s.text.family,
+            fontSize: 24,
+            letterSpacing: 6,
+            textTransform: "uppercase",
+            opacity: 0.85,
+          }}
+        >
+          {info.heading}
+        </div>
+        <div
+          style={{
+            fontFamily: s.names.family,
+            fontSize: nameSize(Math.round(s.names.size * 0.82), info.names, true),
+            lineHeight: 1.15,
+            marginTop: 16,
+            marginBottom: 16,
+            maxWidth: 600,
+            display: "flex",
+            justifyContent: "center",
+            textAlign: "center",
+          }}
+        >
+          {info.names}
+        </div>
+        <div style={{ width: 160, height: 2, backgroundColor: `${fg}88`, marginBottom: 22 }} />
+        <div style={{ fontFamily: s.text.family, fontSize: 34 }}>{info.dateLabel}</div>
+        {info.city && (
+          <div style={{ fontFamily: s.text.family, fontSize: 26, opacity: 0.8, marginTop: 8 }}>
+            {info.city}
+          </div>
+        )}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 40,
+          right: 52,
+          fontFamily: "Jakarta",
+          fontSize: 18,
+          opacity: 0.6,
+        }}
+      >
+        {siteConfig.name}
+      </div>
+    </div>
+  );
 }
 
 /** Gambar umum tanpa data pribadi (undangan kedaluwarsa / tidak ditemukan). */

@@ -10,7 +10,9 @@
  *  - subdomain {slug}.ROOT_DOMAIN (bila NEXT_PUBLIC_ROOT_DOMAIN diisi)
  *  - dialog Bagikan: link ?to=, nomor WA, template tersimpan (updatedAt tetap)
  */
+import fs from "node:fs/promises";
 import http from "node:http";
+import path from "node:path";
 
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { encode } from "next-auth/jwt";
@@ -170,6 +172,113 @@ async function main() {
   });
   check((await get(`/u/${slug}/og`)).status === 404, "draf: /og 404");
   await db.invitation.update({ where: { id: inv.id }, data: { status: "PUBLISHED" } });
+
+  console.log("Foto cover di gambar pratinjau");
+  if ((process.env.STORAGE_DRIVER ?? "local") !== "local") {
+    console.log("  – STORAGE_DRIVER bukan local (dilewati)");
+  } else {
+    const photoInv = async (themeId: string, eventType: "WEDDING" | "BIRTHDAY") => {
+      const s2 = `og-foto-${themeId}`;
+      await db.invitation.deleteMany({ where: { slug: s2 } });
+      const date = new Date(Date.now() + 30 * DAY).toISOString().slice(0, 10);
+      const d = buildInitialData(
+        eventType === "WEDDING"
+          ? {
+              eventType,
+              brideName: "Kirana Ayu",
+              brideNickname: "Kirana",
+              groomName: "Galih Pratama",
+              groomNickname: "Galih",
+              date,
+              timezone: "WIB",
+              city: "Semarang",
+              greeting: "islami",
+              quoteId: "ar-rum-21",
+              themeId,
+            }
+          : {
+              eventType,
+              name: "Aira Salsabila",
+              nickname: "Aira",
+              age: 6,
+              date,
+              timezone: "WIB",
+              city: "Depok",
+              themeId,
+            },
+      ).data as Record<string, unknown>;
+      const created = await db.invitation.create({
+        data: {
+          userId: owner.id,
+          slug: s2,
+          eventType,
+          themeId,
+          package: "PREMIUM",
+          status: "PUBLISHED",
+          publishedAt: new Date(),
+          data: d as Prisma.InputJsonValue,
+        },
+      });
+      // Foto contoh berlisensi Unsplash (public/placeholders) disalin ke penyimpanan
+      // lokal seolah-olah diunggah pemilik.
+      const src = eventType === "WEDDING" ? "wedding-cover.webp" : "birthday-celebrant.webp";
+      const key = `invitations/${created.id}/photos/og-uji.webp`;
+      await fs.mkdir(path.join(process.cwd(), ".uploads", path.dirname(key)), { recursive: true });
+      await fs.copyFile(
+        path.join(process.cwd(), "public/placeholders/photos", src),
+        path.join(process.cwd(), ".uploads", key),
+      );
+      const photo = { url: `/media/${key}`, focusX: 50, focusY: 35 };
+      const withPhoto =
+        eventType === "WEDDING"
+          ? { ...d, photos: { ...(d.photos as object), cover: photo } }
+          : { ...d, celebrant: { ...(d.celebrant as object), photo } };
+      await db.invitation.update({
+        where: { id: created.id },
+        data: { data: withPhoto as Prisma.InputJsonValue },
+      });
+      return created;
+    };
+    for (const [themeId, eventType] of [
+      ["renda-rimba", "WEDDING"],
+      ["tirai-beludru", "WEDDING"],
+      ["confetti-party", "BIRTHDAY"],
+    ] as const) {
+      const pi = await photoInv(themeId, eventType);
+      const r = await get(`/u/${pi.slug}/og`);
+      const text = await get(`/u/perf-${themeId}/og`);
+      const m = await sharp(r.body).metadata();
+      check(
+        r.status === 200 && m.width === 1200 && m.height === 630 && r.body.length < 150 * 1024,
+        `${themeId} + foto: ${m.width}×${m.height}, ${Math.round(r.body.length / 1024)} KB (< 150 KB)`,
+      );
+      if (text.status === 200)
+        check(
+          text.body.length < 150 * 1024,
+          `${themeId} tanpa foto (versi teks): ${Math.round(text.body.length / 1024)} KB`,
+        );
+      // panel kiri harus berisi foto (bukan gradien polos): variasi piksel tinggi
+      const left = await sharp(r.body)
+        .extract({ left: 40, top: 40, width: 380, height: 550 })
+        .stats();
+      check(
+        left.channels[0].stdev > 25,
+        `${themeId}: panel kiri berisi foto (stdev ${left.channels[0].stdev.toFixed(0)})`,
+      );
+      if (shots) await sharp(r.body).toFile(`${shots}/1b-og-foto-${themeId}.jpg`);
+      if (themeId === "renda-rimba") {
+        await db.invitation.update({
+          where: { id: pi.id },
+          data: { expiresAt: new Date(Date.now() - 60_000) },
+        });
+        const ex = await get(`/u/${pi.slug}/og`);
+        check(
+          ex.body.equals(expOg.body),
+          "kedaluwarsa + foto → gambar umum yang sama persis (tanpa foto & nama)",
+        );
+      }
+    }
+  }
 
   console.log("Subdomain");
   const browser = await launchBrowser();

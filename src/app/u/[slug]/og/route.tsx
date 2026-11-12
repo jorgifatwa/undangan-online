@@ -3,6 +3,7 @@ import sharp from "sharp";
 
 import { getPublicInvitation } from "@/lib/invitations/public";
 import { shareInfo } from "@/lib/invitations/share";
+import { coverPhotoDataUri } from "@/lib/og/photo";
 import { genericOg, invitationOg, OG_SIZE } from "@/lib/og/render";
 import { parseInvitationData } from "@/schemas";
 import { getManifest } from "@/themes/registry";
@@ -14,7 +15,8 @@ import { getManifest } from "@/themes/registry";
  * dibagikan. Undangan kedaluwarsa → gambar umum tanpa data pribadi.
  *
  * Satori menghasilkan PNG ±240 KB (gradien sulit dikompres) — mendekati batas
- * ±300 KB yang aman untuk pratinjau WhatsApp — jadi diubah ke JPEG (±40–60 KB).
+ * ±300 KB yang aman untuk pratinjau WhatsApp — jadi diubah ke JPEG (target < 150 KB,
+ * termasuk versi dengan foto cover).
  */
 export const runtime = "nodejs";
 
@@ -30,13 +32,24 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
   const parsed = parseInvitationData(inv.eventType, inv.data);
   const manifest = getManifest(inv.themeId);
+  const ok = inv.active && parsed.ok && manifest;
+  const cover =
+    ok && parsed.ok
+      ? parsed.value.eventType === "WEDDING"
+        ? parsed.value.data.photos.cover
+        : parsed.value.data.celebrant.photo
+      : undefined;
   const { node, fonts } =
-    inv.active && parsed.ok && manifest
-      ? await invitationOg(shareInfo(parsed.value), {
-          id: manifest.id,
-          background: manifest.thumbnail.background,
-          foreground: manifest.thumbnail.foreground,
-        })
+    ok && parsed.ok && manifest
+      ? await invitationOg(
+          shareInfo(parsed.value),
+          {
+            id: manifest.id,
+            background: manifest.thumbnail.background,
+            foreground: manifest.thumbnail.foreground,
+          },
+          await coverPhotoDataUri(cover),
+        )
       : await genericOg();
   const png = Buffer.from(await new ImageResponse(node, { ...OG_SIZE, fonts }).arrayBuffer());
   const jpg = await sharp(png).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
