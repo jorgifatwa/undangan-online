@@ -1,4 +1,4 @@
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 
 /**
  * Font WEBSITE (landing, auth, dashboard, galeri tema).
@@ -6,21 +6,25 @@ import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
  * rute yang memakainya, dan halaman undangan tidak butuh font ini (~160 KB yang
  * berebut bandwidth dengan font tema di jaringan lambat).
  */
-const jakarta = Plus_Jakarta_Sans({
+// File subset OFL dari `pnpm fonts:build` (tanpa unduhan Google Fonts saat build).
+const siteJakarta = localFont({
+  src: "../themes/_fonts/site-jakarta-300-700.woff2",
+  weight: "300 700",
   variable: "--font-jakarta",
-  subsets: ["latin"],
   display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
-const fraunces = Fraunces({
+const siteFraunces = localFont({
+  src: "../themes/_fonts/site-fraunces-400-600.woff2",
+  weight: "400 600",
   variable: "--font-fraunces",
-  subsets: ["latin"],
   display: "swap",
-  axes: ["SOFT", "opsz"],
+  fallback: ["Georgia", "serif"],
 });
 
 /** Pasang di elemen pembungkus halaman website. */
-export const siteFontClass = `${jakarta.variable} ${fraunces.variable} font-sans`;
+export const siteFontClass = `${siteJakarta.variable} ${siteFraunces.variable} font-sans`;
 
 export function SiteFonts({ children }: { children: React.ReactNode }) {
   return <div className={siteFontClass}>{children}</div>;

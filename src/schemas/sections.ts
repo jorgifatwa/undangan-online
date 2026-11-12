@@ -157,7 +157,11 @@ export function resolveSections(
   // Section terkunci: dipindah tepat setelah cover sesuai urutan manifest.
   const lockedSet = new Set(locked);
   const rest = order.filter((id) => id !== "cover" && !lockedSet.has(id));
-  order = [...(order.includes("cover") ? (["cover"] as SectionId[]) : []), ...locked.filter((id) => id !== "cover"), ...rest];
+  order = [
+    ...(order.includes("cover") ? (["cover"] as SectionId[]) : []),
+    ...locked.filter((id) => id !== "cover"),
+    ...rest,
+  ];
 
   const hidden = new Set(configured.filter((s) => !s.visible).map((s) => s.id));
 

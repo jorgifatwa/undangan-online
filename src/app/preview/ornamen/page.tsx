@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Amiri, Noto_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 
 import { OrnamentGallery } from "./OrnamentGallery";
 
-const amiri = Amiri({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
+const amiri = localFont({
+  src: "../../../themes/_fonts/amiri-arabic.woff2",
+  weight: "400",
   variable: "--font-amiri",
   preload: false,
   display: "swap",
 });
-const notoSerif = Noto_Serif({
-  subsets: ["latin"],
+const notoSerif = localFont({
+  src: "../../../themes/_fonts/noto-serif-400.woff2",
+  weight: "400",
   variable: "--font-noto-serif",
   preload: false,
   display: "swap",

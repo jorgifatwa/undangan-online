@@ -103,6 +103,22 @@ function ThemeRootInner({
   }, [prepareBehindCover, opened, prepared]);
   const showSections = opened || prepared;
 
+  // Isi yang disiapkan disembunyikan (visibility) sampai sentuhan PERTAMA tamu:
+  // LCP Chrome berhenti dihitung saat input pertama, jadi setelah itu isi boleh
+  // di-paint di balik cover — sebelum animasi pembuka berjalan, bukan di tengahnya.
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    if (!prepareBehindCover || touched || opened) return;
+    const on = () => setTouched(true);
+    const opts = { capture: true, once: true, passive: true } as const;
+    window.addEventListener("pointerdown", on, opts);
+    window.addEventListener("keydown", on, opts);
+    return () => {
+      window.removeEventListener("pointerdown", on, opts);
+      window.removeEventListener("keydown", on, opts);
+    };
+  }, [prepareBehindCover, touched, opened]);
+
   // Kunci scroll halaman selama cover tampil.
   useEffect(() => {
     if (opened) return;
@@ -180,6 +196,9 @@ function ThemeRootInner({
               // disiapkan di balik cover: belum boleh disentuh/dibaca pembaca layar
               aria-hidden={!opened || undefined}
               inert={!opened || undefined}
+              // Disiapkan tapi belum di-paint sampai tamu menyentuh layar: gambar di
+              // balik cover tidak boleh jadi kandidat LCP (Chrome tak menghitung oklusi).
+              style={!opened && !touched ? { visibility: "hidden" } : undefined}
             >
               {showSections &&
                 sections

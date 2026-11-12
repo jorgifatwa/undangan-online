@@ -1,6 +1,8 @@
 /**
- * Bangun file font tema yang sudah di-subset (woff2) dari sumber OFL resmi
- * (github.com/google/fonts) → src/themes/_fonts/.
+ * Bangun SEMUA file font (tema + website) yang sudah di-subset (woff2) dari
+ * sumber OFL resmi (github.com/google/fonts) → src/themes/_fonts/.
+ * Tidak ada lagi next/font/google: build tidak bergantung pada jaringan ke
+ * Google Fonts (Turbopack sempat gagal mengunduhnya secara acak).
  *
  *   pnpm fonts:build
  *
@@ -180,6 +182,48 @@ const FAMILIES: Family[] = [
     src: "ofl/quattrocento/Quattrocento-Bold.ttf",
     license: "ofl/quattrocento/OFL.txt",
     outputs: [{ file: "quattrocento-700.woff2", chars: LATIN }],
+  }, // ---- Confetti Party ----
+  {
+    name: "Fredoka",
+    src: "ofl/fredoka/Fredoka[wdth,wght].ttf",
+    license: "ofl/fredoka/OFL.txt",
+    outputs: [
+      {
+        file: "fredoka-500-700.woff2",
+        chars: LATIN,
+        axes: { wdth: 100, wght: { min: 500, max: 700 } },
+      },
+    ],
+  },
+  {
+    name: "Nunito",
+    src: "ofl/nunito/Nunito[wght].ttf",
+    license: "ofl/nunito/OFL.txt",
+    outputs: [
+      { file: "nunito-400-700.woff2", chars: LATIN, axes: { wght: { min: 400, max: 700 } } },
+    ],
+  },
+  // ---- Website (landing, dashboard, galeri tema) — bukan font undangan ----
+  {
+    name: "Plus Jakarta Sans",
+    src: "ofl/plusjakartasans/PlusJakartaSans[wght].ttf",
+    license: "ofl/plusjakartasans/OFL.txt",
+    outputs: [
+      { file: "site-jakarta-300-700.woff2", chars: LATIN, axes: { wght: { min: 300, max: 700 } } },
+    ],
+  },
+  {
+    name: "Fraunces",
+    src: "ofl/fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf",
+    license: "ofl/fraunces/OFL.txt",
+    // SOFT & WONK tidak dipakai → dipaku; opsz tetap variabel (judul besar lebih rapi)
+    outputs: [
+      {
+        file: "site-fraunces-400-600.woff2",
+        chars: LATIN,
+        axes: { SOFT: 0, WONK: 0, wght: { min: 400, max: 600 } },
+      },
+    ],
   },
 ];
 

@@ -106,12 +106,15 @@ async function measure(base: string, themeId: string, lite: boolean) {
   )) as number;
 
   const open = await collectFrames(page, async () => {
-    // Tombol "Buka Undangan" atau cover ber-aria-label "Buka undangan" (amplop Tirai Beludru)
-    await page.evaluate(`(() => {
-      const btn = [...document.querySelectorAll("button")].find((b) => /Buka Undangan/i.test(b.textContent || ""))
-        || document.querySelector('[aria-label="Buka undangan"]');
-      btn && btn.click();
-    })()`);
+    // Tombol "Buka Undangan" atau cover ber-aria-label "Buka undangan" (amplop Tirai Beludru).
+    // Klik mouse sungguhan (pointerdown → pointerup → click), bukan element.click(),
+    // karena runtime bereaksi pada pointerdown (prepareBehindCover).
+    const target = await page.evaluateHandle(
+      `[...document.querySelectorAll("button")].find((b) => /Buka Undangan/i.test(b.textContent || ""))
+        || document.querySelector('[aria-label="Buka undangan"]')`,
+    );
+    const el = target.asElement() as import("puppeteer-core").ElementHandle<Element> | null;
+    if (el) await el.click();
     await sleep(3500);
   });
 

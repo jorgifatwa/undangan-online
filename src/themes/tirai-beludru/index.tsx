@@ -29,6 +29,9 @@ const definition: ThemeDefinition = {
   assets: THEME_ASSETS,
   Cover: TiraiCover,
   Ambient: TiraiAmbient,
+  // Isi undangan dirender di balik amplop saat browser menganggur → transisi
+  // amplop tidak berbagi frame dengan render besar.
+  prepareBehindCover: true,
   sections: {
     ayat: TiraiIntro,
     profil: TiraiCouple,

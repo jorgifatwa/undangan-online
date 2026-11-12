@@ -139,7 +139,7 @@ export function RendaEvent() {
   const main = events[0];
   const days = week(main);
   const sameDay = events.every((e) => e.date === main.date);
-  const places = [...new Set(events.map((e) => e.venueName).filter(Boolean))] as string[];
+  const places = [...new Set(events.map((e) => e.venueName ?? e.city).filter(Boolean))] as string[];
   const map = events.find((e) => e.mapsUrl)?.mapsUrl;
   const month = BULAN[ymd(main.date).getUTCMonth()];
   const gold = "var(--inv-gold)";

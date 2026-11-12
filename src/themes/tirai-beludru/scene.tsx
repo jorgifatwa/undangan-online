@@ -145,6 +145,41 @@ export function Verse({ text, source, skip }: { text: string; source?: string; s
 }
 
 /**
+ * Isi kartu renda bila ayat/kutipan kosong (mis. gaya salam "umum"): nama
+ * pasangan + tanggal — dari data user sendiri, bukan teks contoh.
+ */
+export function CardNames({ names, date, skip }: { names: string; date: string; skip?: boolean }) {
+  return (
+    <>
+      <CText
+        style={{
+          ...canvasText([123.9, 268, 192.2], F.script, 30, 40, {
+            renderScale: 1,
+            color: "var(--inv-ink, #2d110e)",
+            wrap: true,
+          }),
+          whiteSpace: "pre-line",
+        }}
+        reveal={skip ? undefined : "blur"}
+        maxLines={3}
+      >
+        {names.replace(" & ", "\n&\n")}
+      </CText>
+      <CText
+        style={canvasText([123.9, 402, 192.2], F.cormorant, 11, 16, {
+          renderScale: 1,
+          color: "var(--inv-ink, #2d110e)",
+          letterSpacing: 1.2,
+        })}
+        reveal={skip ? undefined : "blur"}
+      >
+        {date.toUpperCase()}
+      </CText>
+    </>
+  );
+}
+
+/**
  * Tirai zamrud + karpet (file asli, atau VelvetDrape SVG) mengisi kotak.
  * Filter warna varian hanya untuk TIRAI: karpet damask (mulai ±82% tinggi
  * file) dilapis salinan tanpa filter, sehingga tetap merah di semua varian.

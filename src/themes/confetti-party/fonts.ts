@@ -1,4 +1,4 @@
-import { Fredoka, Nunito } from "next/font/google";
+import localFont from "next/font/local";
 
 /**
  * Font tema dimuat lewat next/font dan HANYA diimpor oleh index.tsx tema ini.
@@ -7,19 +7,21 @@ import { Fredoka, Nunito } from "next/font/google";
  * Tanpa preload, browser hanya mengunduh font yang benar-benar dipakai teks
  * di halaman (CSS @font-face ada di <head>, teks cover dirender di server).
  */
-const display = Fredoka({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+const cpDisplay = localFont({
+  src: "../_fonts/fredoka-500-700.woff2",
+  weight: "500 700",
   variable: "--font-cp-display",
   display: "swap",
   preload: false,
+  fallback: ["system-ui", "sans-serif"],
 });
-const body = Nunito({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+const cpBody = localFont({
+  src: "../_fonts/nunito-400-700.woff2",
+  weight: "400 700",
   variable: "--font-cp-body",
   display: "swap",
   preload: false,
+  fallback: ["system-ui", "sans-serif"],
 });
 
-export const fontClassName = `${display.variable} ${body.variable}`;
+export const fontClassName = `${cpDisplay.variable} ${cpBody.variable}`;

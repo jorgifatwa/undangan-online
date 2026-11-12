@@ -1,14 +1,16 @@
 "use client";
 
-import { motion, type TargetAndTransition } from "framer-motion";
-import type { CSSProperties, ReactNode } from "react";
+import { motion, useInView, type TargetAndTransition } from "framer-motion";
+import { useRef, type CSSProperties, type ReactNode } from "react";
 
-import { useLite } from "../runtime/context";
+import { useLite, useOpened } from "../runtime/context";
 
 /**
  * Animasi masuk saat discroll (terjemahan sistem data-reveal Tirai Beludru
  * dari CSS + IntersectionObserver ke Framer Motion).
  * - Hanya sekali per elemen (viewport once).
+ * - Menunggu cover dibuka: tema dengan prepareBehindCover merender section di
+ *   balik cover, dan animasinya tidak boleh "habis" sebelum terlihat tamu.
  * - prefers-reduced-motion → MotionConfig di ThemeRoot mematikannya.
  * - Mode ringan → efek blur diganti fade biasa & durasi dipersingkat.
  */
@@ -160,6 +162,9 @@ export function Reveal({
   amount = 0.25,
 }: RevealProps) {
   const lite = useLite();
+  const opened = useOpened();
+  const ref = useRef<HTMLElement | null>(null);
+  const inView = useInView(ref, { once: true, amount });
   const def = VARIANTS[lite && variant === "blur" ? "fade" : variant];
   const Component = motion[as];
 
@@ -172,9 +177,9 @@ export function Reveal({
     <Component
       className={className}
       style={{ ...style, transformOrigin: def.transformOrigin ?? style?.transformOrigin }}
+      ref={ref as never}
       initial={def.hidden}
-      whileInView={visible}
-      viewport={{ once: true, amount }}
+      animate={inView && opened ? visible : def.hidden}
       transition={{
         duration: lite ? def.duration * 0.7 : def.duration,
         ease: def.ease as [number, number, number, number],

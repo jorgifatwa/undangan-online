@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { sanitizeGuestName } from "@/lib/guest";
+import { buildInitialData } from "@/lib/invitations/initial-data";
 import type { AnyInvitationData } from "@/schemas/sections";
 import { dummyFor, DUMMY_WISHES } from "@/themes/_shared/dummy";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
@@ -9,6 +10,37 @@ import { getManifest } from "@/themes/registry";
 
 import { PreviewFocus } from "./PreviewFocus";
 import { PreviewToolbar } from "./PreviewToolbar";
+
+/** ?minimal=1: data persis seperti hasil wizard (nama, tanggal, kota — tanpa foto). */
+function minimalData(
+  eventType: "WEDDING" | "BIRTHDAY",
+  salam: string | undefined,
+): AnyInvitationData {
+  const date = new Date(Date.now() + 40 * 86400000).toISOString().slice(0, 10);
+  return eventType === "WEDDING"
+    ? buildInitialData({
+        eventType,
+        brideName: "Sekar Ayu Larasati",
+        brideNickname: "Sekar",
+        groomName: "Raka Aditya Pradipta",
+        groomNickname: "Raka",
+        date,
+        timezone: "WIB",
+        city: "Bandung",
+        greeting: salam === "umum" ? "umum" : "islami",
+        themeId: "",
+      })
+    : buildInitialData({
+        eventType,
+        name: "Kirana Putri Maharani",
+        nickname: "Kirana",
+        age: 7,
+        date,
+        timezone: "WIB",
+        city: "Jakarta",
+        themeId: "",
+      });
+}
 
 /** Data contoh tanpa love story, dress code & live streaming (tidak ada di desain referensi). */
 function referenceLike(inv: AnyInvitationData): AnyInvitationData {
@@ -35,6 +67,7 @@ export async function generateMetadata({
  * Preview tema dengan data dummy.
  * Query: ?variant=<id> &acara=wedding|ultah &to=<nama tamu> &lite=1 &open=1 &k=<remount>
  *        &bare=1 (tanpa toolbar: thumbnail & /preview/banding) &focus=<sectionId>
+ *        &minimal=1 [&salam=umum] (data minim seperti hasil wizard)
  *        &ref=1 (tanpa section yang tidak ada di desain referensi → urutan sama dengan desain)
  */
 export default async function PreviewPage({
@@ -64,9 +97,11 @@ export default async function PreviewPage({
       <Theme
         key={`${eventType}-${one("k") ?? ""}`}
         invitation={
-          one("ref") === "1"
-            ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
-            : dummyFor(eventType, manifest.defaultMusic)
+          one("minimal") === "1"
+            ? minimalData(eventType, one("salam"))
+            : one("ref") === "1"
+              ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
+              : dummyFor(eventType, manifest.defaultMusic)
         }
         variantId={variantId}
         features={null}

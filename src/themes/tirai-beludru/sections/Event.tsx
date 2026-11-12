@@ -170,7 +170,8 @@ function MapsButton({ href }: { href: string }) {
 
 function EventBlock({ e }: { e: InvitationEvent }) {
   const time = eventTimeLabel(e);
-  const address = (e.address ?? "").split("\n").filter(Boolean);
+  // Alamat lengkap; bila belum diisi, kota dari wizard
+  const address = (e.address ?? e.city ?? "").split("\n").filter(Boolean);
   return (
     <div>
       <Reveal variant="blur">

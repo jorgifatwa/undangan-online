@@ -20,8 +20,8 @@ export const optionalText = (max = 500) =>
 export const TIMEZONE_VALUES = ["WIB", "WITA", "WIT"] as const;
 export const timezoneSchema = z.enum(TIMEZONE_VALUES);
 
-const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal YYYY-MM-DD");
-const timeString = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format jam HH:mm");
+export const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal YYYY-MM-DD");
+export const timeString = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format jam HH:mm");
 
 export const photoSchema = z.object({
   url: z.string().min(1),
@@ -54,6 +54,8 @@ export const eventSchema = z.object({
   timezone: timezoneSchema.default("WIB"),
   venueName: optionalText(120),
   address: optionalText(400),
+  /** Kota (diisi di wizard); tema menampilkannya bila alamat masih kosong. */
+  city: optionalText(80),
   mapsUrl: z.url().optional(),
 });
 export type InvitationEvent = z.infer<typeof eventSchema>;

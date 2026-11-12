@@ -37,6 +37,14 @@ export function useInvitation(): InvitationContextValue {
   return ctx;
 }
 
+/**
+ * true bila cover sudah dibuka. Di luar ThemeRoot (mis. /preview/ornamen)
+ * dianggap selalu terbuka.
+ */
+export function useOpened(): boolean {
+  return useContext(InvitationContext)?.opened ?? true;
+}
+
 /** Shortcut untuk komponen efek yang hanya butuh status mode ringan. */
 export function useLite(): boolean {
   return useContext(InvitationContext)?.lite ?? false;

@@ -1,5 +1,9 @@
 "use client";
 
+import { coupleNames } from "../../_shared/format";
+
+import { eventDateLabel, firstEvent } from "@/lib/datetime";
+
 import { useRef } from "react";
 
 import { Butterfly, Tassel } from "../../_shared/ornaments";
@@ -20,6 +24,7 @@ import {
   SECTION1_DRAPERY,
   SECTION1_FIT_WIDTH,
   SECTION1_H,
+  CardNames,
   Verse,
 } from "../scene";
 
@@ -309,7 +314,17 @@ export function TiraiIntro() {
         >
           <AccentBouquet w={282} />
         </Placed>
-        {q?.translation && <Verse text={q.translation} source={q.source} skip={introPlayed} />}
+        {q?.translation ? (
+          <Verse text={q.translation} source={q.source} skip={introPlayed} />
+        ) : (
+          inv.eventType === "WEDDING" && (
+            <CardNames
+              names={coupleNames(inv.data)}
+              date={eventDateLabel(firstEvent(inv.data.events))}
+              skip={introPlayed}
+            />
+          )
+        )}
         <Player />
         <Placed img={[44, 191.2, 134.5, 168.2]} reveal="sway">
           <HangingBouquet w={135} />

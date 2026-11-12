@@ -67,15 +67,15 @@ function EventCard({ event, index }: { event: InvitationEvent; index: number }) 
       </h3>
       <p className="mt-4 font-semibold">{eventDateLabel(event)}</p>
       {time && <p className="mt-1 text-sm opacity-80">{time}</p>}
-      {(event.venueName || event.address) && (
+      {(event.venueName || event.address || event.city) && (
         <div className="mx-auto my-5 h-px w-16" style={{ background: "var(--inv-accent)" }} />
       )}
       {event.venueName && (
         <p className="font-semibold tracking-wide uppercase">{event.venueName}</p>
       )}
-      {event.address && (
+      {(event.address ?? event.city) && (
         <p className="mt-1 text-sm leading-relaxed whitespace-pre-line opacity-80">
-          {event.address}
+          {event.address ?? event.city}
         </p>
       )}
       {event.mapsUrl && (

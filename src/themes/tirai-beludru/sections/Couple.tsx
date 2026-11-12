@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import { Basmalah, CapsuleFrame } from "../../_shared/ornaments";
+import { Basmalah, CapsuleFrame, MonogramFill, initials } from "../../_shared/ornaments";
 import { VelvetTexture } from "../../_shared/textures";
 import { couple, displayFullName, parentNames } from "../../_shared/format";
 import { Reveal, type RevealVariant } from "../../_shared/motion/Reveal";
@@ -17,8 +17,13 @@ import { AccentBouquet, HangingBouquet } from "../scene";
 const CANVAS_H = 820.04;
 /** Jendela foto berbentuk kapsul di dalam bingkai emas. */
 const PHOTO_CLIP = `inset(2.425% 11.126% 2.355% 11.045% round ${u(59.71)})`;
-const DEFAULT_GREETING = [
+const GREETING_ISLAMI = [
   "Dengan memohon rahmat & ridho Allah SWT,",
+  "kami mengundang bapak/ibu/saudara/i",
+  "untuk hadir pada pernikahan:",
+];
+const GREETING_UMUM = [
+  "Dengan penuh sukacita,",
   "kami mengundang bapak/ibu/saudara/i",
   "untuk hadir pada pernikahan:",
 ];
@@ -67,6 +72,15 @@ function Portrait({
   return (
     <>
       <Placed img={clip} clipPath={PHOTO_CLIP} reveal={reveal} style={{ background: "#2e050c" }}>
+        {!person.photo && (
+          <MonogramFill
+            text={initials(person.nickname ?? person.fullName)}
+            background="radial-gradient(circle at 50% 40%, var(--inv-velvet-light, #8f2638) 0%, var(--inv-velvet-dark, #2e050c) 80%)"
+            color="var(--inv-cream)"
+            fontFamily={F.script}
+            scale={1.6}
+          />
+        )}
         {person.photo && (
           <Image
             src={person.photo.url}
@@ -92,18 +106,59 @@ function Portrait({
 }
 
 /** Tautan Instagram (ikon + @nama) di bawah baris orang tua; hanya bila diisi. */
-function Instagram({ handle, x, y, w, align }: { handle?: string; x: number; y: number; w: number; align: "left" | "right" }) {
+function Instagram({
+  handle,
+  x,
+  y,
+  w,
+  align,
+}: {
+  handle?: string;
+  x: number;
+  y: number;
+  w: number;
+  align: "left" | "right";
+}) {
   if (!handle) return null;
   return (
-    <Reveal variant={align === "left" ? "right" : "left"} style={{ position: "absolute", left: u(x), top: u(y), width: u(w), display: "flex", justifyContent: align === "left" ? "flex-start" : "flex-end" }}>
+    <Reveal
+      variant={align === "left" ? "right" : "left"}
+      style={{
+        position: "absolute",
+        left: u(x),
+        top: u(y),
+        width: u(w),
+        display: "flex",
+        justifyContent: align === "left" ? "flex-start" : "flex-end",
+      }}
+    >
       <a
         href={`https://instagram.com/${encodeURIComponent(handle)}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Instagram @${handle}`}
-        style={{ display: "inline-flex", alignItems: "center", gap: u(5), padding: `${u(3)} ${u(9)}`, border: `${u(1)} solid rgb(250 243 237 / 0.55)`, borderRadius: 999, color: "var(--inv-cream)", fontFamily: F.body, fontSize: u(11.5), lineHeight: u(16), textDecoration: "none" }}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: u(5),
+          padding: `${u(3)} ${u(9)}`,
+          border: `${u(1)} solid rgb(250 243 237 / 0.55)`,
+          borderRadius: 999,
+          color: "var(--inv-cream)",
+          fontFamily: F.body,
+          fontSize: u(11.5),
+          lineHeight: u(16),
+          textDecoration: "none",
+        }}
       >
-        <svg viewBox="0 0 24 24" aria-hidden style={{ width: u(12), height: u(12) }} fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden
+          style={{ width: u(12), height: u(12) }}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <rect x="3" y="3" width="18" height="18" rx="5" />
           <circle cx="12" cy="12" r="4" />
           <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
@@ -171,7 +226,7 @@ export function TiraiCouple() {
           {custom}
         </CText>
       ) : (
-        DEFAULT_GREETING.map((line, i) => (
+        (islami ? GREETING_ISLAMI : GREETING_UMUM).map((line, i) => (
           <CText
             key={i}
             style={text(

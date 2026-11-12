@@ -26,7 +26,8 @@
     "assets:sync": "tsx scripts/assets-sync.ts",
     "music:optimize": "tsx scripts/music-optimize.ts",
     "fonts:build": "tsx scripts/fonts-build.ts",
-    "themes:thumbs": "tsx scripts/themes-thumbs.ts"
+    "themes:thumbs": "tsx scripts/themes-thumbs.ts",
+    "e2e:dashboard": "tsx --env-file=.env scripts/e2e-dashboard.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 
-import { Butterfly, CallaLily, SealArt, StampCard } from "../../_shared/ornaments";
+import {
+  Butterfly,
+  CallaLily,
+  MonogramFill,
+  SealArt,
+  StampCard,
+  initials,
+} from "../../_shared/ornaments";
 import { couple, parentNames, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import { LeafPattern } from "../../_shared/textures";
@@ -57,7 +64,7 @@ export function RendaClosing() {
         </div>
       </div>
 
-      {photo && (
+      {
         <div
           data-a="poldrop"
           style={{
@@ -100,17 +107,27 @@ export function RendaClosing() {
               background: "#2a2a2a",
             }}
           >
-            <Image
-              src={photo.url}
-              alt={`Foto ${shortName(a)} dan ${shortName(b)}`}
-              fill
-              sizes="(max-width: 440px) 43vw, 190px"
-              style={{
-                objectFit: "cover",
-                objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 28}%`,
-                filter: "sepia(.14) saturate(.9) contrast(.96) brightness(1.03)",
-              }}
-            />
+            {!photo && (
+              <MonogramFill
+                text={initials(shortName(a), shortName(b))}
+                background="linear-gradient(160deg, #d9cdb7, #b9a684)"
+                color="var(--inv-brown)"
+                fontFamily={F.brush}
+              />
+            )}
+            {photo && (
+              <Image
+                src={photo.url}
+                alt={`Foto ${shortName(a)} dan ${shortName(b)}`}
+                fill
+                sizes="(max-width: 440px) 43vw, 190px"
+                style={{
+                  objectFit: "cover",
+                  objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 28}%`,
+                  filter: "sepia(.14) saturate(.9) contrast(.96) brightness(1.03)",
+                }}
+              />
+            )}
             <span
               aria-hidden
               style={{
@@ -123,7 +140,7 @@ export function RendaClosing() {
             />
           </span>
         </div>
-      )}
+      }
 
       <Pic
         slot="calla-lily"

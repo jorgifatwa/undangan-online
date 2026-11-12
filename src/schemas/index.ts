@@ -2,8 +2,11 @@ import type { EventType } from "@prisma/client";
 import type { z } from "zod";
 
 import { birthdayDataSchema } from "./birthday";
+import { configureZodIndonesian } from "./errors";
 import type { AnyInvitationData } from "./sections";
 import { weddingDataSchema } from "./wedding";
+
+configureZodIndonesian();
 
 export * from "./common";
 export * from "./wedding";

@@ -62,6 +62,21 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum MediaKind {
+  PHOTO
+  AUDIO
+}
+
+/// UPLOADING: URL upload sudah diberikan, file mentah belum/baru diunggah.
+/// PROCESSING: file mentah diterima, sedang dikompres (musik diproses asinkron).
+/// READY: file final siap dipakai. FAILED: gagal diproses (file mentah dihapus).
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+}
+
 // -----------------------------------------------------------------------------
 // Auth.js (struktur standar @auth/prisma-adapter + field tambahan)
 // -----------------------------------------------------------------------------
@@ -82,6 +97,7 @@ model User {
   sessions    Session[]
   invitations Invitation[]
   orders      Order[]
+  media       Media[]
 }
 
 model Account {
@@ -163,6 +179,7 @@ model Invitation {
   wishes Wish[]
   orders Order[]
   views  InvitationView[]
+  media  Media[]
 
   @@index([userId])
   @@index([status, expiresAt])
@@ -293,4 +310,45 @@ model MusicTrack {
   createdAt DateTime @default(now())
 
   @@index([isActive, category])
+}
+
+// -----------------------------------------------------------------------------
+// File upload (foto & musik) — sumber kebenaran kepemilikan, kuota, dan
+// penghapusan file lama. File disimpan lewat src/lib/storage (local / R2).
+// -----------------------------------------------------------------------------
+
+model Media {
+  id               String      @id @default(cuid())
+  userId           String
+  /// Null bila undangannya sudah dihapus (file dibersihkan oleh job pembersih).
+  invitationId     String?
+  kind             MediaKind
+  /// Slot pemakaian, mis. "cover", "bride", "groom", "gallery", "strip",
+  /// "closing", "loveStory", "qris", "music".
+  slot             String
+  status           MediaStatus @default(UPLOADING)
+  /// Key file final di storage (terisi saat READY).
+  key              String?
+  /// Key file mentah sebelum diproses (dihapus setelah READY/FAILED).
+  rawKey           String?
+  /// Tipe hasil deteksi magic bytes (bukan dari nama file / Content-Type).
+  mime             String?
+  /// Ukuran file final (byte) — dihitung ke kuota penyimpanan user.
+  bytes            Int         @default(0)
+  width            Int?
+  height           Int?
+  durationSec      Int?
+  /// Upload musik sendiri: waktu user mencentang pernyataan hak penggunaan lagu.
+  rightsAcceptedAt DateTime?
+  /// Pesan galat untuk ditampilkan di editor bila FAILED.
+  error            String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([invitationId, slot])
+  @@index([status, createdAt])
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { eventDateLabel, firstEvent } from "@/lib/datetime";
+
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
@@ -24,6 +26,7 @@ import {
   SECTION1_DRAPERY,
   SECTION1_H,
   section1Fit,
+  CardNames,
   Verse,
 } from "../scene";
 
@@ -440,8 +443,16 @@ export function TiraiCover({ onOpen, startMusic, firstSection }: CoverProps) {
             >
               <div className="tb-card" style={{ position: "absolute", inset: 0 }}>
                 <LaceCard skip />
-                {quote?.translation && (
+                {quote?.translation ? (
                   <Verse text={quote.translation} source={quote.source} skip />
+                ) : (
+                  inv.eventType === "WEDDING" && (
+                    <CardNames
+                      names={coupleNames(inv.data)}
+                      date={eventDateLabel(firstEvent(inv.data.events))}
+                      skip
+                    />
+                  )
                 )}
               </div>
             </div>

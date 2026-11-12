@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { firstEvent } from "@/lib/datetime";
 
-import { OvalBaroqueFrame } from "../../_shared/ornaments";
+import { MonogramFill, OvalBaroqueFrame, initials } from "../../_shared/ornaments";
 import { couple, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import { LeafPattern } from "../../_shared/textures";
@@ -175,6 +175,15 @@ function Face({ door }: { door?: "l" | "r" }) {
               background: "#2a2a2a",
             }}
           >
+            {!photo && (
+              <MonogramFill
+                text={initials(shortName(a), shortName(b))}
+                background="radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--inv-band) 85%, white) 0%, var(--inv-cover-bg) 75%)"
+                color="var(--inv-cream)"
+                fontFamily={F.brush}
+                scale={0.95}
+              />
+            )}
             {photo && (
               <Image
                 src={photo.url}
