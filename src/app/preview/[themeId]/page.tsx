@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { sanitizeGuestName } from "@/lib/guest";
 import { buildInitialData } from "@/lib/invitations/initial-data";
+import { getQuotePreset } from "@/lib/quotes";
 import type { AnyInvitationData } from "@/schemas/sections";
 import { dummyFor, DUMMY_WISHES } from "@/themes/_shared/dummy";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
@@ -10,6 +11,19 @@ import { getManifest } from "@/themes/registry";
 
 import { PreviewFocus } from "./PreviewFocus";
 import { PreviewToolbar } from "./PreviewToolbar";
+
+/** ?quote=<id>: ganti kutipan data contoh dengan kutipan siap pakai. */
+function withQuote(inv: AnyInvitationData, id: string | undefined): AnyInvitationData {
+  const q = id ? getQuotePreset(id) : undefined;
+  if (!q) return inv;
+  return {
+    ...inv,
+    data: {
+      ...inv.data,
+      quote: { arabic: q.arabic, translation: q.translation, source: q.source },
+    },
+  } as AnyInvitationData;
+}
 
 /** ?minimal=1: data persis seperti hasil wizard (nama, tanggal, kota — tanpa foto). */
 function minimalData(
@@ -28,6 +42,7 @@ function minimalData(
         timezone: "WIB",
         city: "Bandung",
         greeting: salam === "umum" ? "umum" : "islami",
+        quoteId: salam === "umum" ? undefined : "ar-rum-21",
         themeId: "",
       })
     : buildInitialData({
@@ -68,6 +83,7 @@ export async function generateMetadata({
  * Query: ?variant=<id> &acara=wedding|ultah &to=<nama tamu> &lite=1 &open=1 &k=<remount>
  *        &bare=1 (tanpa toolbar: thumbnail & /preview/banding) &focus=<sectionId>
  *        &minimal=1 [&salam=umum] (data minim seperti hasil wizard)
+ *        &quote=<id kutipan siap pakai> (uji tampilan & font kutipan)
  *        &ref=1 (tanpa section yang tidak ada di desain referensi → urutan sama dengan desain)
  */
 export default async function PreviewPage({
@@ -96,13 +112,14 @@ export default async function PreviewPage({
     <>
       <Theme
         key={`${eventType}-${one("k") ?? ""}`}
-        invitation={
+        invitation={withQuote(
           one("minimal") === "1"
             ? minimalData(eventType, one("salam"))
             : one("ref") === "1"
               ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
-              : dummyFor(eventType, manifest.defaultMusic)
-        }
+              : dummyFor(eventType, manifest.defaultMusic),
+          one("quote"),
+        )}
         variantId={variantId}
         features={null}
         watermark={false}

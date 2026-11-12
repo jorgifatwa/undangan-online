@@ -115,6 +115,14 @@ optimasi transisi amplop di tahap berikutnya.
       elemen Canva**. Canva Content License melarang elemen Free maupun Pro
       dipakai di template yang dijual atau didistribusikan ke pengguna lain.
       Elemen yang ragu diganti versi SVG (`status: pro`).
+- [ ] **Kutipan Al-Qur'an & Alkitab** (`src/lib/quotes.ts`, ditambahkan di Tahap 3b).
+  - Teks diambil apa adanya dari API publik:
+    - equran.id: rasm Mushaf Standar Indonesia + Terjemahan Kemenag 2019;
+    - alkitab.sabda.org: Terjemahan Baru © LAI 1974.
+  - Sebelum peluncuran, cocokkan ulang secara manual dengan mushaf dan Alkitab
+    cetak.
+  - Pastikan ketentuan kutipan TB dari LAI (batas jumlah ayat, pencantuman
+    "© LAI") terpenuhi; tambahkan atribusi di halaman "Lisensi pihak ketiga".
 - [ ] **Lisensi font.**
   - Semua font sudah OFL. Sertakan teks lisensi saat font didistribusikan
     (sudah ada di `_fonts/licenses/`), lalu tambahkan halaman atau tautan

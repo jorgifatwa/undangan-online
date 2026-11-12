@@ -24,4 +24,13 @@ const cpBody = localFont({
   fallback: ["system-ui", "sans-serif"],
 });
 
-export const fontClassName = `${cpDisplay.variable} ${cpBody.variable}`;
+const cpArabic = localFont({
+  src: "../_fonts/amiri-arabic.woff2",
+  weight: "400",
+  variable: "--font-cp-arabic",
+  display: "swap",
+  preload: false,
+  fallback: ["serif"],
+});
+
+export const fontClassName = `${cpDisplay.variable} ${cpBody.variable} ${cpArabic.variable}`;

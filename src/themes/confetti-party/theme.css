@@ -7,6 +7,8 @@
   --inv-font-display: var(--font-cp-display), system-ui, sans-serif;
   --inv-font-script: var(--font-cp-display), system-ui, sans-serif;
   --inv-font-body: var(--font-cp-body), system-ui, sans-serif;
+  /* teks Arab kutipan (subset Amiri bersama; hanya terunduh bila ada teks Arab) */
+  --inv-font-arabic: var(--font-cp-arabic), "Amiri", serif;
   --inv-radius: 1.25rem;
 }
 

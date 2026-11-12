@@ -182,6 +182,9 @@ export function RendaIntro() {
       const frameUnit = el.parentElement!.clientWidth / FRAME.w;
       const s = hgt > max * frameUnit ? Math.max(0.6, (max * frameUnit) / hgt) : 1;
       el.style.setProperty("--fit", s.toFixed(3));
+      // Kutipan pendek: tengahkan isi di ruang bingkai (desain asli diisi ayat panjang).
+      const spare = max * frameUnit - el.scrollHeight;
+      el.style.transform = spare > 0 ? `translateY(${(spare / 2).toFixed(1)}px)` : "";
     };
     measure();
     document.fonts?.ready.then(measure).catch(() => undefined);

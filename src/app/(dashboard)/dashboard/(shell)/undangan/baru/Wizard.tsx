@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { wizardSchema } from "@/lib/invitations/initial-data";
+import { QUOTE_GROUP_LABELS, QUOTE_PRESETS, wizardQuoteGroups } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABELS, type ThemeCategory, type ThemeManifest } from "@/themes/types";
 
@@ -79,6 +80,7 @@ export function Wizard({ themes }: { themes: ThemeManifest[] }) {
     city: "",
     timezone: "WIB",
     greeting: "islami",
+    quoteId: "ar-rum-21",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -180,7 +182,11 @@ export function Wizard({ themes }: { themes: ThemeManifest[] }) {
                 type="button"
                 onClick={() => {
                   setEventType(o.type);
-                  setValues((v) => ({ ...v, themeId: "" }));
+                  setValues((v) => ({
+                    ...v,
+                    themeId: "",
+                    quoteId: o.type === "WEDDING" && v.greeting === "islami" ? "ar-rum-21" : "",
+                  }));
                   setStep(1);
                 }}
                 className={cn(
@@ -274,8 +280,8 @@ export function Wizard({ themes }: { themes: ThemeManifest[] }) {
                 <legend className="text-sm font-medium">Gaya salam</legend>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    ["islami", "Islami", "Basmalah, salam, & QS. Ar-Rum: 21"],
-                    ["umum", "Umum", "Tanpa salam & ayat"],
+                    ["islami", "Islami", "Basmalah, salam, & ayat Al-Qur'an"],
+                    ["umum", "Umum", "Tanpa salam; kutipan Alkitab/umum opsional"],
                   ].map(([value, label, text]) => (
                     <label
                       key={value}
@@ -289,7 +295,14 @@ export function Wizard({ themes }: { themes: ThemeManifest[] }) {
                         name="greeting"
                         value={value}
                         checked={values.greeting === value}
-                        onChange={set("greeting")}
+                        onChange={(e) =>
+                          setValues((v) => ({
+                            ...v,
+                            greeting: e.target.value,
+                            // gaya salam berganti → kutipan bawaan ikut berganti
+                            quoteId: e.target.value === "islami" ? "ar-rum-21" : "",
+                          }))
+                        }
                         className="mt-1"
                       />
                       <span>
@@ -301,6 +314,34 @@ export function Wizard({ themes }: { themes: ThemeManifest[] }) {
                 </div>
               </fieldset>
             )}
+            <div className="sm:col-span-2">
+              <Field
+                id="quoteId"
+                label={eventType === "WEDDING" ? "Ayat / kutipan" : "Kutipan ucapan"}
+                hint="Bisa diganti atau ditulis sendiri nanti di editor."
+                error={errors.quoteId}
+              >
+                <select
+                  id="quoteId"
+                  value={values.quoteId ?? ""}
+                  onChange={set("quoteId")}
+                  className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+                >
+                  <option value="">Tanpa kutipan</option>
+                  {wizardQuoteGroups(eventType, values.greeting === "umum" ? "umum" : "islami").map(
+                    (g) => (
+                      <optgroup key={g} label={QUOTE_GROUP_LABELS[g]}>
+                        {QUOTE_PRESETS.filter((q) => q.group === g).map((q) => (
+                          <option key={q.id} value={q.id}>
+                            {q.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ),
+                  )}
+                </select>
+              </Field>
+            </div>
             <div className="flex justify-between gap-3 sm:col-span-2">
               <Button type="button" variant="ghost" onClick={() => setStep(0)}>
                 ← Kembali

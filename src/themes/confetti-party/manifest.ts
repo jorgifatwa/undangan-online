@@ -82,6 +82,7 @@ export const manifest = {
   sections: [
     "cover",
     "salam",
+    "ayat",
     "profil",
     "acara",
     "hitungMundur",

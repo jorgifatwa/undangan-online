@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { getQuotePreset } from "@/lib/quotes";
 import {
   birthdayDataSchema,
   dateString,
@@ -10,8 +11,8 @@ import {
 
 /**
  * Data awal undangan dari wizard (TANPA data contoh): hanya yang diisi user,
- * plus ayat QS Ar-Rum: 21 untuk gaya salam Islami (umum di undangan
- * pernikahan Indonesia; bisa diubah/dihapus di editor). Dipakai server
+ * plus kutipan siap pakai yang DIPILIH user di wizard (src/lib/quotes.ts;
+ * bisa diubah/dihapus di editor). Dipakai server
  * action pembuatan undangan & preview ?minimal=1 (cek tampilan data minim).
  */
 
@@ -33,6 +34,12 @@ const nick = z
   .transform((v) => v || undefined);
 const city = z.string().trim().min(1, "Kota wajib diisi").max(80, "Maksimal 80 karakter");
 const themeId = z.string().min(1, "Pilih tema").max(60);
+/** Id kutipan siap pakai (src/lib/quotes.ts) atau "" = tanpa kutipan. */
+const quoteId = z
+  .string()
+  .max(60)
+  .optional()
+  .refine((v) => !v || !!getQuotePreset(v), "Kutipan tidak dikenal");
 
 export const wizardSchema = z.discriminatedUnion("eventType", [
   z.object({
@@ -45,6 +52,7 @@ export const wizardSchema = z.discriminatedUnion("eventType", [
     timezone: timezoneSchema,
     city,
     greeting: z.enum(["islami", "umum"]),
+    quoteId,
     themeId,
   }),
   z.object({
@@ -61,19 +69,12 @@ export const wizardSchema = z.discriminatedUnion("eventType", [
     date: realDate,
     timezone: timezoneSchema,
     city,
+    quoteId,
     themeId,
   }),
 ]);
 export type WizardInput = z.input<typeof wizardSchema>;
 export type WizardValues = z.output<typeof wizardSchema>;
-
-const AR_RUM_21 = {
-  arabic:
-    "وَمِنْ اٰيٰتِهٖٓ اَنْ خَلَقَ لَكُمْ مِّنْ اَنْفُسِكُمْ اَزْوَاجًا لِّتَسْكُنُوْٓا اِلَيْهَا وَجَعَلَ بَيْنَكُمْ مَّوَدَّةً وَّرَحْمَةً ۗ اِنَّ فِيْ ذٰلِكَ لَاٰيٰتٍ لِّقَوْمٍ يَّتَفَكَّرُوْنَ",
-  translation:
-    "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir.",
-  source: "QS. Ar-Rum: 21",
-};
 
 /** Teks dasar untuk slug: nama panggilan (atau kata pertama nama lengkap). */
 export function slugBase(v: WizardValues): string {
@@ -81,6 +82,11 @@ export function slugBase(v: WizardValues): string {
   return v.eventType === "WEDDING"
     ? `${v.brideNickname ?? first(v.brideName)} ${v.groomNickname ?? first(v.groomName)}`
     : `${v.nickname ?? first(v.name)} ulang tahun`;
+}
+
+function presetQuote(id: string | undefined) {
+  const p = id ? getQuotePreset(id) : undefined;
+  return p ? { arabic: p.arabic, translation: p.translation, source: p.source } : undefined;
 }
 
 export function buildInitialData(v: WizardValues): AnyInvitationData {
@@ -95,7 +101,7 @@ export function buildInitialData(v: WizardValues): AnyInvitationData {
           { id: "resepsi", name: "Resepsi", date: v.date, timezone: v.timezone, city: v.city },
         ],
         greeting: { style: v.greeting },
-        quote: v.greeting === "islami" ? AR_RUM_21 : undefined,
+        quote: presetQuote(v.quoteId),
       }),
     };
   }
@@ -113,6 +119,7 @@ export function buildInitialData(v: WizardValues): AnyInvitationData {
         },
       ],
       greeting: { style: "umum" },
+      quote: presetQuote(v.quoteId),
     }),
   };
 }

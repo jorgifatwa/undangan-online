@@ -1,40 +1,43 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import { requireOwnedInvitation } from "@/lib/invitations/access";
-import { summarize } from "@/lib/invitations/summary";
-import { getManifest } from "@/themes/registry";
+import { displayStatus, summarize } from "@/lib/invitations/summary";
+import { parseInvitationData } from "@/schemas";
+import { THEME_MANIFESTS } from "@/themes/registry";
 
-export const metadata: Metadata = { title: "Edit Undangan" };
+import { Editor } from "./Editor";
 
-/** Sementara (Tahap 3a): ringkasan + tautan. Editor lengkap dibangun di 3b. */
+export const metadata: Metadata = { title: "Edit Undangan", robots: { index: false } };
+
+/** Editor undangan (pemilik saja). Semua penyimpanan dicek ulang di server action. */
 export default async function EditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { invitation } = await requireOwnedInvitation(id);
-  const s = summarize(invitation.eventType, invitation.data);
-  const manifest = getManifest(invitation.themeId);
-
+  const parsed = parseInvitationData(invitation.eventType, invitation.data);
+  if (!parsed.ok) {
+    return (
+      <main className="mx-auto max-w-xl px-4 py-16 text-center">
+        <h1 className="font-heading text-2xl">Data undangan tidak bisa dibaca</h1>
+        <p className="text-muted-foreground mt-2 text-sm">
+          Hubungi bantuan dengan menyertakan id {invitation.id}.
+        </p>
+      </main>
+    );
+  }
+  const eventType = parsed.value.eventType;
   return (
-    <main className="mx-auto max-w-xl px-4 py-16 text-center">
-      <p className="text-muted-foreground text-xs tracking-[0.2em] uppercase">Undangan dibuat ✓</p>
-      <h1 className="font-heading mt-2 text-3xl">{s.title}</h1>
-      <p className="text-muted-foreground mt-2 text-sm">
-        {s.dateLabel} · tema {manifest?.name} · alamat <code>/u/{invitation.slug}</code>
-      </p>
-      <p className="mt-6 text-sm">
-        Editor lengkap (form, foto, musik, urutan section) hadir di tahap 3b.
-      </p>
-      <div className="mt-6 flex justify-center gap-2">
-        <Button asChild>
-          <Link href={`/dashboard/undangan/${invitation.id}/pratinjau`} target="_blank">
-            Pratinjau
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/dashboard">Ke dashboard</Link>
-        </Button>
-      </div>
-    </main>
+    <Editor
+      id={invitation.id}
+      slug={invitation.slug}
+      status={displayStatus(invitation.status, invitation.expiresAt)}
+      eventType={eventType}
+      pkg={invitation.package}
+      themeId={invitation.themeId}
+      variantId={invitation.colorVariant}
+      updatedAt={invitation.updatedAt.toISOString()}
+      data={parsed.value.data as unknown as Record<string, unknown>}
+      title={summarize(invitation.eventType, invitation.data).title}
+      themes={THEME_MANIFESTS.filter((m) => m.eventTypes.includes(eventType))}
+    />
   );
 }

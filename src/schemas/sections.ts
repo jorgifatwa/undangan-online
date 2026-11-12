@@ -30,7 +30,7 @@ export type SectionId = (typeof SECTION_IDS)[number];
 export const SECTION_LABELS: Record<SectionId, string> = {
   cover: "Cover",
   salam: "Pembuka / Salam",
-  ayat: "Kutipan Ayat",
+  ayat: "Ayat / Kutipan",
   profil: "Profil",
   loveStory: "Love Story",
   acara: "Detail Acara",
@@ -66,6 +66,7 @@ export const DEFAULT_SECTION_ORDER: Record<"WEDDING" | "BIRTHDAY", SectionId[]> 
   BIRTHDAY: [
     "cover",
     "salam",
+    "ayat",
     "profil",
     "acara",
     "hitungMundur",
