@@ -7,6 +7,7 @@ import { cleanupMedia } from "@/lib/media/service";
  */
 export const runtime = "nodejs";
 export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;

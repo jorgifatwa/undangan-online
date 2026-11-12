@@ -2,10 +2,17 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-/** IP pengirim dari header proxy (Vercel: x-forwarded-for). */
+/**
+ * IP pengirim dari header proxy. Vercel MENIMPA x-forwarded-for dengan IP asli
+ * (anti-pemalsuan); x-vercel-forwarded-for tetap benar walau ada proxy lain di
+ * depan Vercel, jadi dibaca lebih dulu. Hosting lain: proxy terdepan wajib
+ * menimpa X-Forwarded-For (lihat docs/DEPLOY.md).
+ */
 export function clientIp(headers: Headers): string {
-  const fwd = headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return fwd || headers.get("x-real-ip") || "0.0.0.0";
+  const first = (h: string) => headers.get(h)?.split(",")[0]?.trim();
+  return (
+    first("x-vercel-forwarded-for") || first("x-forwarded-for") || first("x-real-ip") || "0.0.0.0"
+  );
 }
 
 /**

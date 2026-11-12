@@ -2,9 +2,11 @@
   "name": "udangan-website",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "vercel-build": "sh scripts/vercel-build.sh",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -35,7 +37,8 @@
     "e2e:publish": "tsx --env-file=.env scripts/e2e-publish.ts",
     "seed:perf": "tsx --env-file=.env scripts/seed-perf.ts",
     "e2e:guestbook": "tsx --env-file=.env scripts/e2e-guestbook.ts",
-    "e2e:share": "tsx --env-file=.env scripts/e2e-share.ts"
+    "e2e:share": "tsx --env-file=.env scripts/e2e-share.ts",
+    "deploy:check": "tsx scripts/deploy-check.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

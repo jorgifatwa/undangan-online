@@ -14,6 +14,16 @@ export function assertSafeDatabase(script: string) {
   }
   const local = ["localhost", "127.0.0.1", "::1", "[::1]"].includes(host);
   const allowed = process.env.ALLOW_SEED_PERF === "1";
+  // Host database production (dipisah koma) yang TIDAK PERNAH boleh disentuh,
+  // bahkan dengan ALLOW_SEED_PERF=1. Isi di .env lokal setelah production ada.
+  const protectedHosts = (process.env.PROTECTED_DB_HOSTS ?? "")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+  if (host && protectedHosts.some((h) => host.toLowerCase().includes(h))) {
+    console.error(`✗ ${script} DIBATALKAN: "${host}" terdaftar di PROTECTED_DB_HOSTS (production).`);
+    process.exit(2);
+  }
   if (process.env.NODE_ENV === "production" || (!local && !allowed)) {
     console.error(
       `✗ ${script} DIBATALKAN: DATABASE_URL mengarah ke "${host || "?"}" ` +
