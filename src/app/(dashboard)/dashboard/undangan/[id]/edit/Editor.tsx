@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch, type FieldValues, type Resolver } from "react-hook-form";
 
 import { prune } from "@/lib/editor/prune";
+import { shareInfo } from "@/lib/invitations/share";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
 import { PACKAGES, getFeatures } from "@/lib/packages";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ import { PreviewFrame } from "./PreviewFrame";
 import { SectionManager } from "./SectionManager";
 import { GuestbookPanel } from "./GuestbookPanel";
 import { PublishDialog } from "./PublishDialog";
+import { ShareDialog } from "./ShareDialog";
 import type { PublishState } from "./publish-actions";
 import { SlugField, ThemePicker } from "./ThemePicker";
 
@@ -55,6 +57,8 @@ export interface EditorProps {
   updatedAt: string;
   data: Record<string, unknown>;
   title: string;
+  /** Template pesan WhatsApp tersimpan (null = bawaan). */
+  shareTemplate: string | null;
   themes: ThemeManifest[];
   /** Koleksi musik bawaan (tabel MusicTrack aktif). */
   library: LibraryTrack[];
@@ -204,6 +208,9 @@ export function Editor(p: EditorProps) {
     updatedAt: p.updatedAt,
   });
   const [publishOpen, setPublishOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  /** Template terakhir disimpan dialog Bagikan (dialog dibuka ulang memakai ini). */
+  const [shareTemplate, setShareTemplate] = useState(p.shareTemplate);
   const publishExpired =
     publish.status === "PUBLISHED" &&
     !!publish.expiresAt &&
@@ -631,6 +638,15 @@ export function Editor(p: EditorProps) {
             >
               Pratinjau penuh
             </Link>
+            {publish.status === "PUBLISHED" && !publishExpired && (
+              <button
+                type="button"
+                onClick={() => setShareOpen(true)}
+                className="rounded-md bg-[#1f9d55] px-3 py-1.5 text-sm font-medium text-white"
+              >
+                Bagikan
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setPublishOpen(true)}
@@ -657,7 +673,22 @@ export function Editor(p: EditorProps) {
                 setPublish(st);
                 base.current = st.updatedAt;
               }}
+              onShare={() => {
+                setPublishOpen(false);
+                setShareOpen(true);
+              }}
               onClose={() => setPublishOpen(false)}
+            />
+          )}
+          {shareOpen && (
+            <ShareDialog
+              id={p.id}
+              slug={slug}
+              info={shareInfo(lastValid)}
+              initialTemplate={shareTemplate}
+              onSaved={setShareTemplate}
+              active={publish.status === "PUBLISHED" && !publishExpired}
+              onClose={() => setShareOpen(false)}
             />
           )}
 

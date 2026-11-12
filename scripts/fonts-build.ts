@@ -28,6 +28,8 @@ import subsetFont from "subset-font";
 const ROOT = process.cwd();
 const CACHE = path.join(ROOT, ".cache/fonts-src");
 const OUT = path.join(ROOT, "src/themes/_fonts");
+/** Font gambar pratinjau link (OG) — dibaca server saat membuat PNG. */
+const OG_OUT = path.join(ROOT, "src/lib/og/fonts");
 const GH = "https://raw.githubusercontent.com/google/fonts/main";
 
 /** Latin untuk teks dinamis: ASCII, Latin-1, dan tanda baca tipografis. */
@@ -64,6 +66,8 @@ interface Out {
   chars: number[] | string;
   /** Instancing sumbu variabel: angka = dipaku, {min,max} = dipersempit. */
   axes?: Record<string, number | { min: number; max: number }>;
+  /** "og" = TTF statis untuk gambar pratinjau link (satori tidak bisa membaca woff2). */
+  og?: boolean;
 }
 interface Family {
   name: string;
@@ -102,7 +106,10 @@ const FAMILIES: Family[] = [
     name: "Great Vibes",
     src: "ofl/greatvibes/GreatVibes-Regular.ttf",
     license: "ofl/greatvibes/OFL.txt",
-    outputs: [{ file: "great-vibes.woff2", chars: LATIN }],
+    outputs: [
+      { file: "great-vibes.woff2", chars: LATIN },
+      { file: "great-vibes.ttf", chars: LATIN, og: true },
+    ],
   },
   {
     name: "Parisienne",
@@ -122,7 +129,10 @@ const FAMILIES: Family[] = [
     name: "Lora",
     src: "ofl/lora/Lora[wght].ttf",
     license: "ofl/lora/OFL.txt",
-    outputs: [{ file: "lora-400-600.woff2", chars: LATIN, axes: { wght: { min: 400, max: 600 } } }],
+    outputs: [
+      { file: "lora-400-600.woff2", chars: LATIN, axes: { wght: { min: 400, max: 600 } } },
+      { file: "lora-500.ttf", chars: LATIN, axes: { wght: 500 }, og: true },
+    ],
   },
   {
     name: "Lora Italic",
@@ -137,6 +147,7 @@ const FAMILIES: Family[] = [
     license: "ofl/cormorantgaramond/OFL.txt",
     outputs: [
       { file: "cormorant-400-700.woff2", chars: LATIN, axes: { wght: { min: 400, max: 700 } } },
+      { file: "cormorant-600.ttf", chars: LATIN, axes: { wght: 600 }, og: true },
     ],
   },
   {
@@ -157,7 +168,10 @@ const FAMILIES: Family[] = [
     name: "Pinyon Script",
     src: "ofl/pinyonscript/PinyonScript-Regular.ttf",
     license: "ofl/pinyonscript/OFL.txt",
-    outputs: [{ file: "pinyon-script.woff2", chars: LATIN }],
+    outputs: [
+      { file: "pinyon-script.woff2", chars: LATIN },
+      { file: "pinyon-script.ttf", chars: LATIN, og: true },
+    ],
   },
   {
     name: "Italianno",
@@ -193,6 +207,7 @@ const FAMILIES: Family[] = [
         chars: LATIN,
         axes: { wdth: 100, wght: { min: 500, max: 700 } },
       },
+      { file: "fredoka-600.ttf", chars: LATIN, axes: { wdth: 100, wght: 600 }, og: true },
     ],
   },
   {
@@ -201,6 +216,7 @@ const FAMILIES: Family[] = [
     license: "ofl/nunito/OFL.txt",
     outputs: [
       { file: "nunito-400-700.woff2", chars: LATIN, axes: { wght: { min: 400, max: 700 } } },
+      { file: "nunito-700.ttf", chars: LATIN, axes: { wght: 700 }, og: true },
     ],
   },
   // ---- Website (landing, dashboard, galeri tema) — bukan font undangan ----
@@ -210,6 +226,7 @@ const FAMILIES: Family[] = [
     license: "ofl/plusjakartasans/OFL.txt",
     outputs: [
       { file: "site-jakarta-300-700.woff2", chars: LATIN, axes: { wght: { min: 300, max: 700 } } },
+      { file: "jakarta-600.ttf", chars: LATIN, axes: { wght: 600 }, og: true },
     ],
   },
   {
@@ -252,6 +269,7 @@ async function fetchCached(rel: string): Promise<Buffer> {
 
 async function main() {
   await fs.mkdir(path.join(OUT, "licenses"), { recursive: true });
+  await fs.mkdir(OG_OUT, { recursive: true });
   let total = 0;
   const rows: string[] = [];
   for (const fam of FAMILIES) {
@@ -261,14 +279,14 @@ async function main() {
     for (const o of fam.outputs) {
       const text = typeof o.chars === "string" ? o.chars : String.fromCodePoint(...o.chars);
       const out = await subsetFont(src, text, {
-        targetFormat: "woff2",
+        targetFormat: o.og ? "truetype" : "woff2",
         variationAxes: o.axes,
         // hinting TrueType hanya membantu sebagian kecil layar Windows lama;
         // Google Fonts pun menyajikan versi tanpa hinting ke kebanyakan perangkat
         noHinting: true,
         keepFeatures: fam.features ?? (fam.name === "Amiri" ? ARABIC_FEATURES : LATIN_FEATURES),
       });
-      await fs.writeFile(path.join(OUT, o.file), out);
+      await fs.writeFile(path.join(o.og ? OG_OUT : OUT, o.file), out);
       total += out.length;
       rows.push(
         `  ${o.file.padEnd(32)} ${String(Math.round(out.length / 1024)).padStart(4)} KB  (${fam.name}, sumber ${Math.round(src.length / 1024)} KB)`,

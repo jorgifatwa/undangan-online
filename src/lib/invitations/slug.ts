@@ -2,39 +2,14 @@ import "server-only";
 
 import { db } from "@/lib/db";
 
+import { RESERVED_SLUGS } from "./reserved";
+
 /**
  * Slug undangan dipakai untuk subdomain {slug}.domain.id dan /u/{slug}:
  * huruf kecil, angka, tanda "-", 3–40 karakter, tidak boleh nama yang
  * dicadangkan (subdomain sistem).
  */
-export const RESERVED_SLUGS = new Set([
-  "www",
-  "app",
-  "api",
-  "admin",
-  "dashboard",
-  "masuk",
-  "daftar",
-  "login",
-  "tema",
-  "u",
-  "media",
-  "static",
-  "assets",
-  "cdn",
-  "mail",
-  "email",
-  "blog",
-  "help",
-  "bantuan",
-  "support",
-  "status",
-  "preview",
-  "pratinjau",
-  "undangan",
-  "billing",
-  "bayar",
-]);
+export { RESERVED_SLUGS };
 export const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/;
 
 export function slugify(input: string): string {

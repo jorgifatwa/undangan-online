@@ -57,6 +57,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       expiresAt={invitation.expiresAt?.toISOString() ?? null}
       data={parsed.value.data as unknown as Record<string, unknown>}
       title={summarize(invitation.eventType, invitation.data).title}
+      shareTemplate={invitation.shareTemplate}
       themes={THEME_MANIFESTS.filter((m) => m.eventTypes.includes(eventType))}
       library={library}
       uploadedAudio={audio.map((m) => ({

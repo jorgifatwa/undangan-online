@@ -34,7 +34,8 @@
     "e2e:retention": "tsx --env-file=.env --conditions=react-server scripts/e2e-retention.ts",
     "e2e:publish": "tsx --env-file=.env scripts/e2e-publish.ts",
     "seed:perf": "tsx --env-file=.env scripts/seed-perf.ts",
-    "e2e:guestbook": "tsx --env-file=.env scripts/e2e-guestbook.ts"
+    "e2e:guestbook": "tsx --env-file=.env scripts/e2e-guestbook.ts",
+    "e2e:share": "tsx --env-file=.env scripts/e2e-share.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

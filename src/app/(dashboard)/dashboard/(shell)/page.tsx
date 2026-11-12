@@ -10,7 +10,7 @@ import { retentionStatus } from "@/lib/invitations/retention";
 import { displayStatus, summarize } from "@/lib/invitations/summary";
 import { formatTanggal } from "@/lib/format";
 import { PACKAGES } from "@/lib/packages";
-import { siteConfig } from "@/lib/site";
+import { invitationUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { getManifest } from "@/themes/registry";
 
@@ -141,10 +141,7 @@ export default async function DashboardPage() {
                         Pratinjau
                       </Link>
                     </Button>
-                    <CopyLinkButton
-                      url={`${siteConfig.appUrl}/u/${inv.slug}`}
-                      draft={inv.status === "DRAFT"}
-                    />
+                    <CopyLinkButton url={invitationUrl(inv.slug)} draft={inv.status === "DRAFT"} />
                   </div>
                 </div>
               </li>

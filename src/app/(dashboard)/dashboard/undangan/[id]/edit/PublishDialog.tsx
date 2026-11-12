@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { formatTanggal } from "@/lib/format";
 import type { ChecklistItem } from "@/lib/invitations/publish";
-import { siteConfig } from "@/lib/site";
+import { invitationUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 import {
@@ -18,11 +18,6 @@ import {
 
 const FREE_TRIAL_DAYS = 3;
 
-/** URL publik undangan (/u/slug; subdomain diaktifkan nanti lewat env). */
-export function publicUrl(slug: string) {
-  return `${siteConfig.appUrl}/u/${slug}`;
-}
-
 /**
  * Dialog Terbitkan: simpan dulu → checklist dari data tersimpan → terbit.
  * Paket FREE: penjelasan aturan masa uji (3 hari sejak terbit pertama,
@@ -33,12 +28,15 @@ export function PublishDialog({
   state,
   flushSave,
   onState,
+  onShare,
   onClose,
 }: {
   id: string;
   state: PublishState;
   flushSave: () => Promise<boolean>;
   onState: (s: PublishState) => void;
+  /** Buka dialog Bagikan lewat WhatsApp. */
+  onShare: () => void;
   onClose: () => void;
 }) {
   const [items, setItems] = useState<ChecklistItem[] | null>(null);
@@ -83,7 +81,7 @@ export function PublishDialog({
   const trialEnd = state.expiresAt
     ? new Date(state.expiresAt)
     : new Date(now + FREE_TRIAL_DAYS * 86400_000);
-  const url = publicUrl(state.slug);
+  const url = invitationUrl(state.slug);
 
   return (
     <div
@@ -141,11 +139,18 @@ export function PublishDialog({
               Perubahan di editor langsung tampil di halaman undangan.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                onClick={onShare}
+                className="rounded-md bg-[#1f9d55] px-3 py-2 text-sm font-medium text-white"
+              >
+                Bagikan lewat WhatsApp
+              </button>
               <a
                 href={url}
                 target="_blank"
                 rel="noopener"
-                className="bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm"
+                className="rounded-md border px-3 py-2 text-sm"
               >
                 Buka undangan
               </a>

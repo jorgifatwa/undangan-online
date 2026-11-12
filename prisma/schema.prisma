@@ -173,6 +173,9 @@ model Invitation {
   /// Retensi: waktu foto & musik undangan FREE kedaluwarsa dihapus otomatis
   /// (expiresAt + 30 hari). Null = media masih ada.
   mediaPurgedAt DateTime?
+  /// Template pesan WhatsApp milik pemilik (null = template bawaan). Kolom
+  /// terpisah dari `data` agar autosave editor tidak menimpanya.
+  shareTemplate String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
