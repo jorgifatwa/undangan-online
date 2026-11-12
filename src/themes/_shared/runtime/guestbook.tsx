@@ -22,7 +22,8 @@ import type { WishItem } from "./context";
  *  - Preview & editor: tetap lokal (tidak menyimpan apa pun).
  */
 export type SubmitPayload = Omit<GuestbookInput, "startedAt" | "website"> & { website?: string };
-type SubmitResult = { ok: true } | { ok: false; error: string };
+/** `soft` = batas kiriman tercapai: tampilkan sebagai pemberitahuan ramah, bukan error. */
+type SubmitResult = { ok: true } | { ok: false; error: string; soft?: boolean };
 
 interface GuestbookCtx {
   wishes: WishItem[];
@@ -133,8 +134,14 @@ export function GuestbookProvider({
           wish?: WishItem | null;
           stats?: GuestbookStats;
           error?: string;
+          rateLimited?: boolean;
         };
-        if (!r.ok) return { ok: false, error: j.error ?? "Gagal mengirim. Coba lagi." };
+        if (!r.ok)
+          return {
+            ok: false,
+            error: j.error ?? "Gagal mengirim. Coba lagi.",
+            soft: r.status === 429 || j.rateLimited,
+          };
         if (j.wish) merge([j.wish]);
         if (j.stats) setServerStats(j.stats);
         return { ok: true };

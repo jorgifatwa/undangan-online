@@ -4,6 +4,8 @@
  *   pnpm dev
  *   pnpm e2e:guestbook [base-url] [--shots=.reference/report/4b]
  */
+import { randomBytes } from "node:crypto";
+
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { encode } from "next-auth/jwt";
 import type { Page } from "puppeteer-core";
@@ -29,6 +31,7 @@ async function invitation(
   eventType: "WEDDING" | "BIRTHDAY",
   themeId: string,
   status: "PUBLISHED" | "DRAFT" = "PUBLISHED",
+  pkg: "BASIC" | "PREMIUM" = "BASIC",
 ) {
   await db.invitation.deleteMany({ where: { slug } });
   const date = new Date(Date.now() + 40 * 86400_000).toISOString().slice(0, 10);
@@ -64,7 +67,7 @@ async function invitation(
       slug,
       eventType,
       themeId,
-      package: "BASIC",
+      package: pkg,
       status,
       publishedAt: status === "PUBLISHED" ? new Date() : null,
       data: data as Prisma.InputJsonValue,
@@ -74,13 +77,28 @@ async function invitation(
 
 let ipSeq = 10;
 const nextIp = () => `203.0.113.${ipSeq++}`;
-async function post(slug: string, body: Record<string, unknown>, ip = nextIp()) {
+const newDevice = () => randomBytes(16).toString("hex");
+/** Kiriman API sebagai tamu: IP (X-Forwarded-For) & cookie perangkat; device null = tanpa cookie. */
+async function post(
+  slug: string,
+  body: Record<string, unknown>,
+  ip = nextIp(),
+  device: string | null = newDevice(),
+) {
   const r = await fetch(`${base}/api/u/${slug}/guestbook`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Forwarded-For": ip },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Forwarded-For": ip,
+      ...(device ? { Cookie: `udk_dev=${device}` } : {}),
+    },
     body: JSON.stringify({ startedAt: Date.now() - 10_000, ...body }),
   });
-  return { status: r.status, json: (await r.json().catch(() => ({}))) as { error?: string } };
+  return {
+    status: r.status,
+    setCookie: r.headers.get("set-cookie"),
+    json: (await r.json().catch(() => ({}))) as { error?: string; rateLimited?: boolean },
+  };
 }
 const text = (p: Page) => p.evaluate("document.body.innerText") as Promise<string>;
 
@@ -164,6 +182,41 @@ async function main() {
   check(seen, "ucapan baru muncul di perangkat tamu lain tanpa reload (≤ 20 dtk)");
   if (shots) await tamuB.screenshot({ path: `${shots}/2-tamu-lain-realtime.png` });
 
+  console.log("Batas tercapai di halaman tamu → pesan ramah");
+  const devA = (await tamuA.cookies()).find((c) => c.name === "udk_dev")?.value;
+  check(
+    !!devA && rows[0]?.deviceId === devA,
+    "cookie perangkat httpOnly dibuat saat membuka undangan & dipakai saat kirim",
+  );
+  check(
+    (await tamuA.cookies()).find((c) => c.name === "udk_dev")?.httpOnly === true,
+    "cookie perangkat httpOnly",
+  );
+  for (let i = 0; i < 4; i++)
+    await post(inv.slug, { name: "Bu Siti", message: `isi ke-${i}` }, nextIp(), devA!);
+  await tamuA.evaluate(`document.getElementById("inv-ucapan")?.scrollIntoView()`);
+  await tamuA.click("#rr-msg");
+  await tamuA.type("#rr-msg", "Doa tambahan dari Bu Siti");
+  await tamuA.evaluate(
+    `[...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "Kirim")?.click()`,
+  );
+  const soft = await tamuA
+    .waitForFunction(
+      `[...document.querySelectorAll('[role="status"]')].some((e) => e.textContent.includes("Terlalu banyak ucapan dalam waktu singkat"))`,
+      { timeout: 8000 },
+    )
+    .then(
+      () => true,
+      () => false,
+    );
+  check(soft, 'tamu melihat pesan ramah (role="status", bukan alert)');
+  check(
+    (await tamuA.$eval("#rr-msg", (e) => (e as HTMLTextAreaElement).value)) ===
+      "Doa tambahan dari Bu Siti",
+    "isi ucapan tidak hilang, bisa dikirim lagi nanti",
+  );
+  if (shots) await tamuA.screenshot({ path: `${shots}/2b-batas-pesan-ramah.png` });
+
   console.log("Anti-spam (API)");
   const before = await db.wish.count({ where: { invitationId: inv.id } });
   let r = await post(inv.slug, { name: "Bot", message: "halo", website: "http://spam.example" });
@@ -185,8 +238,19 @@ async function main() {
   r = await post(inv.slug, { name: "", message: "tanpa nama" });
   check(r.status === 400, "tanpa nama ditolak");
   const same = nextIp();
-  const a1 = await post(inv.slug, { name: "Dobel", message: "Ucapan yang sama persis" }, same);
-  const a2 = await post(inv.slug, { name: "Dobel", message: "Ucapan yang sama persis" }, same);
+  const sameDev = newDevice();
+  const a1 = await post(
+    inv.slug,
+    { name: "Dobel", message: "Ucapan yang sama persis" },
+    same,
+    sameDev,
+  );
+  const a2 = await post(
+    inv.slug,
+    { name: "Dobel", message: "Ucapan yang sama persis" },
+    same,
+    sameDev,
+  );
   check(
     a1.status === 200 &&
       a2.status === 200 &&
@@ -195,23 +259,97 @@ async function main() {
       })) === 1,
     "kirim ganda → tidak digandakan",
   );
-  const flood = nextIp();
+  const RAMAH = "Terlalu banyak ucapan dalam waktu singkat";
+  // Batas ketat per PERANGKAT (cookie), dari IP berbeda-beda sekalipun.
+  const dev = newDevice();
   const codes: number[] = [];
-  for (let i = 0; i < 7; i++)
-    codes.push(
-      (await post(inv.slug, { name: `Spam ${i}`, message: `pesan ke-${i}` }, flood)).status,
-    );
+  let last = r;
+  for (let i = 0; i < 7; i++) {
+    last = await post(inv.slug, { name: `Spam ${i}`, message: `pesan ke-${i}` }, nextIp(), dev);
+    codes.push(last.status);
+  }
   check(
     codes.slice(0, 5).every((c) => c === 200) && codes[5] === 429,
-    `satu IP: kiriman ke-6 dalam 10 menit ditolak (${codes.join(",")})`,
+    `satu perangkat: kiriman ke-6 dalam 10 menit ditolak (${codes.join(",")})`,
   );
-  const multi: number[] = [];
-  for (let i = 0; i < 35; i++)
-    multi.push((await post(inv.slug, { name: `Tamu ${i}`, message: `doa ${i}` })).status);
   check(
-    multi.includes(429),
-    `banjir dari banyak IP: dibatasi per undangan (${multi.filter((c) => c === 429).length} ditolak)`,
+    !!last.json.rateLimited && (last.json.error ?? "").includes(RAMAH),
+    `pesan ramah: "${last.json.error}"`,
   );
+  // Tanpa cookie: kiriman tanpa cookie dari IP yang sama berbagi batas perangkat.
+  const noCookieIp = nextIp();
+  const nc: number[] = [];
+  for (let i = 0; i < 6; i++) {
+    const x = await post(inv.slug, { name: `Tanpa ${i}`, message: `tc ${i}` }, noCookieIp, null);
+    nc.push(x.status);
+    if (i === 0)
+      check(
+        /udk_dev=[a-f0-9]{32}/.test(x.setCookie ?? ""),
+        "tanpa cookie → API memberi cookie perangkat baru",
+      );
+  }
+  check(nc[4] === 200 && nc[5] === 429, `tanpa cookie dari 1 IP: ke-6 ditolak (${nc.join(",")})`);
+
+  console.log("CGNAT / Wi-Fi gedung (banyak tamu, satu IP)");
+  const cg = await invitation(owner.id, "uji-cgnat", "WEDDING", "renda-rimba");
+  const cgIp = "198.51.100.7";
+  const t0 = Date.now();
+  const cgCodes = await Promise.all(
+    Array.from({ length: 50 }, (_, i) =>
+      post(
+        cg.slug,
+        { name: `Tamu Gedung ${i}`, attendance: "HADIR", message: `Selamat ${i}` },
+        cgIp,
+      ).then((x) => x.status),
+    ),
+  );
+  const secs = (Date.now() - t0) / 1000;
+  check(
+    cgCodes.every((c) => c === 200) && secs < 60,
+    `50 tamu berbeda (cookie berbeda) dari IP yang sama dalam ${secs.toFixed(1)} dtk → ${cgCodes.filter((c) => c === 200).length}/50 berhasil`,
+  );
+  check(
+    (await db.wish.count({ where: { invitationId: cg.id } })) === 50 &&
+      (await db.rsvp.count({ where: { invitationId: cg.id } })) === 50,
+    "50 ucapan + 50 konfirmasi tersimpan",
+  );
+  // Batas IP longgar (100 / undangan / 10 menit) tetap menahan serangan massal.
+  const more: number[] = [];
+  for (let i = 0; i < 52; i++)
+    more.push((await post(cg.slug, { name: `Massal ${i}`, message: `m ${i}` }, cgIp)).status);
+  const okMore = more.filter((c) => c === 200).length;
+  check(
+    okMore === 50 && more.at(-1) === 429,
+    `satu IP: kiriman ke-101 dalam 10 menit ditolak (${50 + okMore} diterima)`,
+  );
+
+  console.log("Batas per undangan (banjir dari banyak IP)");
+  await db.wish.deleteMany({ where: { invitationId: cg.id } });
+  await db.rsvp.deleteMany({ where: { invitationId: cg.id } });
+  // berurutan: batas dihitung dari baris DB (best-effort, bukan transaksi)
+  const flood = async (slug: string, n: number) => {
+    const out: number[] = [];
+    for (let i = 0; i < n; i++)
+      out.push((await post(slug, { name: `Banjir ${i}`, message: `b ${i}` })).status);
+    return out;
+  };
+  const basicFlood = await flood(cg.slug, 130);
+  const basicOk = basicFlood.filter((c) => c === 200).length;
+  check(basicOk === 120, `BASIC: maks 120 kiriman / menit (${basicOk} diterima dari 130)`);
+  const prem = await invitation(
+    owner.id,
+    "uji-cgnat-premium",
+    "WEDDING",
+    "renda-rimba",
+    "PUBLISHED",
+    "PREMIUM",
+  );
+  const premFlood = await flood(prem.slug, 200);
+  check(
+    premFlood.every((c) => c === 200),
+    `PREMIUM: 200 kiriman / menit dari banyak tamu diterima (${premFlood.filter((c) => c === 200).length}/200)`,
+  );
+
   r = await post(draft.slug, { name: "X", message: "draf" });
   check(r.status === 404, "undangan draf/tidak aktif → 404");
 

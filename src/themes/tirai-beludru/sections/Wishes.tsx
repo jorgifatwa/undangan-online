@@ -61,6 +61,7 @@ export function TiraiWishes() {
   const [attendance, setAttendance] = useState<Attendance | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [soft, setSoft] = useState(false);
   const { wishes, stats } = guestbook;
 
   const submit = async (e: React.FormEvent) => {
@@ -76,6 +77,7 @@ export function TiraiWishes() {
       website: hp,
     });
     setBusy(false);
+    setSoft(!r.ok && !!r.soft);
     if (!r.ok) return setError(r.error);
     setError(null);
     setMessage("");
@@ -245,7 +247,7 @@ export function TiraiWishes() {
             {busy ? "Mengirim…" : "Kirim Ucapan"}
           </button>
           <div
-            role="alert"
+            role={soft ? "status" : "alert"}
             aria-live="polite"
             style={{
               minHeight: u(20),

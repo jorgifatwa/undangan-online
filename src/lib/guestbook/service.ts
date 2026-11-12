@@ -15,14 +15,30 @@ import { guestbookInputSchema, type GuestbookStats } from "./schema";
  * baris di database sehingga tetap bekerja di serverless):
  *  1. honeypot terisi / dikirim < 3 dtk setelah form tampil → pura-pura sukses
  *  2. tautan di nama/ucapan ditolak; panjang dibatasi (schema)
- *  3. per IP per undangan: maks 5 kiriman / 10 menit
- *  4. per IP lintas undangan: maks 20 kiriman / 10 menit
- *  5. per undangan (banjir dari banyak IP): maks 30 kiriman / menit
- *  6. ucapan sama persis dari IP yang sama dalam 1 jam → tidak digandakan
+ *  3. per PERANGKAT (cookie acak, lihat device.ts): maks 5 kiriman / undangan / 10 menit
+ *     — tanpa cookie: semua kiriman tanpa cookie dari IP yang sama berbagi batas ini
+ *  4. per IP: dilonggarkan jauh (CGNAT seluler & Wi-Fi gedung membuat banyak tamu
+ *     sungguhan berbagi IP) — hanya menahan serangan massal:
+ *     100 / undangan / 10 menit, 300 lintas undangan / 10 menit
+ *  5. per undangan (banjir dari banyak IP): 120 / menit; Premium ke atas 300 / menit
+ *  6. ucapan sama persis dari perangkat/IP yang sama dalam 1 jam → tidak digandakan
  */
 const MIN_FILL_MS = 3000;
 const MAX_FORM_AGE_MS = 7 * 86400_000;
-const LIMITS = { perIpInvitation: 5, perIpGlobal: 20, perInvitationMinute: 30 };
+export const LIMITS = {
+  perDevice: 5,
+  perIpInvitation: 100,
+  perIpGlobal: 300,
+  perInvitationMinute: { FREE: 120, BASIC: 120, PREMIUM: 300, EXCLUSIVE: 300 },
+} as const;
+export const RATE_LIMIT_MESSAGE =
+  "Terlalu banyak ucapan dalam waktu singkat, coba lagi sebentar lagi.";
+
+export interface Requester {
+  ipHash: string;
+  /** null = tanpa cookie perangkat (cookie diblokir / bot). */
+  deviceId: string | null;
+}
 
 export interface PublicWish {
   id: string;
@@ -34,7 +50,7 @@ export interface PublicWish {
 
 export type SubmitResult =
   | { ok: true; wish?: PublicWish; stats: GuestbookStats }
-  | { ok: false; status: number; error: string };
+  | { ok: false; status: number; error: string; rateLimited?: boolean };
 
 async function activeInvitation(slug: string) {
   const inv = await db.invitation.findUnique({
@@ -81,7 +97,7 @@ const toPublic = (w: {
 export async function submitGuestbook(
   slug: string,
   raw: unknown,
-  ipHash: string,
+  { ipHash, deviceId }: Requester,
   now = new Date(),
 ): Promise<SubmitResult> {
   const inv = await activeInvitation(slug);
@@ -112,38 +128,43 @@ export async function submitGuestbook(
       error: "Halaman sudah terlalu lama dibuka. Muat ulang lalu coba lagi.",
     };
 
-  // 3–5. Rate limit dari baris di database.
-  const tenMin = new Date(now.getTime() - 10 * 60_000);
-  const oneMin = new Date(now.getTime() - 60_000);
-  const [ipInv, ipAll, invMinute] = await Promise.all([
-    Promise.all([
-      db.rsvp.count({ where: { invitationId: inv.id, ipHash, createdAt: { gte: tenMin } } }),
-      db.wish.count({ where: { invitationId: inv.id, ipHash, createdAt: { gte: tenMin } } }),
-    ]).then(([a, b]) => Math.max(a, b)),
-    Promise.all([
-      db.rsvp.count({ where: { ipHash, createdAt: { gte: tenMin } } }),
-      db.wish.count({ where: { ipHash, createdAt: { gte: tenMin } } }),
-    ]).then(([a, b]) => Math.max(a, b)),
-    Promise.all([
-      db.rsvp.count({ where: { invitationId: inv.id, createdAt: { gte: oneMin } } }),
-      db.wish.count({ where: { invitationId: inv.id, createdAt: { gte: oneMin } } }),
-    ]).then(([a, b]) => Math.max(a, b)),
+  // 3–5. Rate limit dari baris di database (maks dari tabel Rsvp & Wish).
+  const tenMin = { gte: new Date(now.getTime() - 10 * 60_000) };
+  const oneMin = { gte: new Date(now.getTime() - 60_000) };
+  type Window = {
+    invitationId?: string;
+    ipHash?: string;
+    deviceId?: string | null;
+    createdAt: { gte: Date };
+  };
+  const count = (where: Window) =>
+    Promise.all([db.rsvp.count({ where }), db.wish.count({ where })]).then(([a, b]) =>
+      Math.max(a, b),
+    );
+  const [perDevice, ipInv, ipAll, invMinute] = await Promise.all([
+    count(
+      deviceId
+        ? { invitationId: inv.id, deviceId, createdAt: tenMin }
+        : { invitationId: inv.id, ipHash, deviceId: null, createdAt: tenMin },
+    ),
+    count({ invitationId: inv.id, ipHash, createdAt: tenMin }),
+    count({ ipHash, createdAt: tenMin }),
+    count({ invitationId: inv.id, createdAt: oneMin }),
   ]);
-  if (ipInv >= LIMITS.perIpInvitation || ipAll >= LIMITS.perIpGlobal)
-    return {
-      ok: false,
-      status: 429,
-      error: "Terlalu banyak kiriman dari perangkat ini. Coba lagi beberapa menit lagi.",
-    };
-  if (invMinute >= LIMITS.perInvitationMinute)
-    return { ok: false, status: 429, error: "Undangan ini sedang ramai. Coba lagi sebentar lagi." };
+  if (
+    perDevice >= LIMITS.perDevice ||
+    ipInv >= LIMITS.perIpInvitation ||
+    ipAll >= LIMITS.perIpGlobal ||
+    invMinute >= LIMITS.perInvitationMinute[inv.package]
+  )
+    return { ok: false, status: 429, error: RATE_LIMIT_MESSAGE, rateLimited: true };
 
   // 6. Duplikat (klik ganda / kirim ulang)
   if (wantWish) {
     const dup = await db.wish.findFirst({
       where: {
         invitationId: inv.id,
-        ipHash,
+        ...(deviceId ? { deviceId } : { ipHash }),
         message: input.message,
         createdAt: { gte: new Date(now.getTime() - 3600_000) },
       },
@@ -160,6 +181,7 @@ export async function submitGuestbook(
         pax: input.attendance === "HADIR" ? (input.pax ?? 1) : 1,
         message: input.message ?? null,
         ipHash,
+        deviceId,
       },
     });
   const wish = wantWish
@@ -170,6 +192,7 @@ export async function submitGuestbook(
           message: input.message!,
           attendance: input.attendance ?? null,
           ipHash,
+          deviceId,
         },
       })
     : null;

@@ -1,3 +1,9 @@
+import {
+  DEVICE_COOKIE,
+  deviceCookieOptions,
+  deviceFromCookieHeader,
+  newDeviceId,
+} from "@/lib/guestbook/device";
 import { clientIp, hashIp } from "@/lib/guestbook/ip";
 import { submitGuestbook } from "@/lib/guestbook/service";
 
@@ -14,10 +20,24 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   } catch {
     return Response.json({ error: "Format kiriman tidak valid." }, { status: 400 });
   }
-  const res = await submitGuestbook(slug, body, hashIp(clientIp(req.headers)));
-  if (!res.ok) return Response.json({ error: res.error }, { status: res.status });
-  return Response.json(
-    { wish: res.wish ?? null, stats: res.stats },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+  const deviceId = deviceFromCookieHeader(req.headers.get("cookie"));
+  const res = await submitGuestbook(slug, body, {
+    ipHash: hashIp(clientIp(req.headers)),
+    deviceId,
+  });
+  const headers = new Headers({ "Cache-Control": "no-store" });
+  // Cookie hilang/diblokir: beri penanda baru untuk kiriman berikutnya.
+  if (!deviceId) {
+    const o = deviceCookieOptions(new URL(req.url).protocol === "https:");
+    headers.append(
+      "Set-Cookie",
+      `${DEVICE_COOKIE}=${newDeviceId()}; Path=${o.path}; Max-Age=${o.maxAge}; HttpOnly; SameSite=Lax${o.secure ? "; Secure" : ""}`,
+    );
+  }
+  if (!res.ok)
+    return Response.json(
+      { error: res.error, ...(res.rateLimited ? { rateLimited: true } : {}) },
+      { status: res.status, headers },
+    );
+  return Response.json({ wish: res.wish ?? null, stats: res.stats }, { headers });
 }

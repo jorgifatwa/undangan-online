@@ -35,6 +35,7 @@ export function DefaultRsvp() {
   const [sent, setSent] = useState(false);
   const [hp, setHp] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [soft, setSoft] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -43,6 +44,7 @@ export function DefaultRsvp() {
     setBusy(true);
     const r = await guestbook.submit({ name, attendance: status, pax, website: hp });
     setBusy(false);
+    setSoft(!r.ok && !!r.soft);
     if (!r.ok) return setError(r.error);
     setError(null);
     setSent(true);
@@ -111,7 +113,11 @@ export function DefaultRsvp() {
             )}
             <Honeypot value={hp} onChange={setHp} />
             {error && (
-              <p role="alert" className="text-sm" style={{ color: "var(--inv-primary)" }}>
+              <p
+                role={soft ? "status" : "alert"}
+                className="text-sm"
+                style={{ color: soft ? "inherit" : "var(--inv-primary)", opacity: soft ? 0.8 : 1 }}
+              >
                 {error}
               </p>
             )}
@@ -140,6 +146,7 @@ export function DefaultUcapan() {
   const [message, setMessage] = useState("");
   const [hp, setHp] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [soft, setSoft] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -148,6 +155,7 @@ export function DefaultUcapan() {
     setBusy(true);
     const r = await send({ name, message, website: hp });
     setBusy(false);
+    setSoft(!r.ok && !!r.soft);
     if (!r.ok) return setError(r.error);
     setError(null);
     setMessage("");
@@ -177,7 +185,11 @@ export function DefaultUcapan() {
           />
           <Honeypot value={hp} onChange={setHp} />
           {error && (
-            <p role="alert" className="text-sm" style={{ color: "var(--inv-primary)" }}>
+            <p
+              role={soft ? "status" : "alert"}
+              className="text-sm"
+              style={{ color: soft ? "inherit" : "var(--inv-primary)", opacity: soft ? 0.8 : 1 }}
+            >
               {error}
             </p>
           )}

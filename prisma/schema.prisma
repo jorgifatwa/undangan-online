@@ -228,6 +228,9 @@ model Rsvp {
   message      String?
   /// Hash harian IP (+ rahasia server) untuk rate limit — IP mentah tidak disimpan.
   ipHash       String?
+  /// Penanda perangkat acak dari cookie httpOnly (bukan data pribadi) — batas
+  /// kiriman per perangkat; aman untuk tamu yang berbagi IP (CGNAT/Wi-Fi gedung).
+  deviceId     String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -237,6 +240,7 @@ model Rsvp {
   @@index([invitationId, status])
   @@index([guestId])
   @@index([invitationId, ipHash, createdAt])
+  @@index([invitationId, deviceId, createdAt])
 }
 
 model Wish {
@@ -250,12 +254,16 @@ model Wish {
   isHidden     Boolean     @default(false)
   /// Hash harian IP (+ rahasia server) untuk rate limit — IP mentah tidak disimpan.
   ipHash       String?
+  /// Penanda perangkat acak dari cookie httpOnly (bukan data pribadi) — batas
+  /// kiriman per perangkat; aman untuk tamu yang berbagi IP (CGNAT/Wi-Fi gedung).
+  deviceId     String?
   createdAt    DateTime    @default(now())
 
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
 
   @@index([invitationId, createdAt])
   @@index([invitationId, ipHash, createdAt])
+  @@index([invitationId, deviceId, createdAt])
 }
 
 /// Log kunjungan ringan untuk statistik "dibuka". Tidak menyimpan IP mentah.

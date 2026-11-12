@@ -92,6 +92,7 @@ export function RendaWishes() {
   const [attendance, setAttendance] = useState<Attendance | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [soft, setSoft] = useState(false);
   const { wishes, stats } = guestbook;
   if (inv.eventType !== "WEDDING") return null;
   const [a, b] = couple(inv.data);
@@ -108,6 +109,7 @@ export function RendaWishes() {
       website: hp,
     });
     setBusy(false);
+    setSoft(!r.ok && !!r.soft);
     if (!r.ok) return setError(r.error);
     setError(null);
     setMessage("");
@@ -218,7 +220,10 @@ export function RendaWishes() {
               placeholder="Tulis ucapan & doa (opsional)"
             />
             {error && (
-              <p role="alert" style={txt(F.body, 12, 1.3, { color: MAROON })}>
+              <p
+                role={soft ? "status" : "alert"}
+                style={txt(F.body, 12, 1.3, { color: soft ? INK : MAROON })}
+              >
                 {error}
               </p>
             )}
