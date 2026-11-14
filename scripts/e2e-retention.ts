@@ -18,7 +18,7 @@ import { assertSafeDatabase } from "./lib/guard";
 import { planFields } from "./lib/purchase";
 
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
 const shots = args.find((a) => a.startsWith("--shots="))?.split("=")[1];
 const db = new PrismaClient();
 const UPLOADS = path.join(process.cwd(), ".uploads");

@@ -17,7 +17,7 @@ import type { Frame, Page } from "puppeteer-core";
 import { launchBrowser } from "./lib/browser";
 
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
 const shots = args.find((a) => a.startsWith("--shots="))?.split("=")[1];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let failed = 0;
