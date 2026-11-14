@@ -163,7 +163,7 @@ async function main() {
   await pv.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)");
   await sleep(1500);
   check(
-    (await text(pv)).includes("Undangku") || (await pv.$("a[href]")) !== null,
+    (await text(pv)).includes("Undangan Online") || (await pv.$("a[href]")) !== null,
     "watermark paket Gratis di akhir halaman",
   );
   await shot(pv, "4-publik-watermark");

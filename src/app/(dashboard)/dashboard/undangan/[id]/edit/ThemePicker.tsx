@@ -68,11 +68,12 @@ export function ThemePicker({
           })}
         </div>
         <p className="text-muted-foreground mt-2 text-xs">
-          Aktif permanen mulai paket <strong>{PACKAGES[permanent].label}</strong>.{" "}
+          Aktif penuh (12 bulan setelah acara) mulai paket{" "}
+          <strong>{PACKAGES[permanent].label}</strong>.{" "}
           {!isTierAtLeast(pkg, permanent) &&
             (pkg === "FREE"
               ? "Paket Gratis bisa memakai tema ini selama masa uji coba 3 hari."
-              : `Paket ${PACKAGES[pkg].label} perlu ditingkatkan agar tema ini aktif permanen.`)}
+              : `Paket ${PACKAGES[pkg].label} perlu ditingkatkan agar undangan dengan tema ini aktif penuh.`)}
         </p>
       </div>
       <div>

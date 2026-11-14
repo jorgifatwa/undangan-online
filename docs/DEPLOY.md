@@ -1,4 +1,4 @@
-# Deploy Undangku — Staging (Vercel + Neon + Cloudflare R2)
+# Deploy Undangan Online — Staging (Vercel + Neon + Cloudflare R2)
 
 Panduan ini menyiapkan **staging** di `https://<nama-proyek>.vercel.app` tanpa
 domain sendiri. **Vercel hanya untuk staging/percobaan; production berjalan
@@ -65,7 +65,7 @@ Staging memakai paket **Hobby**. Batas yang relevan:
 | Kuota bulanan (perkiraan wajar) | 1 juta invocation, 4 jam Active CPU, 100 GB transfer, 5.000 transformasi gambar |
 | Rollback                        | hanya ke deploy sebelumnya                                                      |
 
-**Aturan untuk Undangku:**
+**Aturan untuk Undangan Online:**
 
 - **Staging (Vercel) hanya untuk uji coba internal**: tidak menerima pembayaran
   sungguhan dan tidak dipromosikan ke publik. Vercel mendefinisikan komersial
@@ -102,7 +102,7 @@ Isi di **Vercel → Project → Settings → Environment Variables**, centang
 
 | Variabel                 | Nilai                                          | Catatan                               |
 | ------------------------ | ---------------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_BRAND_NAME` | `Undangku`                                     |                                       |
+| `NEXT_PUBLIC_BRAND_NAME` | `Undangan Online`                              |                                       |
 | `NEXT_PUBLIC_APP_URL`    | `https://<nama-proyek>.vercel.app`             | tanpa `/` di akhir                    |
 | `DATABASE_URL`           | string Neon **pooled** + `&connect_timeout=15` | host berisi `-pooler`                 |
 | `DATABASE_URL_UNPOOLED`  | string Neon **langsung**                       | host tanpa `-pooler`; dipakai migrasi |
@@ -113,7 +113,7 @@ Isi di **Vercel → Project → Settings → Environment Variables**, centang
 | `R2_ACCOUNT_ID`          | dari Cloudflare                                |                                       |
 | `R2_ACCESS_KEY_ID`       | dari token R2                                  |                                       |
 | `R2_SECRET_ACCESS_KEY`   | dari token R2                                  |                                       |
-| `R2_BUCKET`              | mis. `undangku-staging`                        |                                       |
+| `R2_BUCKET`              | mis. `undangan-online-staging`                        |                                       |
 | `R2_PUBLIC_URL`          | `https://pub-xxxx.r2.dev`                      | tanpa `/` di akhir                    |
 | `CRON_SECRET`            | `openssl rand -hex 24`                         | huruf & angka saja                    |
 
@@ -129,7 +129,7 @@ Variabel `NEXT_PUBLIC_*` ditanam saat build → setelah mengubahnya, **Redeploy*
 ### 4.1 Neon (database) — [ANDA]
 
 1. Masuk ke <https://console.neon.tech> → **New Project**.
-2. Nama: `undangku-staging`. Postgres version: **16** (sama dengan lokal).
+2. Nama: `undangan-online-staging`. Postgres version: **16** (sama dengan lokal).
 3. **Region: AWS Asia Pacific (Singapore)** — kode `aws-ap-southeast-1`.
 4. Setelah jadi, buka **Connect** (Dashboard → tombol _Connect_):
    - **Connection pooling ON** → salin → ini `DATABASE_URL`. Tambahkan
@@ -142,7 +142,7 @@ Variabel `NEXT_PUBLIC_*` ditanam saat build → setelah mengubahnya, **Redeploy*
 ### 4.2 Cloudflare R2 (foto & musik) — [ANDA]
 
 1. Dashboard Cloudflare → **R2 Object Storage** → **Create bucket**.
-   - Nama: `undangku-staging`.
+   - Nama: `undangan-online-staging`.
    - **Location → Asia-Pacific (APAC)**. (Petunjuk lokasi bersifat _best effort_
      dan hanya berlaku saat bucket pertama kali dibuat.)
 2. Bucket → **Settings → Public access → R2.dev subdomain → Allow**. Salin URL
@@ -165,7 +165,7 @@ Variabel `NEXT_PUBLIC_*` ditanam saat build → setelah mengubahnya, **Redeploy*
    Tanpa ini upload dari browser gagal dengan error CORS.
 
 4. R2 → **Manage API tokens** → **Create API token**:
-   - Permissions: **Object Read & Write**; batasi ke bucket `undangku-staging`.
+   - Permissions: **Object Read & Write**; batasi ke bucket `undangan-online-staging`.
    - Salin **Access Key ID** dan **Secret Access Key** (secret hanya tampil sekali).
 5. **Account ID** ada di halaman ringkasan R2 (kanan) → `R2_ACCOUNT_ID`.
 
@@ -173,7 +173,7 @@ Variabel `NEXT_PUBLIC_*` ditanam saat build → setelah mengubahnya, **Redeploy*
 
 1. <https://console.cloud.google.com> → **APIs & Services → Credentials**.
 2. Pilih OAuth client yang dipakai lokal, atau buat baru (**Web application**,
-   disarankan terpisah: “Undangku Staging”).
+   disarankan terpisah: “Undangan Online Staging”).
 3. **Authorized JavaScript origins**: `https://<nama-proyek>.vercel.app`
 4. **Authorized redirect URIs**:
    `https://<nama-proyek>.vercel.app/api/auth/callback/google`
@@ -184,7 +184,7 @@ Variabel `NEXT_PUBLIC_*` ditanam saat build → setelah mengubahnya, **Redeploy*
 
 1. <https://vercel.com/new> → **Import** repo GitHub `jorgifatwa/undangan-online`.
 2. **Project Name** menentukan URL: `<nama-proyek>.vercel.app` (mis.
-   `undangku-staging`). Tentukan dulu karena dipakai di 4.2–4.3.
+   `undangan-online-staging`). Tentukan dulu karena dipakai di 4.2–4.3.
 3. Framework: **Next.js** (terdeteksi). Build/Install command: biarkan default
    (Vercel otomatis memakai script `vercel-build`).
 4. Buka **Environment Variables** di layar yang sama → isi tabel bagian 3.
@@ -324,7 +324,7 @@ Aturan:
 ## 8. URL undangan: `domain/{slug}`
 
 Undangan tampil langsung di root, mis. `https://<nama-proyek>.vercel.app/laras-bima`
-(nanti `https://undangku.id/laras-bima`). **[OTOMATIS]**:
+(nanti `https://undanganonline.id/laras-bima`). **[OTOMATIS]**:
 
 - Tautan lama `/u/{slug}` (termasuk `?to=Nama`) dialihkan **permanen (301)**
   ke `/{slug}` — `next.config.ts`.

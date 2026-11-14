@@ -240,6 +240,13 @@ const FAMILIES: Family[] = [
         chars: LATIN,
         axes: { SOFT: 0, WONK: 0, wght: { min: 400, max: 600 } },
       },
+      // gambar pratinjau landing page (/opengraph-image)
+      {
+        file: "fraunces-500.ttf",
+        chars: LATIN,
+        axes: { SOFT: 0, WONK: 0, opsz: 72, wght: 500 },
+        og: true,
+      },
     ],
   },
 ];

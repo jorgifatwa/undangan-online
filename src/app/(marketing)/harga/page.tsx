@@ -1,99 +1,104 @@
+import { Check, Minus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { formatRupiah } from "@/lib/format";
-import { PACKAGES, PACKAGE_ORDER, type PackageFeatures } from "@/lib/packages";
-import { cn } from "@/lib/utils";
+import { Pricing } from "@/components/marketing/Pricing";
+import { PAYMENT_TEXT, PRICE_ROWS, REFUND_TEXT } from "@/lib/marketing/content";
+import { pricingData } from "@/lib/marketing/pricing";
+import { PACKAGE_ORDER, PACKAGES, PAID_ACTIVE } from "@/lib/packages";
 
 export const metadata: Metadata = {
-  title: "Harga Paket",
-  description: "Pilih paket undangan digital: gratis untuk mencoba, berbayar untuk aktif permanen.",
+  title: "Harga Undangan Digital",
+  description: `Harga undangan pernikahan online dan undangan ulang tahun online: coba gratis, bayar sekali per undangan. ${PAID_ACTIVE.long}`,
+  alternates: { canonical: "/harga" },
 };
 
-const ROWS: { label: string; get: (f: PackageFeatures) => string | boolean }[] = [
-  { label: "Masa aktif", get: (f) => (f.activeDays ? `${f.activeDays} hari` : "Permanen") },
-  { label: "Tanpa watermark", get: (f) => !f.watermark },
-  {
-    label: "Foto galeri",
-    get: (f) => (f.galleryLimit === null ? "Tanpa batas" : `Maks. ${f.galleryLimit}`),
-  },
-  {
-    label: "Penyimpanan foto & musik",
-    get: (f) =>
-      `${f.storageQuotaMb >= 1000 ? `${f.storageQuotaMb / 1000} GB` : `${f.storageQuotaMb} MB`}`,
-  },
-  { label: "Unggah musik sendiri", get: (f) => f.customMusic },
-  { label: "RSVP & ucapan", get: (f) => f.rsvp && f.wishes },
-  { label: "Amplop digital", get: (f) => f.digitalEnvelope },
-  { label: "Nama tamu personal & kirim WhatsApp", get: (f) => f.personalGuestNames },
-  { label: "QR check-in", get: (f) => f.qrCheckIn },
-  { label: "Mode privat", get: (f) => f.privateMode },
-];
-
-/** Harga & fitur paket (sumber: lib/packages.ts). Pembayaran dibuat di tahap berikutnya. */
+/** Harga & perbandingan paket (sumber: lib/packages.ts — sama dengan section harga di landing). */
 export default function HargaPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
-      <h1 className="font-heading text-4xl sm:text-5xl">Harga paket</h1>
-      <p className="text-muted-foreground mt-3 max-w-xl">
-        Semua tema bisa dicoba gratis. Tingkatkan paket kapan saja tanpa kehilangan data undangan.
-      </p>
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {PACKAGE_ORDER.map((tier) => {
-          const p = PACKAGES[tier];
-          const price = p.prices.WEDDING;
-          return (
-            <section
-              key={tier}
-              className={cn(
-                "bg-card rounded-2xl border p-5",
-                tier === "PREMIUM" && "border-primary ring-primary/20 ring-2",
-              )}
-            >
-              <h2 className="font-heading text-2xl">{p.label}</h2>
-              <p className="mt-1 text-sm">
-                {price === undefined
-                  ? "Segera hadir"
-                  : price === 0
-                    ? "Gratis"
-                    : `${formatRupiah(price)} / pernikahan`}
-                {p.prices.BIRTHDAY ? (
-                  <span className="text-muted-foreground block text-xs">
-                    Ulang tahun{" "}
-                    {p.prices.BIRTHDAY === 0 ? "gratis" : formatRupiah(p.prices.BIRTHDAY)}
-                  </span>
-                ) : null}
-              </p>
-              <ul className="mt-4 space-y-1.5 text-sm">
-                {ROWS.map((r) => {
-                  const v = r.get(p.features);
-                  return (
-                    <li
-                      key={r.label}
-                      className={cn(
-                        "flex justify-between gap-2",
-                        v === false && "text-muted-foreground line-through",
-                      )}
-                    >
-                      <span>{r.label}</span>
-                      <span className="shrink-0 font-medium">
-                        {v === true ? "✓" : v === false ? "—" : v}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          );
-        })}
+    <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+      <div className="mx-auto max-w-2xl text-center">
+        <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">Harga</p>
+        <h1 className="font-heading mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
+          Harga undangan digital
+        </h1>
+        <p className="text-muted-foreground mt-4 sm:text-lg">
+          Semua tema bisa dicoba gratis. Sekali bayar per undangan, tanpa langganan — tingkatkan
+          paket kapan saja tanpa kehilangan isian.
+        </p>
       </div>
-      <p className="text-muted-foreground mt-8 text-sm">
-        Pembayaran online (QRIS, e-wallet, transfer) segera tersedia. Butuh paket sekarang?{" "}
-        <Link href="/dashboard" className="text-primary underline">
-          Buka dashboard
-        </Link>
-        .
-      </p>
+
+      <div className="mt-12">
+        <Pricing wedding={pricingData("WEDDING")} birthday={pricingData("BIRTHDAY")} compact />
+      </div>
+
+      <section className="mt-20" aria-labelledby="banding">
+        <h2 id="banding" className="font-heading text-3xl">
+          Perbandingan fitur
+        </h2>
+        <div className="mt-6 overflow-x-auto rounded-2xl border">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead className="bg-sand">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left font-medium">
+                  Fitur
+                </th>
+                {PACKAGE_ORDER.map((t) => (
+                  <th key={t} scope="col" className="px-4 py-3 text-left font-medium">
+                    {PACKAGES[t].label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PRICE_ROWS.map((r) => (
+                <tr key={r.label} className="border-t">
+                  <th scope="row" className="px-4 py-3 text-left font-normal">
+                    {r.label}
+                    {r.soon && (
+                      <span className="bg-accent text-accent-foreground ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap">
+                        Segera hadir
+                      </span>
+                    )}
+                  </th>
+                  {PACKAGE_ORDER.map((t) => {
+                    const v = r.value(PACKAGES[t].features);
+                    return (
+                      <td key={t} className="px-4 py-3">
+                        {typeof v === "string" ? (
+                          v
+                        ) : v ? (
+                          <Check className="text-primary size-4" aria-label="Termasuk" />
+                        ) : (
+                          <Minus
+                            className="text-muted-foreground/50 size-4"
+                            aria-label="Tidak termasuk"
+                          />
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="text-muted-foreground mt-6 space-y-2 text-sm">
+          <p>
+            <strong className="text-foreground">Masa aktif paket berbayar:</strong>{" "}
+            {PAID_ACTIVE.long}
+          </p>
+          <p>
+            <strong className="text-foreground">Cara bayar:</strong> {PAYMENT_TEXT}
+          </p>
+          <p>
+            <strong className="text-foreground">Pengembalian dana:</strong> {REFUND_TEXT}{" "}
+            <Link href="/syarat" className="underline underline-offset-4">
+              Syarat & Ketentuan
+            </Link>
+          </p>
+        </div>
+      </section>
     </main>
   );
 }

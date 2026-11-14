@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { siteConfig } from "@/lib/site";
 import { ThemeCard } from "@/components/themes/ThemeCard";
 import { listThemes, usedCategories } from "@/themes/registry";
 import { CATEGORY_LABELS, type ThemeCategory } from "@/themes/types";
 
 export const metadata: Metadata = {
-  title: "Pilihan Tema",
+  title: "Tema Undangan Pernikahan & Ulang Tahun",
   description:
-    "Jelajahi tema undangan digital pernikahan dan ulang tahun. Semua tema bisa dicoba gratis.",
+    "Jelajahi tema undangan digital pernikahan dan ulang tahun online. Semua tema bisa dicoba gratis.",
+  alternates: { canonical: "/tema" },
 };
 
 const EVENT_FILTERS = [
@@ -44,12 +44,11 @@ export default async function TemaPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
-      <Link href="/" className="text-muted-foreground text-xs tracking-[0.2em] uppercase">
-        {siteConfig.name}
-      </Link>
+      <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">Tema</p>
       <h1 className="font-heading mt-3 text-4xl sm:text-5xl">Pilih tema undanganmu</h1>
       <p className="text-muted-foreground mt-3 max-w-xl">
-        Semua tema bisa dicoba gratis. Pilih paket hanya saat undangan ingin aktif permanen.
+        Semua tema bisa dicoba gratis. Pilih paket berbayar saat undangan siap disebar — aktif 12
+        bulan setelah acara.
       </p>
 
       <div className="mt-8 flex flex-wrap gap-2">

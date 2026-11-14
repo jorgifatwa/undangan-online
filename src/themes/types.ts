@@ -43,7 +43,8 @@ export interface ThemeManifest {
   category: ThemeCategory;
   eventTypes: readonly SupportedEventType[];
   /**
-   * Paket minimum agar undangan dengan tema ini bisa AKTIF PERMANEN.
+   * Paket berbayar minimum agar undangan dengan tema ini bisa AKTIF PENUH
+   * (PAID_ACTIVE: minimal 12 bulan setelah acara).
    * Semua tema tetap bisa dicoba di paket FREE (3 hari + watermark).
    */
   minPackage: PackageTier;

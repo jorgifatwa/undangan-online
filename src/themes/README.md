@@ -75,7 +75,7 @@ Untuk menghapus tema, hapus foldernya lalu jalankan `pnpm themes:sync`.
 | Field            | Isi                                                                                                       |
 | ---------------- | --------------------------------------------------------------------------------------------------------- |
 | `id`             | sama persis dengan nama folder (dicek oleh `themes:sync`)                                                 |
-| `minPackage`     | paket minimum agar undangan **aktif permanen**; semua tema tetap bisa dicoba di FREE (3 hari + watermark) |
+| `minPackage`     | paket berbayar minimum agar undangan **aktif penuh** (min. 12 bulan setelah acara); semua tema tetap bisa dicoba di FREE (3 hari + watermark) |
 | `variants`       | 2–4 varian; yang pertama jadi default                                                                     |
 | `sections`       | section yang didukung tema; section lain tidak pernah dirender                                            |
 | `lockedSections` | lihat §11                                                                                                 |

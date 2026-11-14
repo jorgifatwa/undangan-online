@@ -130,6 +130,8 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "images",
   "img",
   "undangku",
+  "undangan-online",
+  "undanganonline",
   // --- File metadata Next.js (tanpa ekstensi) ---
   "favicon",
   "icon",
@@ -140,6 +142,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "sitemap",
   "manifest",
   // --- Folder di public/ ---
+  "landing",
   "placeholders",
   "theme-assets",
   "theme-thumbs",

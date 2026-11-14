@@ -7,7 +7,11 @@ import type { EventType, PackageTier } from "@prisma/client";
  */
 
 export interface PackageFeatures {
-  /** Masa aktif dalam hari sejak publish; null = permanen. */
+  /**
+   * Masa aktif dalam hari sejak terbit pertama (masa uji FREE).
+   * null = paket berbayar: aktif minimal 12 bulan setelah tanggal acara dan tetap
+   * dapat diakses setelahnya selama layanan berjalan (lihat PAID_ACTIVE).
+   */
   activeDays: number | null;
   watermark: boolean;
   /** Batas foto galeri; null = tanpa batas. */
@@ -35,6 +39,22 @@ export interface PackageDefinition {
   /** Harga per jenis acara (rupiah). Tidak ada entri = paket tidak dijual untuk jenis itu. */
   prices: Partial<Record<EventType, number>>;
   features: PackageFeatures;
+}
+
+/**
+ * Masa aktif paket berbayar — SATU-SATUNYA sumber kalimat untuk website
+ * (kartu harga, FAQ, syarat, editor). Jangan menulis "permanen".
+ */
+export const PAID_ACTIVE = {
+  months: 12,
+  /** Untuk kartu harga & label pendek. */
+  short: "Aktif 12 bulan setelah acara",
+  long: "Aktif minimal 12 bulan setelah tanggal acara, dan tetap dapat diakses setelahnya selama layanan berjalan.",
+} as const;
+
+/** Label masa aktif per paket: "3 hari (uji coba)" / PAID_ACTIVE.short. */
+export function activeLabel(f: PackageFeatures): string {
+  return f.activeDays ? `${f.activeDays} hari (uji coba)` : PAID_ACTIVE.short;
 }
 
 /** Urutan tingkat paket, dipakai untuk perbandingan "minimal paket X". */
@@ -142,8 +162,8 @@ export class FeatureNotAllowedError extends Error {
 // -----------------------------------------------------------------------------
 // Semua tema boleh DIPILIH dan DIPAKAI di paket mana pun, termasuk FREE (masa
 // aktif 3 hari + watermark), supaya calon pengguna bisa mencoba tema terbaik.
-// manifest.minPackage = paket minimum agar undangan dengan tema itu bisa AKTIF
-// PERMANEN. FREE tidak pernah permanen, jadi selalu lolos sebagai uji coba.
+// manifest.minPackage = paket berbayar minimum agar undangan dengan tema itu bisa
+// AKTIF PENUH (lihat PAID_ACTIVE). FREE selalu lolos sebagai uji coba 3 hari.
 
 /** true jika undangan berpaket `tier` boleh dipublikasikan dengan tema ber-`minPackage` ini. */
 export function canPublishWithTheme(tier: PackageTier, themeMinPackage: PackageTier): boolean {
@@ -152,7 +172,7 @@ export function canPublishWithTheme(tier: PackageTier, themeMinPackage: PackageT
 }
 
 /**
- * Paket berbayar termurah yang membuat tema ini aktif permanen
+ * Paket berbayar termurah yang membuat tema ini aktif penuh
  * (dipakai halaman checkout untuk menyarankan paket).
  */
 export function minimumPaidPackageForTheme(themeMinPackage: PackageTier): PackageTier {
@@ -165,7 +185,7 @@ export class ThemeNotAllowedError extends Error {
     public readonly themeMinPackage: PackageTier,
   ) {
     super(
-      `Tema ini membutuhkan paket minimal ${PACKAGES[themeMinPackage].label} untuk aktif permanen.`,
+      `Tema ini membutuhkan paket minimal ${PACKAGES[themeMinPackage].label} agar undangan aktif penuh.`,
     );
     this.name = "ThemeNotAllowedError";
   }

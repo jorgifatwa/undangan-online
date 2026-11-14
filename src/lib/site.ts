@@ -3,7 +3,7 @@
  * Nama brand sengaja dari env agar mudah diganti tanpa ubah kode.
  */
 export const siteConfig = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "Undangku",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME || "Undangan Online",
   description:
     "Buat undangan digital pernikahan & ulang tahun yang cantik dalam hitungan menit. Bagikan lewat WhatsApp.",
   appUrl: (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, ""),

@@ -2,7 +2,7 @@
  * Cek pasca-deploy staging/production (docs/DEPLOY.md). Jalankan DARI
  * INDONESIA (laptop/jaringan Anda) agar TTFB mewakili tamu sungguhan.
  *
- *   CRON_SECRET=... pnpm deploy:check https://undangku-staging.vercel.app --slug=nama-undangan
+ *   CRON_SECRET=... pnpm deploy:check https://undangan-online-staging.vercel.app --slug=nama-undangan
  *
  *  - region fungsi (sin1) dari header x-vercel-id & /api/health
  *  - latensi database & R2 dari DALAM fungsi (menandakan region berdekatan)

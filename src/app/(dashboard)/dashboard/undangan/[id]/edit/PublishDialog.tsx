@@ -132,7 +132,7 @@ export function PublishDialog({
                 <Link href="/harga" target="_blank" className="font-semibold underline">
                   Tingkatkan paket
                 </Link>{" "}
-                agar aktif permanen tanpa watermark.
+                agar aktif 12 bulan setelah acara, tanpa watermark.
               </p>
             )}
             <p className="text-muted-foreground text-xs">

@@ -21,6 +21,13 @@ export const toPreviewSchema = z.discriminatedUnion("type", [
   }),
   z.object({ ns, type: z.literal("focus"), section: z.enum(SECTION_IDS) }),
   z.object({ ns, type: z.literal("cover"), show: z.boolean() }),
+  /** Demo landing page: ganti nama di data contoh (lihat preview/[themeId]/DemoPreview). */
+  z.object({
+    ns,
+    type: z.literal("names"),
+    primary: z.string().max(40),
+    secondary: z.string().max(40),
+  }),
 ]);
 export type ToPreview = z.infer<typeof toPreviewSchema>;
 

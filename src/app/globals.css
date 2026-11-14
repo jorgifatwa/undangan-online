@@ -6,6 +6,9 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-gold: var(--gold);
+  --color-sand: var(--sand);
+  --color-clay: var(--clay);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
@@ -74,6 +77,11 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.75rem;
+  /* Identitas website: emas (garis & aksen), pasir (latar selang-seling),
+     terracotta tua (section CTA). */
+  --gold: oklch(0.7 0.1 78);
+  --sand: oklch(0.955 0.02 75);
+  --clay: oklch(0.36 0.09 35);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);

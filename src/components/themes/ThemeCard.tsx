@@ -75,7 +75,7 @@ export function ThemeCard({
       </div>
       {showPackage && (
         <p className="text-muted-foreground mt-1 text-left text-xs">
-          Coba gratis · aktif permanen mulai paket{" "}
+          Coba gratis · aktif penuh mulai paket{" "}
           {PACKAGES[theme.minPackage === "FREE" ? "BASIC" : theme.minPackage].label}
         </p>
       )}

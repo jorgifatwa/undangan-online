@@ -16,7 +16,8 @@ import { isValidSlug } from "./slug";
  *  - aktif 3 hari sejak TERBIT PERTAMA (publishedAt tidak pernah di-reset)
  *  - "Batalkan terbit" TIDAK menghentikan hitungan → tidak bisa diperpanjang
  *    dengan terbit ulang; setelah lewat harus upgrade
- * Paket berbayar: aktif permanen (expiresAt null).
+ * Paket berbayar: expiresAt null — aktif minimal 12 bulan setelah acara dan tetap
+ * dapat diakses setelahnya selama layanan berjalan (PAID_ACTIVE di lib/packages).
  */
 export const FREE_TRIAL_DAYS = 3;
 const DAY = 86400_000;

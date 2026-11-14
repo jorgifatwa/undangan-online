@@ -9,6 +9,7 @@ import { dummyFor, DUMMY_WISHES } from "@/themes/_shared/dummy";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
 
+import { DemoPreview } from "./DemoPreview";
 import { PreviewFocus } from "./PreviewFocus";
 import { PreviewToolbar } from "./PreviewToolbar";
 
@@ -85,6 +86,7 @@ export async function generateMetadata({
  *        &minimal=1 [&salam=umum] (data minim seperti hasil wizard)
  *        &quote=<id kutipan siap pakai> (uji tampilan & font kutipan)
  *        &ref=1 (tanpa section yang tidak ada di desain referensi → urutan sama dengan desain)
+ *        &demo=1 (demo landing page: tanpa toolbar, nama diganti lewat postMessage)
  */
 export default async function PreviewPage({
   params,
@@ -107,6 +109,15 @@ export default async function PreviewPage({
   const variantId = manifest.variants.some((v) => v.id === one("variant"))
     ? one("variant")
     : manifest.variants[0].id;
+
+  if (one("demo") === "1")
+    return (
+      <DemoPreview
+        themeId={themeId}
+        variantId={variantId!}
+        invitation={dummyFor(eventType, manifest.defaultMusic)}
+      />
+    );
 
   return (
     <>

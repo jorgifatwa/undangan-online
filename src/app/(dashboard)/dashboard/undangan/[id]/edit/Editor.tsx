@@ -47,7 +47,7 @@ export interface EditorProps {
   status: "DRAFT" | "PUBLISHED" | "EXPIRED";
   /** ISO — terbit pertama (FREE: dasar masa uji). */
   publishedAt: string | null;
-  /** ISO — akhir masa aktif (FREE); null = permanen / belum terbit. */
+  /** ISO — akhir masa aktif (FREE); null = paket berbayar (PAID_ACTIVE) / belum terbit. */
   expiresAt: string | null;
   eventType: EventType;
   pkg: PackageTier;
