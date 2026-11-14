@@ -43,6 +43,7 @@ export function LiveStreamForm() {
         label="Link siaran"
         type="url"
         placeholder="https://youtube.com/…"
+        hint="YouTube, Zoom, Google Meet, atau Instagram."
       />
       <TextField name="liveStream.platform" label="Platform" placeholder="YouTube" maxLength={40} />
       <TextField name="liveStream.note" label="Catatan" rows={2} maxLength={200} />

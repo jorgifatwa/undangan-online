@@ -1,6 +1,7 @@
 import Image from "next/image";
 
-import { PACKAGES } from "@/lib/packages";
+import { formatRupiah } from "@/lib/format";
+import { TRIAL_DAYS } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { themeThumb } from "@/themes/registry";
 import { CATEGORY_LABELS, type ThemeManifest } from "@/themes/types";
@@ -13,11 +14,14 @@ import { CATEGORY_LABELS, type ThemeManifest } from "@/themes/types";
 export function ThemeCard({
   theme,
   selected = false,
-  showPackage = true,
+  showPrice = true,
+  priceNote,
 }: {
   theme: ThemeManifest;
   selected?: boolean;
-  showPackage?: boolean;
+  showPrice?: boolean;
+  /** Ganti teks harga (mis. di editor: "Dimiliki", "Bayar selisih Rp…"). */
+  priceNote?: string;
 }) {
   const thumb = themeThumb(theme.id);
   return (
@@ -73,10 +77,14 @@ export function ThemeCard({
           ))}
         </span>
       </div>
-      {showPackage && (
-        <p className="text-muted-foreground mt-1 text-left text-xs">
-          Coba gratis · aktif penuh mulai paket{" "}
-          {PACKAGES[theme.minPackage === "FREE" ? "BASIC" : theme.minPackage].label}
+      {showPrice && (
+        <p className="mt-1 text-left text-xs" data-theme-price>
+          {priceNote ?? (
+            <>
+              <span className="text-foreground font-semibold">{formatRupiah(theme.price)}</span>
+              <span className="text-muted-foreground"> · coba gratis {TRIAL_DAYS} hari</span>
+            </>
+          )}
         </p>
       )}
     </>

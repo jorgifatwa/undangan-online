@@ -1,29 +1,26 @@
 import {
   CalendarCheck,
   ChevronDown,
+  Clock,
   EyeOff,
-  FileSpreadsheet,
   Gift,
   ImageIcon,
   Link2,
-  Lock,
   MapPin,
   MessagesSquare,
   Music,
   Palette,
   PenLine,
-  QrCode,
   Quote,
   Send,
   Share2,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 
 import { WhatsAppIcon } from "@/components/marketing/BrandIcons";
 import { business } from "@/config/business";
-import { FAQ, minTierFor } from "@/lib/marketing/content";
-import { PACKAGES } from "@/lib/packages";
+import { COMING_SOON, FAQ } from "@/lib/marketing/content";
+import { LIMITS } from "@/lib/pricing";
 
 /** Judul section: label kecil emas + H2 Fraunces. */
 export function SectionHead({
@@ -90,11 +87,6 @@ export function Steps() {
 
 // --------------------------------- Fitur ----------------------------------
 
-const tier = (f: Parameters<typeof minTierFor>[0]) => {
-  const t = minTierFor(f);
-  return t && t !== "FREE" ? `Mulai ${PACKAGES[t].label}` : undefined;
-};
-
 const GROUPS = [
   {
     title: "Membuat undangan",
@@ -108,13 +100,12 @@ const GROUPS = [
       {
         icon: ImageIcon,
         t: "Foto tanpa ribet",
-        d: "Unggah dari HP (termasuk foto iPhone), atur bagian yang ditonjolkan, ukuran dioptimalkan otomatis.",
+        d: `Galeri hingga ${LIMITS.galleryPhotos} foto. Unggah dari HP (termasuk foto iPhone), atur bagian yang ditonjolkan, ukuran dioptimalkan otomatis.`,
       },
       {
         icon: Music,
         t: "Musik latar",
-        d: "Pilih dari koleksi bawaan, atau unggah lagu sendiri.",
-        badge: tier("customMusic"),
+        d: `Pilih dari koleksi bawaan, atau unggah hingga ${LIMITS.customMusicTracks} lagu sendiri.`,
       },
       {
         icon: Quote,
@@ -145,8 +136,7 @@ const GROUPS = [
       {
         icon: Gift,
         t: "Amplop digital & hadiah",
-        d: "Rekening, QRIS, dan alamat kirim hadiah dalam satu kartu.",
-        badge: tier("digitalEnvelope"),
+        d: "Rekening, QRIS, dan alamat kirim hadiah dalam satu kartu (tampil di halaman tamu setelah tema dibeli).",
       },
     ],
   },
@@ -178,14 +168,6 @@ const GROUPS = [
   },
 ];
 
-const SOON = [
-  { icon: Users, t: "Daftar tamu" },
-  { icon: FileSpreadsheet, t: "Impor tamu dari Excel" },
-  { icon: Send, t: "Kirim WhatsApp massal" },
-  { icon: QrCode, t: "QR check-in di lokasi" },
-  { icon: Lock, t: "Mode privat dengan kata sandi" },
-];
-
 export function Features() {
   return (
     <div className="mt-12 space-y-12">
@@ -207,14 +189,7 @@ export function Features() {
                   <it.icon className="size-5" aria-hidden />
                 </span>
                 <div>
-                  <p className="font-medium">
-                    {it.t}
-                    {"badge" in it && it.badge && (
-                      <span className="bg-accent text-accent-foreground ml-2 rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap">
-                        {it.badge}
-                      </span>
-                    )}
-                  </p>
+                  <p className="font-medium">{it.t}</p>
                   <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{it.d}</p>
                 </div>
               </li>
@@ -225,12 +200,12 @@ export function Features() {
       <div className="rounded-3xl border border-dashed p-6" data-reveal>
         <p className="text-sm font-semibold">Segera hadir</p>
         <ul className="mt-3 flex flex-wrap gap-2">
-          {SOON.map((s) => (
+          {COMING_SOON.map((t) => (
             <li
-              key={s.t}
+              key={t}
               className="text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm"
             >
-              <s.icon className="size-4" aria-hidden /> {s.t}
+              <Clock className="size-4" aria-hidden /> {t}
               <span className="sr-only"> (segera hadir)</span>
             </li>
           ))}
@@ -303,7 +278,7 @@ export function FinalCta({ waHref }: { waHref: string | null }) {
           Undangan digital pertamamu bisa siap sebelum teh hangatmu dingin.
         </h2>
         <p className="mt-4 text-white/75">
-          Coba semua tema gratis. Tingkatkan paket hanya saat undangan siap dibagikan.
+          Coba semua tema gratis. Beli tema hanya saat undangan siap dibagikan.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link

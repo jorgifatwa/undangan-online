@@ -49,7 +49,7 @@ async function main() {
     check(r.status === 200, `${path} → ${r.status}`);
     check(
       !/permanen/i.test(body.replace(/<script[\s\S]*?<\/script>/g, "")),
-      `${path}: tidak memakai kata "permanen"`,
+      `${path}: tanpa kata "permanen" & tanpa nama paket lama`,
     );
   }
   const dash = await fetch(`${base}/dashboard`, { redirect: "manual" });
@@ -192,20 +192,23 @@ async function main() {
   await sleep(400);
   const priceText = await m.$eval("#harga", (e) => (e as HTMLElement).innerText);
   check(
-    priceText.includes("Paling populer") &&
-      priceText.includes("Rp69.000") &&
-      priceText.includes("Aktif 12 bulan setelah acara"),
-    "harga pernikahan dari packages.ts + Premium ditonjolkan",
+    ["Rp49.000", "Rp99.000", "Rp149.000"].every((p) => priceText.includes(p)) &&
+      priceText.includes("Sudah termasuk di setiap tema") &&
+      priceText.includes("Aktif 12 bulan setelah acara") &&
+      !/Basic|Premium|Exclusive|paket Gratis/.test(priceText),
+    "harga per tema dari manifest + daftar yang termasuk (tanpa paket)",
   );
   if (shots) await m.screenshot({ path: `${shots}/m-3-harga.png` });
   await m.evaluate(
     `[...document.querySelectorAll('#harga [role="tab"]')].find((b)=>b.textContent.trim()==="Ulang tahun")?.click()`,
   );
   await sleep(300);
-  const bt = await m.$eval("#harga", (e) => (e as HTMLElement).innerText);
+  const bdayCards = await m.$$eval("#harga [data-theme-price-card]", (els) =>
+    els.map((e) => e.getAttribute("data-theme-price-card")),
+  );
   check(
-    bt.includes("Rp39.000") && /Exclusive[\s\S]*Segera hadir/.test(bt),
-    "tab ulang tahun: harga ulang tahun, Exclusive “Segera hadir”",
+    bdayCards.length === 1 && bdayCards[0] === "confetti-party",
+    `tab ulang tahun: hanya Confetti Party (${bdayCards.join(",")})`,
   );
 
   // FAQ & lainnya

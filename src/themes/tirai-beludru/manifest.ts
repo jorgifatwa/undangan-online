@@ -15,7 +15,7 @@ export const manifest = {
     "Panggung teater: tirai beludru zamrud, amplop bersegel lilin yang terbuka, kartu renda, dan bunga kering.",
   category: "elegan",
   eventTypes: ["WEDDING"],
-  minPackage: "PREMIUM",
+  price: 149_000,
   variants: TIRAI_VARIANTS,
   sections: [
     "cover",

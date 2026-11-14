@@ -43,6 +43,7 @@ function EventItem({ index }: { index: number }) {
           label="Link Google Maps"
           type="url"
           placeholder="https://maps.app.goo.gl/…"
+          hint="Hanya link Google Maps."
         />
       </div>
     </>

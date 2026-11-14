@@ -1,5 +1,5 @@
 /**
- * Kebijakan retensi media (foto & musik) undangan paket FREE:
+ * Kebijakan retensi media (foto & musik) undangan MASA UJI (tema belum dibeli):
  *   kedaluwarsa (expiresAt) + 30 hari → dihapus otomatis oleh cron pembersih.
  *   7 hari sebelum dihapus → peringatan di dashboard + tawaran upgrade.
  * Teks undangan tidak dihapus; setelah upgrade undangan bisa aktif lagi
@@ -10,8 +10,11 @@ export const RETENTION_WARNING_DAYS = 7;
 
 const DAY = 86400_000;
 
-export function mediaDeletionDate(inv: { package: string; expiresAt: Date | null }): Date | null {
-  if (inv.package !== "FREE" || !inv.expiresAt) return null;
+export function mediaDeletionDate(inv: {
+  purchasedAt: Date | null;
+  expiresAt: Date | null;
+}): Date | null {
+  if (inv.purchasedAt || !inv.expiresAt) return null;
   return new Date(inv.expiresAt.getTime() + MEDIA_RETENTION_DAYS * DAY);
 }
 
@@ -22,7 +25,7 @@ export function mediaDeletionDate(inv: { package: string; expiresAt: Date | null
  *  - null: tidak relevan
  */
 export function retentionStatus(
-  inv: { package: string; expiresAt: Date | null; mediaPurgedAt: Date | null },
+  inv: { purchasedAt: Date | null; expiresAt: Date | null; mediaPurgedAt: Date | null },
   hasMedia: boolean,
   now = new Date(),
 ): { kind: "warning"; deleteAt: Date; daysLeft: number } | { kind: "purged"; at: Date } | null {

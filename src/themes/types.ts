@@ -1,7 +1,6 @@
-import type { PackageTier } from "@prisma/client";
 import type { ComponentType, ReactNode } from "react";
 
-import type { PackageFeatures } from "@/lib/packages";
+import type { Entitlements } from "@/lib/pricing";
 import type { SupportedEventType } from "@/schemas";
 import type { AnyInvitationData, SectionId } from "@/schemas/sections";
 
@@ -43,11 +42,11 @@ export interface ThemeManifest {
   category: ThemeCategory;
   eventTypes: readonly SupportedEventType[];
   /**
-   * Paket berbayar minimum agar undangan dengan tema ini bisa AKTIF PENUH
-   * (PAID_ACTIVE: minimal 12 bulan setelah acara).
-   * Semua tema tetap bisa dicoba di paket FREE (3 hari + watermark).
+   * Harga tema dalam rupiah, sekali bayar PER UNDANGAN — SATU-SATUNYA sumber
+   * harga (landing, /harga, kartu tema, editor, pesanan membaca dari sini).
+   * Sudah termasuk semua fitur inti; setiap tema bisa dicoba gratis 3 hari.
    */
-  minPackage: PackageTier;
+  price: number;
   /** 2–4 varian; yang pertama adalah default. */
   variants: readonly ColorVariant[];
   /** Section yang didukung tema; section lain tidak pernah dirender. */
@@ -68,8 +67,8 @@ export interface ThemeManifest {
 export interface ThemeProps {
   invitation: AnyInvitationData;
   variantId?: string;
-  /** Fitur paket untuk membatasi section; null = preview (tanpa batasan). */
-  features: PackageFeatures | null;
+  /** Hak pakai undangan (masa uji / dibeli); null = preview tema (tanpa batasan). */
+  features: Entitlements | null;
   watermark: boolean;
   /** Nama tamu dari ?to= (sudah dibersihkan di server). */
   guestName: string | null;

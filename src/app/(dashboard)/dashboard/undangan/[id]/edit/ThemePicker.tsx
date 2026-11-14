@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 
+import { PaymentSoon } from "@/components/billing/PaymentSoon";
 import { ThemeCard } from "@/components/themes/ThemeCard";
-import type { PackageTier } from "@prisma/client";
-
-import { PACKAGES, isTierAtLeast } from "@/lib/packages";
+import { formatRupiah } from "@/lib/format";
+import { PAID_ACTIVE, quoteTheme, TRIAL_DAYS, type PurchaseState } from "@/lib/pricing";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import type { ThemeManifest } from "@/themes/types";
@@ -14,26 +14,51 @@ import { updateSlug } from "./actions";
 import { inputClass } from "./forms/fields";
 
 /**
- * Ganti tema & varian kapan saja. Data undangan tidak pernah dihapus saat
- * ganti tema; section yang tidak didukung tema baru ditandai di daftar section.
+ * Ganti tema & varian. Data undangan tidak pernah dihapus saat ganti tema.
+ * Harga per tema (manifest), berlaku per undangan:
+ *  - masa uji: bebas mencoba semua tema
+ *  - sudah membeli: tema yang dimiliki / harga ≤ kredit → gratis; lebih mahal →
+ *    hanya PRATINJAU sampai selisihnya dibayar (server juga menolaknya)
  */
 export function ThemePicker({
   themes,
   themeId,
   variantId,
-  pkg,
+  purchase,
+  previewThemeId,
+  onPreviewTheme,
   onTheme,
   onVariant,
 }: {
   themes: ThemeManifest[];
   themeId: string;
   variantId: string | null;
-  pkg: PackageTier;
+  purchase: { purchased: boolean; themeCredit: number; ownedThemeIds: string[] };
+  previewThemeId: string | null;
+  onPreviewTheme: (id: string | null) => void;
   onTheme: (id: string) => void;
   onVariant: (id: string) => void;
 }) {
+  const [buying, setBuying] = useState(false);
   const current = themes.find((t) => t.id === themeId) ?? themes[0];
-  const permanent = current.minPackage === "FREE" ? "BASIC" : current.minPackage;
+  const state: PurchaseState = {
+    themeId,
+    purchasedAt: purchase.purchased ? "dibeli" : null,
+    themeCredit: purchase.themeCredit,
+    ownedThemeIds: purchase.ownedThemeIds,
+  };
+  const previewing = previewThemeId ? themes.find((t) => t.id === previewThemeId) : undefined;
+  const previewQuote = previewing ? quoteTheme(state, previewing.id) : null;
+
+  const badge = (t: ThemeManifest) => {
+    const q = quoteTheme(state, t.id);
+    if (!q) return null;
+    if (q.kind === "trial") return `${formatRupiah(q.price)} · coba gratis`;
+    if (q.kind === "owned")
+      return purchase.ownedThemeIds.includes(t.id) ? "Dimiliki" : "Gratis (sudah termasuk)";
+    return `Bayar selisih ${formatRupiah(q.amount)}`;
+  };
+
   return (
     <div className="space-y-5">
       <div>
@@ -67,15 +92,54 @@ export function ThemePicker({
             );
           })}
         </div>
-        <p className="text-muted-foreground mt-2 text-xs">
-          Aktif penuh (12 bulan setelah acara) mulai paket{" "}
-          <strong>{PACKAGES[permanent].label}</strong>.{" "}
-          {!isTierAtLeast(pkg, permanent) &&
-            (pkg === "FREE"
-              ? "Paket Gratis bisa memakai tema ini selama masa uji coba 3 hari."
-              : `Paket ${PACKAGES[pkg].label} perlu ditingkatkan agar undangan dengan tema ini aktif penuh.`)}
-        </p>
+        <div className="text-muted-foreground mt-3 space-y-2 text-xs" data-theme-pricing>
+          {purchase.purchased ? (
+            <p>
+              Tema <strong>{current.name}</strong> sudah dibeli untuk undangan ini.{" "}
+              {PAID_ACTIVE.short}, tanpa watermark.
+            </p>
+          ) : (
+            <>
+              <p>
+                Tema <strong>{current.name}</strong>: {formatRupiah(current.price)}, sekali bayar
+                untuk undangan ini. Saat ini masa uji gratis {TRIAL_DAYS} hari dengan watermark.
+              </p>
+              <button
+                type="button"
+                onClick={() => setBuying((b) => !b)}
+                className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
+              >
+                Beli tema {formatRupiah(current.price)}
+              </button>
+              {buying && <PaymentSoon what={`membeli tema ${current.name}`} />}
+            </>
+          )}
+        </div>
       </div>
+
+      {previewing && previewQuote?.kind === "upgrade" && (
+        <div
+          className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
+          role="status"
+          data-theme-upgrade
+        >
+          <p>
+            Sedang mempratinjau <strong>{previewing.name}</strong> (
+            {formatRupiah(previewQuote.price)}
+            ). Untuk memakainya, bayar selisih <strong>{formatRupiah(previewQuote.amount)}</strong>.
+            Data undangan tetap utuh.
+          </p>
+          <PaymentSoon what={`ganti ke tema ${previewing.name} (bayar selisih)`} />
+          <button
+            type="button"
+            onClick={() => onPreviewTheme(null)}
+            className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm"
+          >
+            Kembali ke tema saya
+          </button>
+        </div>
+      )}
+
       <div>
         <p className="text-sm font-medium">Tema</p>
         <ul
@@ -83,23 +147,40 @@ export function ThemePicker({
           role="radiogroup"
           aria-label="Tema"
         >
-          {themes.map((t) => (
-            <li key={t.id}>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={t.id === themeId}
-                onClick={() => onTheme(t.id)}
-                className="group block w-full text-left"
-              >
-                <ThemeCard theme={t} selected={t.id === themeId} />
-              </button>
-            </li>
-          ))}
+          {themes.map((t) => {
+            const q = quoteTheme(state, t.id);
+            const locked = q?.kind === "upgrade";
+            return (
+              <li key={t.id} data-theme-option={t.id}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={t.id === themeId}
+                  onClick={() => (locked ? onPreviewTheme(t.id) : onTheme(t.id))}
+                  className="group block w-full text-left"
+                >
+                  {/* centang hanya untuk tema TERSIMPAN; yang dipratinjau diberi label */}
+                  <ThemeCard
+                    theme={t}
+                    selected={t.id === themeId}
+                    priceNote={
+                      t.id === previewThemeId
+                        ? `Sedang dipratinjau · ${badge(t) ?? ""}`
+                        : (badge(t) ?? undefined)
+                    }
+                  />
+                </button>
+              </li>
+            );
+          })}
         </ul>
         <p className="text-muted-foreground mt-3 text-xs">
-          Ganti tema tidak menghapus data. Section yang tidak didukung tema tetap tersimpan dan
-          ditandai &ldquo;tidak tampil di tema ini&rdquo;.
+          Ganti tema tidak menghapus data.{" "}
+          {purchase.purchased
+            ? "Pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana); ke tema lebih mahal cukup bayar selisihnya."
+            : "Selama masa uji, semua tema bebas dicoba."}{" "}
+          Section yang tidak didukung tema tetap tersimpan dan ditandai &ldquo;tidak tampil di tema
+          ini&rdquo;.
         </p>
       </div>
     </div>

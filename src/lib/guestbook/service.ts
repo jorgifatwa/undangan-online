@@ -4,7 +4,7 @@ import type { RsvpStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { isActive } from "@/lib/invitations/publish";
-import { getFeatures } from "@/lib/packages";
+import { getEntitlements, isPurchased } from "@/lib/pricing";
 
 import { guestbookInputSchema, type GuestbookStats } from "./schema";
 
@@ -20,7 +20,7 @@ import { guestbookInputSchema, type GuestbookStats } from "./schema";
  *  4. per IP: dilonggarkan jauh (CGNAT seluler & Wi-Fi gedung membuat banyak tamu
  *     sungguhan berbagi IP) — hanya menahan serangan massal:
  *     100 / undangan / 10 menit, 300 lintas undangan / 10 menit
- *  5. per undangan (banjir dari banyak IP): 120 / menit; Premium ke atas 300 / menit
+ *  5. per undangan (banjir dari banyak IP): 120 / menit; tema sudah dibeli 300 / menit
  *  6. ucapan sama persis dari perangkat/IP yang sama dalam 1 jam → tidak digandakan
  */
 const MIN_FILL_MS = 3000;
@@ -29,7 +29,8 @@ export const LIMITS = {
   perDevice: 5,
   perIpInvitation: 100,
   perIpGlobal: 300,
-  perInvitationMinute: { FREE: 120, BASIC: 120, PREMIUM: 300, EXCLUSIVE: 300 },
+  /** Per undangan per menit: masa uji 120, tema sudah dibeli 300 (acara besar). */
+  perInvitationMinute: { trial: 120, purchased: 300 },
 } as const;
 export const RATE_LIMIT_MESSAGE =
   "Terlalu banyak ucapan dalam waktu singkat, coba lagi sebentar lagi.";
@@ -55,7 +56,15 @@ export type SubmitResult =
 async function activeInvitation(slug: string) {
   const inv = await db.invitation.findUnique({
     where: { slug },
-    select: { id: true, status: true, expiresAt: true, package: true },
+    select: {
+      id: true,
+      status: true,
+      expiresAt: true,
+      themeId: true,
+      purchasedAt: true,
+      themeCredit: true,
+      ownedThemeIds: true,
+    },
   });
   return inv && isActive(inv) ? inv : null;
 }
@@ -112,7 +121,7 @@ export async function submitGuestbook(
       error: parsed.error.issues[0]?.message ?? "Isian tidak valid.",
     };
   const input = parsed.data;
-  const features = getFeatures(inv.package);
+  const features = getEntitlements(inv);
   const wantRsvp = !!input.attendance && features.rsvp;
   const wantWish = !!input.message && features.wishes;
   if (!wantRsvp && !wantWish)
@@ -155,7 +164,7 @@ export async function submitGuestbook(
     perDevice >= LIMITS.perDevice ||
     ipInv >= LIMITS.perIpInvitation ||
     ipAll >= LIMITS.perIpGlobal ||
-    invMinute >= LIMITS.perInvitationMinute[inv.package]
+    invMinute >= LIMITS.perInvitationMinute[isPurchased(inv) ? "purchased" : "trial"]
   )
     return { ok: false, status: 429, error: RATE_LIMIT_MESSAGE, rateLimited: true };
 
@@ -203,7 +212,7 @@ export async function submitGuestbook(
 export async function listPublicWishes(slug: string, after?: Date) {
   const inv = await activeInvitation(slug);
   if (!inv) return null;
-  if (!getFeatures(inv.package).wishes) return { wishes: [], stats: await guestbookStats(inv.id) };
+  if (!getEntitlements(inv).wishes) return { wishes: [], stats: await guestbookStats(inv.id) };
   const rows = await db.wish.findMany({
     where: {
       invitationId: inv.id,

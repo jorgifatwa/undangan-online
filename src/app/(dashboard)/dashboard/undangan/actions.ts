@@ -23,7 +23,7 @@ function fieldErrors(issues: { path: PropertyKey[]; message: string }[]) {
 }
 
 /**
- * Wizard → undangan baru: draf, paket FREE, data awal dari isian user (tanpa
+ * Wizard → undangan baru: draf, masa uji (tema belum dibeli), data awal dari isian user (tanpa
  * data contoh), slug unik dari nama. Semua dicek ulang di server.
  */
 export async function createInvitation(input: unknown): Promise<ActionResult<{ id: string }>> {
@@ -68,7 +68,6 @@ export async function createInvitation(input: unknown): Promise<ActionResult<{ i
           themeId: manifest.id,
           colorVariant: manifest.variants[0].id,
           data: initial.data as Prisma.InputJsonValue,
-          package: "FREE",
           status: "DRAFT",
         },
         select: { id: true },

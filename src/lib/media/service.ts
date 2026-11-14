@@ -1,11 +1,12 @@
 import "server-only";
 
-import type { Media, PackageTier, Prisma } from "@prisma/client";
+import type { Invitation, Media, Prisma } from "@prisma/client";
 
 import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
 
 import { db } from "@/lib/db";
-import { getFeatures } from "@/lib/packages";
+import { invitationAddons } from "@/lib/orders/service";
+import { getEntitlements } from "@/lib/pricing";
 import { storage } from "@/lib/storage";
 
 import { transcodeToAac } from "./audio";
@@ -24,7 +25,7 @@ import {
 
 /**
  * Layanan upload foto & musik. SATU tempat untuk semua aturan:
- * pemilik undangan, fitur & kuota paket, jumlah foto galeri, tipe file dari
+ * pemilik undangan, batas galeri & lagu, kuota (pengaman), tipe file dari
  * magic bytes, batas dimensi, file mentah → final, penghapusan.
  *
  * Alur: requestUpload → browser PUT file mentah → finalizePhoto (sinkron)
@@ -32,11 +33,35 @@ import {
  */
 
 /** Galat yang ditampilkan ke user; `code` dipakai UI untuk menawarkan upgrade. */
+/** Content-Type yang boleh ditandatangani untuk upload langsung ke penyimpanan. */
+const PHOTO_CONTENT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/heic",
+  "image/heif",
+];
+const AUDIO_CONTENT_TYPES = [
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/m4a",
+  "audio/aac",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/wave",
+  "audio/ogg",
+  "audio/flac",
+  "audio/x-flac",
+];
+
 export class UploadError extends Error {
   constructor(
     message: string,
     public readonly code:
-      "QUOTA" | "GALLERY_LIMIT" | "FEATURE" | "INVALID" | "NOT_FOUND" = "INVALID",
+      "QUOTA" | "GALLERY_LIMIT" | "MUSIC_LIMIT" | "INVALID" | "NOT_FOUND" = "INVALID",
   ) {
     super(message);
   }
@@ -48,14 +73,19 @@ const finalKey = (invitationId: string, mediaId: string, ext: string) =>
 
 /**
  * Pemakaian penyimpanan satu UNDANGAN (byte): file final + upload yang sedang
- * berjalan (ukuran yang diumumkan). Kuota mengikuti paket undangan itu.
+ * berjalan (ukuran yang diumumkan). Kuota = pengaman anti-penyalahgunaan
+ * (lib/pricing STORAGE_QUOTA_MB), tidak ditampilkan sebagai fitur.
  */
-export async function storageUsage(invitationId: string, pkg: PackageTier) {
+export async function storageUsage(invitationId: string, quotaMb: number) {
   const agg = await db.media.aggregate({
     where: { invitationId, status: { not: "FAILED" } },
     _sum: { bytes: true },
   });
-  return { used: agg._sum.bytes ?? 0, quota: getFeatures(pkg).storageQuotaMb * 1024 * 1024 };
+  return { used: agg._sum.bytes ?? 0, quota: quotaMb * 1024 * 1024 };
+}
+
+async function entitlementsOf(inv: Invitation) {
+  return getEntitlements(inv, await invitationAddons(inv.id));
 }
 
 async function ownedInvitation(userId: string, invitationId: string) {
@@ -80,34 +110,55 @@ export interface UploadRequest {
 }
 
 export async function requestUpload(userId: string, invitationId: string, req: UploadRequest) {
+  // Hanya foto & musik. Jenis lain (video, dokumen, HTML, SVG, dll.) ditolak.
+  if (req.kind !== "PHOTO" && req.kind !== "AUDIO")
+    throw new UploadError("Hanya foto dan musik yang bisa diunggah.", "INVALID");
   const inv = await ownedInvitation(userId, invitationId);
-  const features = getFeatures(inv.package);
+  const features = await entitlementsOf(inv);
   const size = Math.floor(Number(req.size));
   if (!Number.isFinite(size) || size <= 0) throw new UploadError("Ukuran file tidak valid.");
-  // Content-Type hanya untuk tanda tangan upload; tipe asli dicek dari isi file saat finalize.
-  const contentType = /^[\w.+-]+\/[\w.+-]+$/.test(req.contentType)
-    ? req.contentType
-    : "application/octet-stream";
+  // Content-Type ikut ditandatangani & disajikan penyimpanan untuk file mentah:
+  // hanya tipe gambar/audio (bukan text/html dsb. yang bisa dibuka sebagai halaman).
+  // Tipe asli tetap dicek dari isi file (magic bytes) saat finalize.
+  const contentType = String(req.contentType || "").toLowerCase();
+  const allowed = req.kind === "PHOTO" ? PHOTO_CONTENT_TYPES : AUDIO_CONTENT_TYPES;
+  if (!allowed.includes(contentType))
+    throw new UploadError(
+      req.kind === "PHOTO"
+        ? "File ini bukan foto (JPG, PNG, WebP, HEIC)."
+        : "File ini bukan musik (MP3, M4A/AAC, WAV, OGG, atau FLAC).",
+      "INVALID",
+    );
 
   if (req.kind === "PHOTO") {
     if (!(PHOTO_SLOTS as readonly string[]).includes(req.slot))
       throw new UploadError("Slot foto tidak dikenal.");
     if (size > MAX_PHOTO_BYTES)
       throw new UploadError(`Foto maksimal ${mb(MAX_PHOTO_BYTES)} per file.`);
-    if (req.slot === "gallery" && features.galleryLimit !== null) {
+    if (req.slot === "gallery") {
       const count = await db.media.count({
         where: { invitationId, slot: "gallery", kind: "PHOTO", status: { not: "FAILED" } },
       });
       if (count >= features.galleryLimit)
         throw new UploadError(
-          `Paket ${inv.package === "FREE" ? "Gratis" : inv.package} maksimal ${features.galleryLimit} foto galeri.`,
+          `Galeri maksimal ${features.galleryLimit} foto. Hapus foto yang tidak dipakai untuk menggantinya.`,
           "GALLERY_LIMIT",
         );
     }
   } else {
     if (req.slot !== "music") throw new UploadError("Slot musik tidak dikenal.");
-    if (!features.customMusic)
-      throw new UploadError("Unggah musik sendiri tersedia mulai paket Basic.", "FEATURE");
+    const tracks = await db.media.count({
+      where: {
+        invitationId,
+        kind: "AUDIO",
+        status: { in: ["UPLOADING", "PROCESSING", "READY"] },
+      },
+    });
+    if (tracks >= features.customMusicTracks)
+      throw new UploadError(
+        `Maksimal ${features.customMusicTracks} lagu unggahan sendiri per undangan. Hapus lagu yang tidak dipakai untuk menggantinya.`,
+        "MUSIC_LIMIT",
+      );
     if (!req.rightsAccepted)
       throw new UploadError("Centang pernyataan hak penggunaan lagu terlebih dahulu.");
     if (size > MAX_AUDIO_BYTES)
@@ -120,10 +171,10 @@ export async function requestUpload(userId: string, invitationId: string, req: U
   if (pending >= MAX_PENDING_UPLOADS)
     throw new UploadError("Terlalu banyak unggahan yang sedang berjalan. Tunggu sebentar.");
 
-  const { used, quota } = await storageUsage(invitationId, inv.package);
+  const { used, quota } = await storageUsage(invitationId, features.storageQuotaMb);
   if (used + size > quota)
     throw new UploadError(
-      `Kuota penyimpanan undangan ini penuh (${mb(used)} dari ${mb(quota)}). Hapus foto yang tidak dipakai atau tingkatkan paket.`,
+      "Ruang penyimpanan undangan ini sudah penuh. Hapus foto atau lagu yang tidak dipakai, lalu coba lagi.",
       "QUOTA",
     );
 
@@ -305,7 +356,7 @@ export async function deleteByUrls(userId: string, invitationId: string, urls: s
  *  - baris FAILED > 24 jam → dihapus
  *  - file final milik undangan yang sudah dihapus → dihapus
  *  - file di raw/ tanpa baris Media > 24 jam → dihapus
- *  - RETENSI: undangan FREE yang kedaluwarsa > 30 hari → semua foto & musiknya
+ *  - RETENSI: undangan masa uji (tema belum dibeli) yang kedaluwarsa > 30 hari → semua foto & musiknya
  *    dihapus, URL-nya dikosongkan dari data undangan (teks tetap utuh)
  */
 export async function cleanupMedia(now = new Date()) {
@@ -360,10 +411,10 @@ export async function cleanupMedia(now = new Date()) {
       report.orphanRaw++;
     }
   }
-  // Retensi media undangan FREE (lib/invitations/retention.ts)
+  // Retensi media undangan masa uji (lib/invitations/retention.ts)
   const due = await db.invitation.findMany({
     where: {
-      package: "FREE",
+      purchasedAt: null,
       mediaPurgedAt: null,
       expiresAt: { lt: new Date(now.getTime() - MEDIA_RETENTION_DAYS * 86400_000) },
     },

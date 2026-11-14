@@ -8,7 +8,6 @@ import {
   markAudioUploaded,
   mediaView,
   requestUpload,
-  storageUsage,
   type UploadRequest,
 } from "@/lib/media/service";
 import { db } from "@/lib/db";
@@ -22,7 +21,7 @@ export type MediaResult<T> =
   | {
       ok: false;
       error: string;
-      code?: "QUOTA" | "GALLERY_LIMIT" | "FEATURE" | "INVALID" | "NOT_FOUND";
+      code?: "QUOTA" | "GALLERY_LIMIT" | "MUSIC_LIMIT" | "INVALID" | "NOT_FOUND";
     };
 
 async function wrap<T>(fn: () => Promise<T>): Promise<MediaResult<T>> {
@@ -64,13 +63,4 @@ export async function deleteMediaAction(invitationId: string, urls: string[]) {
   return wrap(async () => ({
     deleted: await deleteByUrls(user.id, invitationId, urls.slice(0, 100)),
   }));
-}
-
-export async function storageInfoAction(invitationId: string) {
-  const user = await requireUser();
-  return wrap(async () => {
-    const inv = await db.invitation.findFirst({ where: { id: invitationId, userId: user.id } });
-    if (!inv) throw new UploadError("Undangan tidak ditemukan.", "NOT_FOUND");
-    return storageUsage(inv.id, inv.package);
-  });
 }

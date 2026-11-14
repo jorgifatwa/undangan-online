@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isTrustedUrl, TRUSTED_LABEL, type LinkKind } from "@/lib/links";
+
 /**
  * Blok data yang dipakai bersama semua jenis acara.
  *
@@ -7,6 +9,15 @@ import { z } from "zod";
  * supaya undangan tetap tampil rapi saat data belum lengkap; section yang
  * datanya kosong otomatis disembunyikan (lihat isSectionEmpty di sections.ts).
  */
+
+/**
+ * Link dari domain tepercaya saja (anti-penipuan; lihat lib/links.ts).
+ * Berlaku di editor (browser) dan server action karena schema yang sama.
+ */
+export const trustedUrl = (kind: LinkKind) =>
+  z
+    .url("Link tidak valid")
+    .refine((v) => isTrustedUrl(v, kind), `Link harus dari ${TRUSTED_LABEL[kind]}`);
 
 /** String opsional: string kosong / spasi dianggap tidak diisi. */
 export const optionalText = (max = 500) =>
@@ -56,7 +67,7 @@ export const eventSchema = z.object({
   address: optionalText(400),
   /** Kota (diisi di wizard); tema menampilkannya bila alamat masih kosong. */
   city: optionalText(80),
-  mapsUrl: z.url().optional(),
+  mapsUrl: trustedUrl("maps").optional(),
 });
 export type InvitationEvent = z.infer<typeof eventSchema>;
 
@@ -126,7 +137,7 @@ export const dressCodeSchema = z.object({
 export type DressCode = z.infer<typeof dressCodeSchema>;
 
 export const liveStreamSchema = z.object({
-  url: z.url(),
+  url: trustedUrl("liveStream"),
   platform: optionalText(40),
   note: optionalText(200),
 });

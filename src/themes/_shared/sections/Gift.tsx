@@ -7,6 +7,7 @@ import { Reveal } from "../motion/Reveal";
 import { useInvitation } from "../runtime/context";
 import { SectionShell } from "../runtime/SectionShell";
 import { Icon, SectionTitle } from "./ui";
+import { safeHref } from "@/lib/links";
 
 /** Amplop digital: rekening, QRIS, kado fisik, kontak konfirmasi, wishlist ulang tahun. */
 export function DefaultAmplop() {
@@ -118,9 +119,9 @@ export function DefaultAmplop() {
                 <li key={w.name} className="flex items-start gap-3 text-sm">
                   <span aria-hidden>🎁</span>
                   <span className="flex-1">
-                    {w.url ? (
+                    {safeHref(w.url, "wishlist") ? (
                       <a
-                        href={w.url}
+                        href={safeHref(w.url, "wishlist")}
                         target="_blank"
                         rel="noopener"
                         className="font-semibold underline underline-offset-2"

@@ -11,6 +11,7 @@ import { SuedeTexture, VelvetTexture } from "../../_shared/textures";
 import { Art } from "../art";
 import { CText, F, Placed, canvasText, u } from "../canvas";
 import { AccentBouquet, HangingBouquet } from "../scene";
+import { safeHref } from "@/lib/links";
 
 /**
  * Section tambahan (tidak ada di desain referensi) dengan bahasa visual Tirai
@@ -241,7 +242,7 @@ export function TiraiLiveStream() {
       </Reveal>
       <Reveal variant="pop" style={{ display: "flex", justifyContent: "center", marginTop: u(22) }}>
         <a
-          href={ls.url}
+          href={safeHref(ls.url, "liveStream")}
           target="_blank"
           rel="noopener noreferrer"
           style={{

@@ -1,5 +1,5 @@
 /**
- * Uji kuota penyimpanan PER UNDANGAN & retensi media FREE (development).
+ * Uji kuota penyimpanan PER UNDANGAN & retensi media masa uji (development).
  *
  *   pnpm dev
  *   pnpm e2e:retention [base-url] [--shots=.reference/report/3c-fix]
@@ -15,6 +15,7 @@ import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { cleanupMedia, requestUpload, UploadError } from "../src/lib/media/service";
 import { launchBrowser } from "./lib/browser";
 import { assertSafeDatabase } from "./lib/guard";
+import { planFields } from "./lib/purchase";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -31,7 +32,7 @@ const check = (ok: boolean, label: string) => {
 async function invitation(
   userId: string,
   slug: string,
-  pkg: "FREE" | "BASIC",
+  plan: "trial" | "paid",
   expiresAt: Date | null,
 ) {
   await db.invitation.deleteMany({ where: { slug } });
@@ -53,7 +54,7 @@ async function invitation(
       slug,
       eventType: "WEDDING",
       themeId: "renda-rimba",
-      package: pkg,
+      ...planFields(plan, "renda-rimba"),
       status: expiresAt ? "PUBLISHED" : "DRAFT",
       publishedAt: expiresAt ? new Date(expiresAt.getTime() - 3 * DAY) : null,
       expiresAt,
@@ -102,8 +103,8 @@ async function main() {
   await db.invitation.deleteMany({ where: { userId: u.id } });
 
   console.log("Kuota per undangan");
-  const free = await invitation(u.id, "uji-kuota-free", "FREE", null);
-  const basic = await invitation(u.id, "uji-kuota-basic", "BASIC", null);
+  const free = await invitation(u.id, "uji-kuota-free", "trial", null);
+  const basic = await invitation(u.id, "uji-kuota-basic", "paid", null);
   await db.media.create({
     data: {
       userId: u.id,
@@ -126,7 +127,7 @@ async function main() {
   );
   check(
     freeErr instanceof UploadError && freeErr.code === "QUOTA",
-    "undangan FREE penuh (50 MB) → ditolak dengan kode QUOTA",
+    "undangan masa uji penuh (50 MB) → ditolak dengan kode QUOTA",
   );
   const basicOk = await requestUpload(u.id, basic.id, {
     kind: "PHOTO",
@@ -137,15 +138,15 @@ async function main() {
     () => true,
     () => false,
   );
-  check(basicOk, "undangan BASIC milik akun yang sama tetap bisa upload (kuota terpisah)");
+  check(basicOk, "undangan yang sudah dibeli (akun sama) tetap bisa upload (kuota per undangan)");
   await db.media.deleteMany({ where: { userId: u.id } });
   await db.invitation.deleteMany({ where: { userId: u.id } });
 
   console.log("Retensi media FREE");
   const now = Date.now();
-  const warn = await invitation(u.id, "uji-retensi-peringatan", "FREE", new Date(now - 24 * DAY)); // dihapus 6 hari lagi
-  const purge = await invitation(u.id, "uji-retensi-hapus", "FREE", new Date(now - 31 * DAY));
-  const paid = await invitation(u.id, "uji-retensi-basic", "BASIC", new Date(now - 60 * DAY));
+  const warn = await invitation(u.id, "uji-retensi-peringatan", "trial", new Date(now - 24 * DAY)); // dihapus 6 hari lagi
+  const purge = await invitation(u.id, "uji-retensi-hapus", "trial", new Date(now - 31 * DAY));
+  const paid = await invitation(u.id, "uji-retensi-basic", "paid", new Date(now - 60 * DAY));
   const warnKey = await attachPhoto(u.id, warn.id);
   const purgeKey = await attachPhoto(u.id, purge.id);
   const paidKey = await attachPhoto(u.id, paid.id);
@@ -171,7 +172,7 @@ async function main() {
     /akan dihapus pada/.test(t1) && /6 hari lagi/.test(t1),
     "peringatan 7 hari sebelum penghapusan tampil di dashboard",
   );
-  check(t1.includes("Tingkatkan paket"), "peringatan menawarkan upgrade");
+  check(t1.includes("Beli tema"), "peringatan menawarkan beli tema");
   if (shots)
     await page.screenshot({
       path: `${shots}/dashboard-peringatan-retensi.png` as `${string}.png`,

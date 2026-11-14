@@ -18,7 +18,12 @@ function PersonFields({ prefix, who }: { prefix: "bride" | "groom"; who: string 
           hint="Dipakai di cover"
           maxLength={40}
         />
-        <TextField name={`${prefix}.instagram`} label="Instagram" hint="Tanpa @" maxLength={40} />
+        <TextField
+          name={`${prefix}.instagram`}
+          label="Instagram"
+          hint="Nama akun saja, mis. sekar.ayu"
+          maxLength={40}
+        />
         <TextField
           name={`${prefix}.titlePrefix`}
           label="Gelar depan"

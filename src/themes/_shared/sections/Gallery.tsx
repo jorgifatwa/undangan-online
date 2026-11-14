@@ -124,6 +124,12 @@ export function DefaultGaleri() {
   const { inv } = useInvitation();
   const photos = inv.data.gallery;
   const [active, setActive] = useState<number | null>(null);
+  // Pola: foto ke-1, 6, 11 … lebar, sisanya berpasangan. Foto kecil terakhir yang
+  // tidak punya pasangan juga dibuat lebar agar baris terakhir tidak bolong.
+  const n = photos.length;
+  const lastWide = n ? Math.floor((n - 1) / 5) * 5 : 0;
+  const orphan = n > 0 && (n - 1 - lastWide) % 2 === 1;
+  const wide = (i: number) => i % 5 === 0 || (orphan && i === n - 1);
 
   return (
     <SectionShell id="galeri" className="px-4 py-20">
@@ -133,18 +139,18 @@ export function DefaultGaleri() {
           <Reveal
             key={p.url + i}
             variant={i % 2 ? "tilt-right" : "tilt-left"}
-            className={i % 5 === 0 ? "col-span-2" : ""}
+            className={wide(i) ? "col-span-2" : ""}
             amount={0.1}
           >
             <button
               type="button"
               onClick={() => setActive(i)}
               aria-label={`Buka foto ${i + 1}`}
-              className={`relative block w-full overflow-hidden rounded-xl ${i % 5 === 0 ? "aspect-[4/3]" : "aspect-[3/4]"}`}
+              className={`relative block w-full overflow-hidden rounded-xl ${wide(i) ? "aspect-[4/3]" : "aspect-[3/4]"}`}
             >
               <FillPhoto
                 photo={p}
-                sizes={i % 5 === 0 ? "440px" : "220px"}
+                sizes={wide(i) ? "440px" : "220px"}
                 className="transition-transform duration-500 hover:scale-105"
               />
             </button>

@@ -7,6 +7,7 @@ import { Heart } from "../../_shared/ornaments";
 import { useInvitation } from "../../_shared/runtime/context";
 import { LeatherTexture } from "../../_shared/textures";
 import { Art, F, Fleuron, Section, box, txt, u } from "../canvas";
+import { safeHref } from "@/lib/links";
 
 /**
  * Kartu acara (desain: 354 × 336 mulai y 944 di section mempelai; di sini
@@ -140,7 +141,7 @@ export function RendaEvent() {
   const days = week(main);
   const sameDay = events.every((e) => e.date === main.date);
   const places = [...new Set(events.map((e) => e.venueName ?? e.city).filter(Boolean))] as string[];
-  const map = events.find((e) => e.mapsUrl)?.mapsUrl;
+  const map = events.map((e) => safeHref(e.mapsUrl, "maps")).find(Boolean);
   const month = BULAN[ymd(main.date).getUTCMonth()];
   const gold = "var(--inv-gold)";
   const line = "color-mix(in srgb, var(--inv-gold) 50%, transparent)";

@@ -146,6 +146,36 @@ function put(
   });
 }
 
+/**
+ * Tipe file untuk tanda tangan upload. Browser kadang mengosongkan tipe musik
+ * (.m4a/.flac) → tebak dari ekstensi. Server tetap memeriksa isi file.
+ */
+const EXT_TYPES: Record<string, string> = {
+  mp3: "audio/mpeg",
+  m4a: "audio/mp4",
+  aac: "audio/aac",
+  mp4: "audio/mp4",
+  wav: "audio/wav",
+  ogg: "audio/ogg",
+  oga: "audio/ogg",
+  flac: "audio/flac",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  heic: "image/heic",
+  heif: "image/heif",
+  avif: "image/avif",
+};
+function guessContentType(kind: "PHOTO" | "AUDIO", blob: Blob): string {
+  const prefix = kind === "PHOTO" ? "image/" : "audio/";
+  if (blob.type.startsWith(prefix)) return blob.type;
+  const name = "name" in blob ? String((blob as File).name) : "";
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  const t = EXT_TYPES[ext];
+  return t?.startsWith(prefix) ? t : blob.type || "application/octet-stream";
+}
+
 async function upload(
   invitationId: string,
   kind: "PHOTO" | "AUDIO",
@@ -154,7 +184,7 @@ async function upload(
   onProgress?: (p: number) => void,
   rightsAccepted?: boolean,
 ) {
-  const contentType = blob.type || "application/octet-stream";
+  const contentType = guessContentType(kind, blob);
   const req = await requestUploadAction(invitationId, {
     kind,
     slot,

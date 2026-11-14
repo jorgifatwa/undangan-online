@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { db } from "@/lib/db";
 import { requireOwnedInvitation } from "@/lib/invitations/access";
+import { invitationAddons } from "@/lib/orders/service";
+import { getEntitlements } from "@/lib/pricing";
 import { storage } from "@/lib/storage";
 import { displayStatus, summarize } from "@/lib/invitations/summary";
 import { parseInvitationData } from "@/schemas";
@@ -27,7 +29,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     );
   }
   const eventType = parsed.value.eventType;
-  const [library, audio] = await Promise.all([
+  const [library, audio, addons] = await Promise.all([
     db.musicTrack.findMany({
       where: { isActive: true },
       orderBy: [{ sortOrder: "asc" }, { title: "asc" }],
@@ -42,6 +44,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    invitationAddons(invitation.id),
   ]);
   return (
     <Editor
@@ -49,7 +52,12 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       slug={invitation.slug}
       status={displayStatus(invitation.status, invitation.expiresAt)}
       eventType={eventType}
-      pkg={invitation.package}
+      purchase={{
+        purchased: !!invitation.purchasedAt,
+        themeCredit: invitation.themeCredit,
+        ownedThemeIds: invitation.ownedThemeIds,
+      }}
+      entitlements={getEntitlements(invitation, addons)}
       themeId={invitation.themeId}
       variantId={invitation.colorVariant}
       updatedAt={invitation.updatedAt.toISOString()}

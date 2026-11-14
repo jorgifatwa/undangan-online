@@ -10,9 +10,9 @@ import { createContext, useContext } from "react";
  */
 export interface MediaCtx {
   invitationId: string;
-  galleryLimit: number | null;
-  customMusic: boolean;
-  packageLabel: string;
+  galleryLimit: number;
+  /** Lagu unggahan sendiri maksimal per undangan. */
+  musicLimit: number;
   releaseUrl: (url: string) => void;
   saveSoon: () => void;
 }

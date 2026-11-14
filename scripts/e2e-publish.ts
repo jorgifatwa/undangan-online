@@ -9,7 +9,8 @@
  *  - batal terbit → 404; terbit ulang → masa uji TIDAK di-reset
  *  - kedaluwarsa → halaman "tidak aktif" tanpa data pribadi; tombol upgrade
  *    hanya untuk pemilik; terbit ulang FREE ditolak
- *  - checklist menolak tema di atas paket (BASIC + Tirai Premium)
+ *  - harga per tema: undangan yang sudah membeli Renda tidak bisa pindah ke Tirai
+ *    (lebih mahal) tanpa bayar selisih — editor hanya pratinjau, server menolak
  */
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { encode } from "next-auth/jwt";
@@ -18,6 +19,7 @@ import type { Page } from "puppeteer-core";
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { launchBrowser } from "./lib/browser";
 import { assertSafeDatabase } from "./lib/guard";
+import { planFields } from "./lib/purchase";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -40,7 +42,7 @@ async function user(email: string, name: string) {
   });
   return { u, token };
 }
-async function invitation(userId: string, slug: string, pkg: "FREE" | "BASIC", themeId: string) {
+async function invitation(userId: string, slug: string, plan: "trial" | "paid", themeId: string) {
   await db.invitation.deleteMany({ where: { slug } });
   const data = buildInitialData({
     eventType: "WEDDING",
@@ -61,7 +63,7 @@ async function invitation(userId: string, slug: string, pkg: "FREE" | "BASIC", t
       slug,
       eventType: "WEDDING",
       themeId,
-      package: pkg,
+      ...planFields(plan, themeId),
       data: data as Prisma.InputJsonValue,
     },
   });
@@ -85,8 +87,8 @@ async function main() {
   assertSafeDatabase("e2e-publish");
   const a = await user("e2e-a@test.local", "Uji A");
   const b = await user("e2e-b@test.local", "Uji B");
-  const inv = await invitation(a.u.id, "kirana-galih-uji", "FREE", "renda-rimba");
-  const tirai = await invitation(a.u.id, "uji-basic-tirai", "BASIC", "tirai-beludru");
+  const inv = await invitation(a.u.id, "kirana-galih-uji", "trial", "renda-rimba");
+  const tirai = await invitation(a.u.id, "uji-basic-tirai", "paid", "renda-rimba");
   const cookieA = `authjs.session-token=${a.token}`;
   const cookieB = `authjs.session-token=${b.token}`;
   const shot = async (p: Page, n: string) => {
@@ -121,7 +123,7 @@ async function main() {
   check(await waitText(page, "Nama kedua mempelai"), "checklist tampil (setelah menyimpan)");
   const t = await text(page);
   check(
-    t.includes("Aturan paket Gratis") &&
+    t.includes("Aturan masa uji gratis") &&
       t.includes("3 hari sejak pertama kali diterbitkan") &&
       t.includes("tidak menghentikan hitungan"),
     "penjelasan aturan masa uji FREE",
@@ -164,7 +166,7 @@ async function main() {
   await sleep(1500);
   check(
     (await text(pv)).includes("Undangan Online") || (await pv.$("a[href]")) !== null,
-    "watermark paket Gratis di akhir halaman",
+    "watermark masa uji di akhir halaman",
   );
   await shot(pv, "4-publik-watermark");
 
@@ -222,14 +224,14 @@ async function main() {
     !guest.includes("Kiran") && !guest.includes("Galih") && !guest.includes("Semarang"),
     "tidak ada data pribadi di halaman kedaluwarsa",
   );
-  check(!guest.includes("Lihat paket"), "tamu tidak melihat tombol upgrade");
+  check(!guest.includes("Lihat harga tema"), "tamu tidak melihat tombol beli tema");
   check(
-    !(await html(`/${inv.slug}`, cookieB)).includes("Lihat paket"),
-    "user lain tidak melihat tombol upgrade",
+    !(await html(`/${inv.slug}`, cookieB)).includes("Lihat harga tema"),
+    "user lain tidak melihat tombol beli tema",
   );
   check(
-    (await html(`/${inv.slug}`, cookieA)).includes("Lihat paket"),
-    "pemilik melihat tombol upgrade",
+    (await html(`/${inv.slug}`, cookieA)).includes("Lihat harga tema"),
+    "pemilik melihat tombol beli tema",
   );
   await pv.goto(`${base}/${inv.slug}`, { waitUntil: "networkidle0" });
   await shot(pv, "5-kedaluwarsa-tamu");
@@ -261,10 +263,37 @@ async function main() {
   check(disabled === true, "tombol Terbitkan sekarang nonaktif");
   await shot(page, "7-terbit-ulang-ditolak");
 
-  console.log("Tema di atas paket");
+  console.log("Harga per tema: pindah ke tema lebih mahal setelah membeli");
+  // `tirai` = undangan yang SUDAH membeli Renda Rimba (Rp99.000)
   await page.goto(`${base}/dashboard/undangan/${tirai.id}/edit`, { waitUntil: "networkidle0" });
-  await clickText(page, "Terbitkan");
-  check(await waitText(page, "butuh paket Premium"), "BASIC + Tirai (Premium) → checklist menolak");
+  // grup tema terbuka secara bawaan; klik hanya bila tertutup
+  if (!(await page.$('[data-theme-option="renda-rimba"]')))
+    await clickText(page, "Tema, warna & alamat");
+  await page.waitForSelector('[data-theme-option="renda-rimba"]', { timeout: 10000 });
+  const opt = (id: string) =>
+    page.$eval(`[data-theme-option="${id}"]`, (e) => (e as HTMLElement).innerText);
+  check((await opt("renda-rimba")).includes("Dimiliki"), "tema yang dibeli: “Dimiliki”");
+  check(
+    (await opt("tirai-beludru")).includes("Bayar selisih Rp50.000"),
+    "Tirai (Rp149.000): bayar selisih Rp50.000",
+  );
+  check(
+    (await opt("confetti-party").catch(() => "")) === "" ||
+      (await opt("confetti-party")).includes("Gratis"),
+    "tema lebih murah: gratis (atau tidak tersedia untuk jenis acara ini)",
+  );
+  await page.click('[data-theme-option="tirai-beludru"] button');
+  check(await waitText(page, "Sedang mempratinjau"), "klik tema lebih mahal → hanya pratinjau");
+  await sleep(2500); // lewati jeda simpan otomatis
+  check(
+    (await db.invitation.findUnique({ where: { id: tirai.id } }))?.themeId === "renda-rimba",
+    "tema tersimpan tetap Renda Rimba (belum bayar selisih)",
+  );
+  check(
+    (await text(page)).includes("Pembayaran online segera hadir"),
+    "bayar selisih: segera hadir",
+  );
+  await shot(page, "9-ganti-tema-bayar-selisih");
 
   console.log("Dashboard");
   await db.invitation.update({

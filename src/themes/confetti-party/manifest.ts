@@ -7,7 +7,7 @@ export const manifest = {
     "Ceria dan penuh warna: balon, bendera segitiga, dan hujan konfeti saat undangan dibuka.",
   category: "ceria",
   eventTypes: ["BIRTHDAY"],
-  minPackage: "BASIC",
+  price: 49_000,
   variants: [
     {
       id: "pelangi",

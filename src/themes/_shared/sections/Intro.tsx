@@ -6,6 +6,7 @@ import { useInvitation } from "../runtime/context";
 import { SectionShell } from "../runtime/SectionShell";
 import type { Person } from "@/schemas/wedding";
 import { FillPhoto, Icon, SectionTitle } from "./ui";
+import { instagramUrl } from "@/lib/links";
 
 const SECTION_PAD = "px-7 py-20";
 
@@ -134,9 +135,9 @@ function PersonCard({
           <span className="font-semibold">{parents.names}</span>
         </p>
       )}
-      {person.instagram && (
+      {instagramUrl(person.instagram) && (
         <a
-          href={`https://instagram.com/${encodeURIComponent(person.instagram)}`}
+          href={instagramUrl(person.instagram)}
           target="_blank"
           rel="noopener"
           className="mt-3 inline-flex items-center gap-1.5 text-sm opacity-80 hover:opacity-100"

@@ -160,6 +160,7 @@ export function WishlistForm() {
               label="Link toko"
               type="url"
               placeholder="https://…"
+              hint="Tokopedia, Shopee, Lazada, Blibli, atau TikTok Shop."
             />
             <TextField name={`wishlist.${i}.note`} label="Catatan" maxLength={200} />
           </div>

@@ -26,6 +26,19 @@ function withQuote(inv: AnyInvitationData, id: string | undefined): AnyInvitatio
   } as AnyInvitationData;
 }
 
+/** ?galeri=N: galeri berisi N foto (foto contoh diulang) — cek tata letak 1..batas. */
+function withGallery(inv: AnyInvitationData, n: string | undefined): AnyInvitationData {
+  const count = Number(n);
+  if (!n || !Number.isInteger(count) || count < 0 || count > 60) return inv;
+  const src = inv.data.gallery;
+  if (!src.length) return inv;
+  const gallery = Array.from({ length: count }, (_, i) => ({
+    ...src[i % src.length],
+    alt: `Galeri ${i + 1}`,
+  }));
+  return { ...inv, data: { ...inv.data, gallery } } as AnyInvitationData;
+}
+
 /** ?minimal=1: data persis seperti hasil wizard (nama, tanggal, kota — tanpa foto). */
 function minimalData(
   eventType: "WEDDING" | "BIRTHDAY",
@@ -123,13 +136,16 @@ export default async function PreviewPage({
     <>
       <Theme
         key={`${eventType}-${one("k") ?? ""}`}
-        invitation={withQuote(
-          one("minimal") === "1"
-            ? minimalData(eventType, one("salam"))
-            : one("ref") === "1"
-              ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
-              : dummyFor(eventType, manifest.defaultMusic),
-          one("quote"),
+        invitation={withGallery(
+          withQuote(
+            one("minimal") === "1"
+              ? minimalData(eventType, one("salam"))
+              : one("ref") === "1"
+                ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
+                : dummyFor(eventType, manifest.defaultMusic),
+            one("quote"),
+          ),
+          one("galeri"),
         )}
         variantId={variantId}
         features={null}

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Pricing } from "@/components/marketing/Pricing";
+import { ThemePricing } from "@/components/marketing/ThemePricing";
 import { business, waLink } from "@/config/business";
-import { PAYMENT_TEXT } from "@/lib/marketing/content";
+import { INCLUDED, PAYMENT_TEXT } from "@/lib/marketing/content";
 import { landingJsonLd } from "@/lib/marketing/jsonld";
-import { pricingData } from "@/lib/marketing/pricing";
+import { priceRange, TRIAL_DAYS } from "@/lib/pricing";
+import { formatRupiah } from "@/lib/format";
 import { siteConfig } from "@/lib/site";
 import { THEME_MANIFESTS, themeThumb } from "@/themes/registry";
 
@@ -135,16 +136,20 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHead
             eyebrow="Harga"
-            title="Coba gratis, bayar saat siap disebar"
-            lead="Sekali bayar per undangan, tanpa langganan. Tingkatkan paket kapan saja tanpa kehilangan isian."
+            title="Harga per tema, semua fitur termasuk"
+            lead={`Mulai ${formatRupiah(priceRange().min)}, sekali bayar per undangan — tanpa paket, tanpa langganan. Coba gratis dulu, bayar saat siap disebar.`}
           />
           <div className="mt-10">
-            <Pricing wedding={pricingData("WEDDING")} birthday={pricingData("BIRTHDAY")} compact />
+            <ThemePricing
+              themes={[...THEME_MANIFESTS]}
+              included={INCLUDED}
+              trialDays={TRIAL_DAYS}
+            />
           </div>
           <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-sm">
             {PAYMENT_TEXT}{" "}
             <Link href="/harga" className="text-foreground underline underline-offset-4">
-              Bandingkan semua fitur paket
+              Lihat ketentuan harga & ganti tema
             </Link>
           </p>
         </div>

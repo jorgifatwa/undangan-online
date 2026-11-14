@@ -10,6 +10,7 @@ import { useInvitation } from "../runtime/context";
 import { SectionShell } from "../runtime/SectionShell";
 import { useInvitationTitle } from "./Cover";
 import { Icon, SectionTitle } from "./ui";
+import { safeHref } from "@/lib/links";
 
 const SECTION_PAD = "px-7 py-20";
 
@@ -78,8 +79,13 @@ function EventCard({ event, index }: { event: InvitationEvent; index: number }) 
           {event.address ?? event.city}
         </p>
       )}
-      {event.mapsUrl && (
-        <a href={event.mapsUrl} target="_blank" rel="noopener" className="inv-btn mt-5">
+      {safeHref(event.mapsUrl, "maps") && (
+        <a
+          href={safeHref(event.mapsUrl, "maps")}
+          target="_blank"
+          rel="noopener"
+          className="inv-btn mt-5"
+        >
           <Icon name="map" /> Petunjuk Lokasi
         </a>
       )}
@@ -175,7 +181,7 @@ export function DefaultMaps() {
       )}
       <a
         href={
-          e.mapsUrl ??
+          safeHref(e.mapsUrl, "maps") ??
           `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
         }
         target="_blank"
@@ -238,7 +244,7 @@ export function DefaultLiveStream() {
     >
       <SectionTitle kicker="Live Streaming" title="Saksikan Secara Daring" />
       {ls.note && <p className="mx-auto mb-6 max-w-xs text-sm opacity-85">{ls.note}</p>}
-      <a href={ls.url} target="_blank" rel="noopener" className="inv-btn">
+      <a href={safeHref(ls.url, "liveStream")} target="_blank" rel="noopener" className="inv-btn">
         <Icon name="play" /> Tonton di {ls.platform ?? "sini"}
       </a>
     </SectionShell>

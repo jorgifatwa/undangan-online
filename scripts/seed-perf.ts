@@ -8,6 +8,7 @@ import { dummyFor } from "../src/themes/_shared/dummy";
 import { THEME_MANIFESTS } from "../src/themes/registry.generated";
 
 import { assertSafeDatabase } from "./lib/guard";
+import { planFields } from "./lib/purchase";
 
 const db = new PrismaClient();
 
@@ -34,7 +35,7 @@ async function main() {
         slug,
         eventType,
         themeId: m.id,
-        package: "EXCLUSIVE", // tanpa watermark & masa aktif — ukur tema murni
+        ...planFields("paid", m.id), // tanpa watermark & masa uji — ukur tema murni
         status: "PUBLISHED",
         publishedAt: new Date(),
         data: inv.data as unknown as Prisma.InputJsonValue,

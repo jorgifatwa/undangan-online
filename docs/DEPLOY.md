@@ -113,7 +113,7 @@ Isi di **Vercel → Project → Settings → Environment Variables**, centang
 | `R2_ACCOUNT_ID`          | dari Cloudflare                                |                                       |
 | `R2_ACCESS_KEY_ID`       | dari token R2                                  |                                       |
 | `R2_SECRET_ACCESS_KEY`   | dari token R2                                  |                                       |
-| `R2_BUCKET`              | mis. `undangan-online-staging`                        |                                       |
+| `R2_BUCKET`              | mis. `undangan-online-staging`                 |                                       |
 | `R2_PUBLIC_URL`          | `https://pub-xxxx.r2.dev`                      | tanpa `/` di akhir                    |
 | `CRON_SECRET`            | `openssl rand -hex 24`                         | huruf & angka saja                    |
 
@@ -219,6 +219,27 @@ DATABASE_URL="<DATABASE_URL_UNPOOLED staging>" ALLOW_SEED_PERF=1 pnpm seed:perf
 ```
 
 Lihat [aturan alat uji](#7-aturan-alat-uji-seedperf--e2e) — **jangan pernah** ke production.
+
+### 4.7 Aktivasi pembelian tema manual (sebelum Midtrans) — [ANDA]
+
+Harga per tema (manifest tema), sekali bayar per undangan. Sampai pembayaran
+online ada (Tahap 5), pembelian setelah transfer manual diaktifkan dengan:
+
+```bash
+DATABASE_URL="<DATABASE_URL_UNPOOLED staging>" pnpm admin:grant-theme <slug-undangan> --by="Nama Anda" [--theme=<id-tema>] [--note="BCA 14/11"]
+```
+
+- Membuat pesanan LUNAS (`paymentType = manual-admin`) dengan item yang sama
+  seperti pesanan online (beli tema / bayar selisih upgrade), lalu
+  menerapkannya — undangan aktif 12 bulan setelah acara, tanpa watermark.
+- Setiap pemakaian **tercatat di tabel `AdminAudit`**: siapa (`--by` + user
+  OS), kapan, undangan mana, tema, nominal, catatan.
+- **Ditolak di production** (`NODE_ENV=production` atau host database ada di
+  `PROTECTED_DB_HOSTS`) kecuali `ALLOW_ADMIN_GRANT=1` diisi secara sadar.
+
+**Migrasi data lama** (`20261114120000_theme_pricing`, otomatis saat build):
+undangan berpaket BASIC/PREMIUM/EXCLUSIVE dianggap sudah membeli tema yang
+sedang dipakai (kredit = harga tema saat migrasi); FREE tetap masa uji.
 
 ---
 

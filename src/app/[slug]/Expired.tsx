@@ -22,12 +22,12 @@ export function Expired({ owner, invitationId }: { owner: boolean; invitationId:
           <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-950">
             <p className="font-semibold">Ini undangan Anda</p>
             <p className="mt-1">
-              Masa uji paket Gratis (3 hari sejak terbit pertama) sudah berakhir. Tingkatkan paket
-              agar tamu bisa membuka undangan ini lagi — semua isi tetap tersimpan.
+              Masa uji gratis (3 hari sejak terbit pertama) sudah berakhir. Beli tema undangan ini
+              agar tamu bisa membukanya lagi — semua isi tetap tersimpan.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link href="/harga" className="rounded-md bg-[#8a4b3b] px-3 py-1.5 text-white">
-                Lihat paket & tingkatkan
+                Lihat harga tema
               </Link>
               <Link
                 href={`/dashboard/undangan/${invitationId}/edit`}

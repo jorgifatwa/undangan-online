@@ -47,7 +47,7 @@ export default async function TemaPage({
       <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">Tema</p>
       <h1 className="font-heading mt-3 text-4xl sm:text-5xl">Pilih tema undanganmu</h1>
       <p className="text-muted-foreground mt-3 max-w-xl">
-        Semua tema bisa dicoba gratis. Pilih paket berbayar saat undangan siap disebar — aktif 12
+        Semua tema bisa dicoba gratis. Beli tema saat undangan siap disebar — aktif 12
         bulan setelah acara.
       </p>
 

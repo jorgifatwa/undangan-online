@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { parseMessage, toPreviewSchema, type FromPreview } from "@/lib/editor/protocol";
-import type { PackageFeatures } from "@/lib/packages";
+import type { Entitlements } from "@/lib/pricing";
 import { parseInvitationData, type AnyInvitationData } from "@/schemas";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
@@ -24,7 +24,7 @@ export function EditorPreview({
 }: {
   initial: { themeId: string; variantId: string | null; invitation: AnyInvitationData };
   eventType: "WEDDING" | "BIRTHDAY";
-  features: PackageFeatures;
+  features: Entitlements;
   watermark: boolean;
 }) {
   const [themeId, setThemeId] = useState(initial.themeId);

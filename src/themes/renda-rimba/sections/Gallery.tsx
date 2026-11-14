@@ -14,6 +14,7 @@ import { Art, F, Pic, Section, box, txt, u } from "../canvas";
  * "Our Gallery" (desain 430 × ±800): tirai hijau, ukiran kayu di kedua sudut
  * atas, bunga calla marun, untai mutiara, dan grid foto 2 kolom.
  * Grid menampilkan maks. 6 foto (seperti desain); sisanya lewat tombol "Lihat semua".
+ * Jumlah ganjil: foto terakhir ditengahkan agar baris terakhir tetap rapi.
  */
 const MAX_GRID = 6;
 const TOP = 112;
@@ -94,7 +95,10 @@ export function RendaGallery() {
           data-a="up"
           style={{
             ...box(
-              left0 + (i % 2) * (PHOTO.w + PHOTO.gapX),
+              // foto terakhir yang sendirian di barisnya → di tengah (tidak bolong kanan)
+              i === shown.length - 1 && shown.length % 2 === 1
+                ? (430 - PHOTO.w) / 2
+                : left0 + (i % 2) * (PHOTO.w + PHOTO.gapX),
               TOP + Math.floor(i / 2) * PHOTO.pitch,
               PHOTO.w,
               PHOTO.h,

@@ -22,6 +22,7 @@ import sharp from "sharp";
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { launchBrowser } from "./lib/browser";
 import { assertSafeDatabase } from "./lib/guard";
+import { planFields } from "./lib/purchase";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -96,7 +97,6 @@ async function main() {
       slug,
       eventType: "WEDDING",
       themeId: "renda-rimba",
-      package: "FREE",
       status: "PUBLISHED",
       publishedAt: new Date(),
       expiresAt: new Date(Date.now() + 3 * DAY),
@@ -212,7 +212,7 @@ async function main() {
           slug: s2,
           eventType,
           themeId,
-          package: "PREMIUM",
+          ...planFields("paid", themeId),
           status: "PUBLISHED",
           publishedAt: new Date(),
           data: d as Prisma.InputJsonValue,

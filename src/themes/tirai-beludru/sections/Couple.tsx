@@ -12,6 +12,7 @@ import type { Person } from "@/schemas/wedding";
 import { Art } from "../art";
 import { CText, F, Placed, canvasSectionStyle, canvasText, u, type Box } from "../canvas";
 import { AccentBouquet, HangingBouquet } from "../scene";
+import { instagramUrl } from "@/lib/links";
 
 /** Section 2 desain: 440 × 820.04 (salam + kedua mempelai). */
 const CANVAS_H = 820.04;
@@ -119,7 +120,8 @@ function Instagram({
   w: number;
   align: "left" | "right";
 }) {
-  if (!handle) return null;
+  const href = instagramUrl(handle);
+  if (!href) return null;
   return (
     <Reveal
       variant={align === "left" ? "right" : "left"}
@@ -133,7 +135,7 @@ function Instagram({
       }}
     >
       <a
-        href={`https://instagram.com/${encodeURIComponent(handle)}`}
+        href={href}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Instagram @${handle}`}

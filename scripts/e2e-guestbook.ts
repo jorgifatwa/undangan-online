@@ -13,6 +13,7 @@ import type { Page } from "puppeteer-core";
 import { buildInitialData } from "../src/lib/invitations/initial-data";
 import { launchBrowser } from "./lib/browser";
 import { assertSafeDatabase } from "./lib/guard";
+import { planFields } from "./lib/purchase";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
@@ -31,7 +32,7 @@ async function invitation(
   eventType: "WEDDING" | "BIRTHDAY",
   themeId: string,
   status: "PUBLISHED" | "DRAFT" = "PUBLISHED",
-  pkg: "BASIC" | "PREMIUM" = "BASIC",
+  plan: "trial" | "paid" = "trial",
 ) {
   await db.invitation.deleteMany({ where: { slug } });
   const date = new Date(Date.now() + 40 * 86400_000).toISOString().slice(0, 10);
@@ -67,7 +68,7 @@ async function invitation(
       slug,
       eventType,
       themeId,
-      package: pkg,
+      ...planFields(plan, themeId),
       status,
       publishedAt: status === "PUBLISHED" ? new Date() : null,
       data: data as Prisma.InputJsonValue,
@@ -335,19 +336,19 @@ async function main() {
   };
   const basicFlood = await flood(cg.slug, 130);
   const basicOk = basicFlood.filter((c) => c === 200).length;
-  check(basicOk === 120, `BASIC: maks 120 kiriman / menit (${basicOk} diterima dari 130)`);
+  check(basicOk === 120, `masa uji: maks 120 kiriman / menit (${basicOk} diterima dari 130)`);
   const prem = await invitation(
     owner.id,
     "uji-cgnat-premium",
     "WEDDING",
     "renda-rimba",
     "PUBLISHED",
-    "PREMIUM",
+    "paid",
   );
   const premFlood = await flood(prem.slug, 200);
   check(
     premFlood.every((c) => c === 200),
-    `PREMIUM: 200 kiriman / menit dari banyak tamu diterima (${premFlood.filter((c) => c === 200).length}/200)`,
+    `tema dibeli: 200 kiriman / menit dari banyak tamu diterima (${premFlood.filter((c) => c === 200).length}/200)`,
   );
 
   r = await post(draft.slug, { name: "X", message: "draf" });

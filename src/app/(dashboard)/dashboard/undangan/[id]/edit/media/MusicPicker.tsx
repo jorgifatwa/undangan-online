@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 import { mediaStatusAction } from "../media-actions";
 import { useMedia } from "./MediaContext";
-import { UpgradeNotice } from "./UpgradeNotice";
+import { LimitNotice } from "./LimitNotice";
 
 export interface LibraryTrack {
   id: string;
@@ -122,6 +122,21 @@ export function MusicPicker({
     }
   };
 
+  // Lagu unggahan yang masih dihitung batas (selain yang gagal).
+  const activeUploads = uploaded.filter((u) => u.status !== "FAILED").length;
+  const musicFull = activeUploads >= media.musicLimit;
+
+  /** Hapus lagu unggahan: file dihapus dari penyimpanan setelah data tersimpan. */
+  const removeUploaded = (u: UploadedAudio) => {
+    if (!u.url) return;
+    if (!window.confirm(`Hapus lagu "${u.title}"?`)) return;
+    if (selected === u.url) choose(null);
+    media.releaseUrl(u.url);
+    media.saveSoon();
+    setUploaded((list) => list.filter((x) => x.id !== u.id));
+    setError(null);
+  };
+
   const row = (
     key: string,
     label: string,
@@ -129,6 +144,7 @@ export function MusicPicker({
     url: string | null,
     onPick: () => void,
     active: boolean,
+    onDelete?: () => void,
   ) => (
     <li
       key={key}
@@ -152,6 +168,16 @@ export function MusicPicker({
           aria-label={playing === url ? `Hentikan ${label}` : `Dengar ${label}`}
         >
           {playing === url ? "■ Stop" : "▶ Dengar"}
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          className="text-muted-foreground hover:text-destructive shrink-0 rounded-full border px-2.5 py-1 text-xs"
+          aria-label={`Hapus ${label}`}
+        >
+          Hapus
         </button>
       )}
     </li>
@@ -188,22 +214,23 @@ export function MusicPicker({
               u.url,
               () => choose({ url: u.url!, title: u.title }),
               selected === u.url,
+              () => removeUploaded(u),
             ),
           )}
       </ul>
 
       <fieldset className="space-y-2 rounded-xl border p-3">
         <legend className="px-1 text-sm font-medium">Unggah musik sendiri</legend>
-        {!media.customMusic ? (
-          <UpgradeNotice
-            compact
-            message={`Unggah musik sendiri tersedia mulai paket Basic (saat ini paket ${media.packageLabel}).`}
+        {musicFull ? (
+          <LimitNotice
+            message={`Sudah ${activeUploads} dari maksimal ${media.musicLimit} lagu unggahan.`}
+            hint="Hapus lagu unggahan yang tidak dipakai untuk mengunggah lagu lain."
           />
         ) : (
           <>
             <p className="text-muted-foreground text-xs">
               MP3, M4A, WAV, OGG, atau FLAC, maks. 10 MB. Dikompres otomatis agar ringan diputar
-              tamu.
+              tamu. {activeUploads} dari maks. {media.musicLimit} lagu.
             </p>
             <label className="flex items-start gap-2 text-sm">
               <input
@@ -250,8 +277,8 @@ export function MusicPicker({
             </p>
           ))}
         {error &&
-          (error.code === "FEATURE" || error.code === "QUOTA" ? (
-            <UpgradeNotice compact message={error.message} />
+          (error.code === "MUSIC_LIMIT" || error.code === "QUOTA" ? (
+            <LimitNotice message={error.message} />
           ) : (
             <p className="text-destructive text-sm" role="alert">
               {error.message}

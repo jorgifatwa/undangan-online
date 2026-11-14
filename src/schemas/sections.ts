@@ -1,4 +1,4 @@
-import type { PackageFeatures } from "@/lib/packages";
+import type { Entitlements } from "@/lib/pricing";
 
 import type { BirthdayData } from "./birthday";
 import type { WeddingData } from "./wedding";
@@ -115,10 +115,11 @@ export function isSectionEmpty(id: SectionId, inv: AnyInvitationData): boolean {
 }
 
 /**
- * Section yang membutuhkan fitur paket tertentu. Dicek di server saat
- * merender undangan asli (preview mengabaikan pembatasan paket).
+ * Section yang bergantung pada hak pakai undangan (lib/pricing getEntitlements),
+ * mis. amplop digital baru tampil di halaman tamu setelah tema dibeli. Dicek di
+ * server saat merender undangan asli (preview tema mengabaikannya).
  */
-export const SECTION_FEATURE: Partial<Record<SectionId, keyof PackageFeatures>> = {
+export const SECTION_FEATURE: Partial<Record<SectionId, keyof Entitlements>> = {
   maps: "maps",
   rsvp: "rsvp",
   ucapan: "wishes",
@@ -127,7 +128,7 @@ export const SECTION_FEATURE: Partial<Record<SectionId, keyof PackageFeatures>> 
 
 /**
  * Hitung urutan akhir section: urutan dari data (jika ada) → filter dukungan
- * tema → filter visibilitas user → filter paket → filter data kosong.
+ * tema → filter visibilitas user → filter hak pakai → filter data kosong.
  * Section yang didukung tema tapi belum tercantum di data.sections ditambahkan
  * di posisi default-nya (agar section baru di tema tidak hilang).
  *
@@ -139,7 +140,7 @@ export const SECTION_FEATURE: Partial<Record<SectionId, keyof PackageFeatures>> 
 export function resolveSections(
   inv: AnyInvitationData,
   supported: readonly SectionId[],
-  features: PackageFeatures | null,
+  features: Entitlements | null,
   locked: readonly SectionId[] = [],
 ): SectionId[] {
   const defaults = DEFAULT_SECTION_ORDER[inv.eventType];

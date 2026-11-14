@@ -20,7 +20,7 @@ const FREE_TRIAL_DAYS = 3;
 
 /**
  * Dialog Terbitkan: simpan dulu → checklist dari data tersimpan → terbit.
- * Paket FREE: penjelasan aturan masa uji (3 hari sejak terbit pertama,
+ * Masa uji (tema belum dibeli): penjelasan aturan (3 hari sejak terbit pertama,
  * batal terbit tidak menghentikan hitungan).
  */
 export function PublishDialog({
@@ -126,11 +126,11 @@ export function PublishDialog({
                 Salin
               </button>
             </div>
-            {state.package === "FREE" && state.expiresAt && (
+            {!state.purchased && state.expiresAt && (
               <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-950">
-                Masa uji Gratis aktif sampai <strong>{formatTanggal(state.expiresAt)}</strong>.{" "}
+                Masa uji gratis aktif sampai <strong>{formatTanggal(state.expiresAt)}</strong>.{" "}
                 <Link href="/harga" target="_blank" className="font-semibold underline">
-                  Tingkatkan paket
+                  Beli tema
                 </Link>{" "}
                 agar aktif 12 bulan setelah acara, tanpa watermark.
               </p>
@@ -161,7 +161,7 @@ export function PublishDialog({
                   if (
                     !window.confirm(
                       "Batalkan terbit? Tamu tidak bisa membuka undangan sampai diterbitkan lagi." +
-                        (state.package === "FREE" ? " Masa uji Gratis tetap berjalan." : ""),
+                        (!state.purchased ? " Masa uji gratis tetap berjalan." : ""),
                     )
                   )
                     return;
@@ -214,9 +214,9 @@ export function PublishDialog({
               </ul>
             )}
 
-            {state.package === "FREE" && !expired && (
+            {!state.purchased && !expired && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950">
-                <p className="font-semibold">Aturan paket Gratis</p>
+                <p className="font-semibold">Aturan masa uji gratis</p>
                 <ul className="mt-1 list-disc space-y-0.5 pl-4">
                   <li>
                     Undangan aktif{" "}
@@ -225,9 +225,7 @@ export function PublishDialog({
                     {formatTanggal(trialEnd)}.
                   </li>
                   <li>&ldquo;Batalkan terbit&rdquo; tidak menghentikan hitungan masa uji.</li>
-                  <li>
-                    Ada watermark. Setelah masa uji, tingkatkan paket agar undangan aktif kembali.
-                  </li>
+                  <li>Ada watermark. Setelah masa uji, beli tema agar undangan aktif kembali.</li>
                 </ul>
               </div>
             )}
@@ -243,7 +241,7 @@ export function PublishDialog({
                 target="_blank"
                 className="text-primary inline-block text-sm font-semibold underline"
               >
-                Lihat paket & tingkatkan →
+                Lihat harga tema →
               </Link>
             )}
             <button

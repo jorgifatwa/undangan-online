@@ -8,7 +8,7 @@ import { sanitizeGuestName } from "@/lib/guest";
 import { guestbookStats } from "@/lib/guestbook/service";
 import { getPublicInvitation } from "@/lib/invitations/public";
 import { metaDescription, metaTitle, shareInfo } from "@/lib/invitations/share";
-import { getFeatures } from "@/lib/packages";
+import { getEntitlements } from "@/lib/pricing";
 import { invitationUrl, siteConfig } from "@/lib/site";
 import { parseInvitationData } from "@/schemas";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
@@ -78,7 +78,7 @@ export const dynamic = "force-dynamic";
  * Rute website statis (harga, tema, …) selalu didahulukan Next.js; slug
  * dicadangkan & format tidak valid langsung 404 tanpa query database.
  * Draf → 404. Masa aktif habis → halaman "tidak aktif" tanpa data pribadi.
- * Pembatasan fitur paket diterapkan DI SERVER lewat `features`.
+ * Hak pakai (masa uji / tema dibeli) diterapkan DI SERVER lewat `features`.
  */
 export default async function InvitationPage({ params, searchParams }: Props) {
   const { slug } = await params;
@@ -96,7 +96,7 @@ export default async function InvitationPage({ params, searchParams }: Props) {
   const parsed = parseInvitationData(invitation.eventType, invitation.data);
   if (!manifest || !Theme || !parsed.ok) notFound();
 
-  const features = getFeatures(invitation.package);
+  const features = getEntitlements(invitation);
   const [wishes, stats] = await Promise.all([
     features.wishes
       ? db.wish.findMany({

@@ -6,7 +6,9 @@ import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { findOwnedInvitation, type ActionResult } from "@/lib/invitations/access";
 import { isValidSlug, RESERVED_SLUGS } from "@/lib/invitations/slug";
-import { getFeatures } from "@/lib/packages";
+import { formatRupiah } from "@/lib/format";
+import { invitationAddons } from "@/lib/orders/service";
+import { getEntitlements, isPurchased, quoteTheme } from "@/lib/pricing";
 import { parseInvitationData } from "@/schemas";
 import { getManifest } from "@/themes/registry";
 
@@ -30,7 +32,8 @@ export type SaveResult =
  *  2. tema ada & mendukung jenis acara; varian milik tema itu
  *  3. data lolos schema Zod jenis acaranya
  *  4. section terkunci tema tetap tampil
- *  5. batasan paket (jumlah foto galeri)
+ *  5. batas galeri & tema yang sudah dibayar (setelah membeli: tema lebih mahal
+ *     dari kredit ditolak sampai selisihnya dibayar)
  *  6. konkurensi optimis: tolak bila undangan sudah diubah di tab/perangkat lain
  */
 export async function saveInvitation(
@@ -49,7 +52,17 @@ export async function saveInvitation(
   const variant =
     manifest.variants.find((v) => v.id === payload.colorVariant) ?? manifest.variants[0];
 
-  const parsed = parseInvitationData(inv.eventType, payload.data);
+  if (isPurchased(inv) && manifest.id !== inv.themeId) {
+    const q = quoteTheme(inv, manifest.id);
+    if (q?.kind === "upgrade")
+      return {
+        ok: false,
+        error: `Tema ${manifest.name} perlu bayar selisih ${formatRupiah(q.amount)} sebelum dipakai.`,
+      };
+  }
+
+  // strict: link tak tepercaya DITOLAK dengan pesan (tidak dibuang diam-diam)
+  const parsed = parseInvitationData(inv.eventType, payload.data, { strict: true });
   if (!parsed.ok) {
     const issues = "issues" in parsed.error ? parsed.error.issues : [];
     return {
@@ -64,11 +77,11 @@ export async function saveInvitation(
   const locked = new Set<string>(manifest.lockedSections ?? []);
   data.sections = data.sections.map((s) => (locked.has(s.id) ? { ...s, visible: true } : s));
 
-  const features = getFeatures(inv.package);
-  if (features.galleryLimit !== null && data.gallery.length > features.galleryLimit) {
+  const features = getEntitlements(inv, await invitationAddons(inv.id));
+  if (data.gallery.length > features.galleryLimit) {
     return {
       ok: false,
-      error: `Paket ${inv.package === "FREE" ? "Gratis" : inv.package} maksimal ${features.galleryLimit} foto galeri.`,
+      error: `Galeri maksimal ${features.galleryLimit} foto.`,
       fieldErrors: { gallery: `Maksimal ${features.galleryLimit} foto` },
     };
   }

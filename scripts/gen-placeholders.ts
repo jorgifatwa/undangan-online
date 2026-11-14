@@ -267,7 +267,10 @@ async function main() {
   await fs.mkdir(path.join(OUT, "photos"), { recursive: true });
   await fs.mkdir(path.join(OUT, "music"), { recursive: true });
   // --only=wedding-groom,wedding-bride → hanya unduh ulang foto tertentu
-  const only = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1]?.split(",");
+  const only = process.argv
+    .find((a) => a.startsWith("--only="))
+    ?.split("=")[1]
+    ?.split(",");
   for (const p of PHOTOS) if (!only || only.includes(p.file)) await processPhoto(p);
   await fs.writeFile(path.join(OUT, "CREDITS.md"), credits());
   console.log("✓ CREDITS.md");

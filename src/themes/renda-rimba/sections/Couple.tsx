@@ -8,6 +8,7 @@ import { couple, displayFullName, parentNames } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import type { Person } from "@/schemas/wedding";
 import { F, Pic, Section, box, fitSize, txt, u, useFit } from "../canvas";
+import { instagramUrl } from "@/lib/links";
 
 /**
  * Kartu mempelai (desain 430 × 900): kartu renda portrait (aset renda via
@@ -83,10 +84,10 @@ function PersonBlock({ person, lead, d }: { person: Person; lead: string; d: num
           )}
         </p>
       )}
-      {person.instagram && (
+      {instagramUrl(person.instagram) && (
         <a
           data-a="up"
-          href={`https://instagram.com/${encodeURIComponent(person.instagram)}`}
+          href={instagramUrl(person.instagram)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Instagram @${person.instagram}`}

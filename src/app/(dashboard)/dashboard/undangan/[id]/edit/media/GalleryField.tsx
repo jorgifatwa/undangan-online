@@ -26,12 +26,12 @@ import type { Photo } from "@/schemas";
 
 import { CropDialog } from "./CropDialog";
 import { useMedia } from "./MediaContext";
-import { UpgradeNotice } from "./UpgradeNotice";
+import { LimitNotice } from "./LimitNotice";
 
 /**
  * Galeri: pilih banyak foto sekaligus (progres per foto), urutkan dengan
  * drag & drop (sentuh & keyboard), potong opsional per foto. Default langsung
- * dikompres tanpa crop supaya cepat. Batas paket → pesan + tawaran upgrade.
+ * dikompres tanpa crop supaya cepat. Batas galeri → pesan (hapus yang tidak dipakai).
  */
 interface QueueItem {
   id: string;
@@ -118,13 +118,13 @@ export function GalleryField() {
     setLimitMsg(null);
     const limit = media.galleryLimit;
     const inFlight = queue.filter((q) => !q.error && q.progress < 1).length;
-    const room = limit === null ? files.length : Math.max(0, limit - current().length - inFlight);
+    const room = Math.max(0, limit - current().length - inFlight);
     const accepted = files.slice(0, room);
     if (accepted.length < files.length)
       setLimitMsg(
         room === 0
-          ? `Galeri sudah penuh: paket ${media.packageLabel} maksimal ${limit} foto.`
-          : `Hanya ${room} dari ${files.length} foto yang diunggah: paket ${media.packageLabel} maksimal ${limit} foto galeri.`,
+          ? `Galeri sudah penuh (maksimal ${limit} foto). Hapus foto yang tidak dipakai untuk menggantinya.`
+          : `Hanya ${room} dari ${files.length} foto yang diunggah: galeri maksimal ${limit} foto.`,
       );
     const items = accepted.map((f) => ({
       id: `${Date.now()}-${Math.random()}`,
@@ -178,15 +178,13 @@ export function GalleryField() {
     media.saveSoon();
   };
 
-  const full = media.galleryLimit !== null && photos.length >= media.galleryLimit;
+  const full = photos.length >= media.galleryLimit;
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-muted-foreground text-xs">
-          {photos.length} foto
-          {media.galleryLimit !== null ? ` dari maks. ${media.galleryLimit}` : ""} · tahan &amp;
-          geser untuk mengurutkan
+          {photos.length} dari maks. {media.galleryLimit} foto · tahan &amp; geser untuk mengurutkan
         </p>
         <input
           ref={input}
@@ -205,7 +203,7 @@ export function GalleryField() {
           onClick={() =>
             full
               ? setLimitMsg(
-                  `Galeri sudah penuh: paket ${media.packageLabel} maksimal ${media.galleryLimit} foto.`,
+                  `Galeri sudah penuh (maksimal ${media.galleryLimit} foto). Hapus foto yang tidak dipakai untuk menggantinya.`,
                 )
               : input.current?.click()
           }
@@ -215,7 +213,12 @@ export function GalleryField() {
         </button>
       </div>
 
-      {limitMsg && <UpgradeNotice message={limitMsg} />}
+      {limitMsg && (
+        <LimitNotice
+          message={limitMsg}
+          hint="Cover, foto mempelai, dan foto penutup tidak dihitung dalam batas galeri."
+        />
+      )}
 
       {queue.length > 0 && (
         <ul className="space-y-1.5" aria-label="Antrean unggahan">

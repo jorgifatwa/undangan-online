@@ -8,6 +8,7 @@ import { LeafPattern } from "../../_shared/textures";
 import { Art, F, Fleuron, Pic, Section, txt, u } from "../canvas";
 import { useLaceBorder } from "./Couple";
 import { MapButton, MaroonCard } from "./Event";
+import { safeHref } from "@/lib/links";
 
 /**
  * Section tambahan (tidak ada di desain referensi) dengan bahasa visual Renda
@@ -269,7 +270,13 @@ export function RendaLiveStream() {
         <p style={txt(F.body, 13, 1.6)}>
           {ls.note ?? "Bagi yang berhalangan hadir, saksikan momen bahagia kami secara daring."}
         </p>
-        <MapButton href={ls.url} label={`Tonton di ${ls.platform ?? "sini"}`} icon="play" />
+        {safeHref(ls.url, "liveStream") && (
+          <MapButton
+            href={safeHref(ls.url, "liveStream")!}
+            label={`Tonton di ${ls.platform ?? "sini"}`}
+            icon="play"
+          />
+        )}
       </MaroonCard>
     </Section>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { PackageTier } from "@prisma/client";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch, type FieldValues, type Resolver } from "react-hook-form";
@@ -9,7 +8,7 @@ import { FormProvider, useForm, useWatch, type FieldValues, type Resolver } from
 import { prune } from "@/lib/editor/prune";
 import { shareInfo } from "@/lib/invitations/share";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
-import { PACKAGES, getFeatures } from "@/lib/packages";
+import type { Entitlements } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import {
   birthdayDataSchema,
@@ -45,12 +44,15 @@ export interface EditorProps {
   id: string;
   slug: string;
   status: "DRAFT" | "PUBLISHED" | "EXPIRED";
-  /** ISO — terbit pertama (FREE: dasar masa uji). */
+  /** ISO — terbit pertama (dasar masa uji). */
   publishedAt: string | null;
-  /** ISO — akhir masa aktif (FREE); null = paket berbayar (PAID_ACTIVE) / belum terbit. */
+  /** ISO — akhir masa uji; null = tema sudah dibeli (PAID_ACTIVE) / belum terbit. */
   expiresAt: string | null;
   eventType: EventType;
-  pkg: PackageTier;
+  /** Status pembelian tema undangan ini (harga per tema, per undangan). */
+  purchase: { purchased: boolean; themeCredit: number; ownedThemeIds: string[] };
+  /** Hak pakai dari server (termasuk add-on). */
+  entitlements: Entitlements;
   themeId: string;
   variantId: string | null;
   /** ISO — dasar konkurensi optimis. */
@@ -201,7 +203,7 @@ export function Editor(p: EditorProps) {
   const [showCover, setShowCover] = useState(false);
   const [publish, setPublish] = useState<PublishState>({
     status: p.status === "DRAFT" ? "DRAFT" : "PUBLISHED",
-    package: p.pkg,
+    purchased: p.purchase.purchased,
     slug: p.slug,
     publishedAt: p.publishedAt,
     expiresAt: p.expiresAt,
@@ -219,6 +221,9 @@ export function Editor(p: EditorProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const base = useRef(p.updatedAt);
   const themeRef = useRef(themeId);
+  /** Tema lebih mahal yang sedang dipratinjau (belum dibayar) — tidak disimpan. */
+  const previewThemeRef = useRef<string | null>(null);
+  const [previewThemeId, setPreviewThemeId] = useState<string | null>(null);
   const variantRef = useRef(variantId);
   const version = useRef(0);
   const saving = useRef(false);
@@ -227,7 +232,7 @@ export function Editor(p: EditorProps) {
   const pendingDeletes = useRef<Set<string>>(new Set());
 
   const manifest = p.themes.find((t) => t.id === themeId) ?? p.themes[0];
-  const features = getFeatures(p.pkg);
+  const features = p.entitlements;
   const sectionsCfg = (useWatch({ control: form.control, name: "sections" }) ?? []) as {
     id: string;
     visible: boolean;
@@ -245,7 +250,8 @@ export function Editor(p: EditorProps) {
     post({
       ns: "undangku",
       type: "update",
-      themeId: themeRef.current,
+      // tema yang belum dibayar hanya DIPRATINJAU (tidak ikut tersimpan)
+      themeId: previewThemeRef.current ?? themeRef.current,
       variantId: variantRef.current,
       data: r.data,
     });
@@ -383,18 +389,25 @@ export function Editor(p: EditorProps) {
     () => ({
       invitationId: p.id,
       galleryLimit: features.galleryLimit,
-      customMusic: features.customMusic,
-      packageLabel: PACKAGES[p.pkg].label,
+      musicLimit: features.customMusicTracks,
       releaseUrl: (url) => pendingDeletes.current.add(url),
       saveSoon: () => {
         window.clearTimeout(timers.current.save);
         timers.current.save = window.setTimeout(() => void save(), 300);
       },
     }),
-    [p.id, p.pkg, features.galleryLimit, features.customMusic, save],
+    [p.id, features.galleryLimit, features.customMusicTracks, save],
   );
 
+  const previewTheme = (id: string | null) => {
+    previewThemeRef.current = id;
+    setPreviewThemeId(id);
+    pushPreview();
+  };
+
   const changeTheme = (id: string) => {
+    previewThemeRef.current = null;
+    setPreviewThemeId(null);
     themeRef.current = id;
     setThemeId(id);
     const m = p.themes.find((t) => t.id === id);
@@ -454,7 +467,9 @@ export function Editor(p: EditorProps) {
             themes={p.themes}
             themeId={themeId}
             variantId={variantId}
-            pkg={p.pkg}
+            purchase={{ ...p.purchase, purchased: publish.purchased }}
+            previewThemeId={previewThemeId}
+            onPreviewTheme={previewTheme}
             onTheme={changeTheme}
             onVariant={changeVariant}
           />
@@ -572,7 +587,7 @@ export function Editor(p: EditorProps) {
             featureNote={
               features.digitalEnvelope
                 ? undefined
-                : "Amplop digital tampil mulai paket Premium. Datanya tetap bisa diisi sekarang."
+                : "Selama masa uji, amplop digital & hadiah hanya tampil di pratinjau ini. Di halaman tamu, bagian ini muncul setelah tema dibeli (pengaman dari penipuan)."
             }
           />
         </div>

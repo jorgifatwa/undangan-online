@@ -24,7 +24,7 @@ interface ThemeRootProps extends ThemeProps {
  * Akar setiap undangan. Menangani hal yang SAMA untuk semua tema:
  * token warna varian, font tema, kolom 440px + latar desktop, cover → buka,
  * musik (mulai hanya setelah "Buka Undangan"), mode ringan, reduced motion,
- * jeda animasi saat tab tidak aktif, watermark paket FREE, dan urutan section.
+ * jeda animasi saat tab tidak aktif, watermark masa uji, dan urutan section.
  */
 export function ThemeRoot(props: ThemeRootProps) {
   const { theme, invitation } = props;

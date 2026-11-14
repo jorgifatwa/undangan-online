@@ -96,7 +96,7 @@ export const manifest = {
   description: "TODO: deskripsi singkat untuk galeri tema.",
   category: "${birthday ? "ceria" : "elegan"}",
   eventTypes: ["${birthday ? "BIRTHDAY" : "WEDDING"}"],
-  minPackage: "BASIC",
+  price: 99_000, // TODO: harga tema (rupiah)
   variants: VARIANTS,
   sections: ${JSON.stringify(sections, null, 4)
     .replace(/\n\]/, ",\n  ]")

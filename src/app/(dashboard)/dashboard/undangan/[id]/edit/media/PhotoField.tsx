@@ -8,7 +8,7 @@ import type { Photo } from "@/schemas";
 
 import { CropDialog } from "./CropDialog";
 import { useMedia } from "./MediaContext";
-import { UpgradeNotice } from "./UpgradeNotice";
+import { LimitNotice } from "./LimitNotice";
 
 /**
  * Satu foto (profil, cover, strip, penutup, …): pilih → (HEIC→JPEG) → potong
@@ -155,7 +155,7 @@ export function PhotoField({
       </div>
       {error &&
         (error.code === "QUOTA" ? (
-          <UpgradeNotice message={error.message} compact />
+          <LimitNotice message={error.message} />
         ) : (
           <p className="text-destructive text-xs" role="alert">
             {error.message}

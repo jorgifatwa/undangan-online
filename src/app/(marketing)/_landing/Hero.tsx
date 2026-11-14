@@ -2,12 +2,12 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { business } from "@/config/business";
-import { PACKAGES } from "@/lib/packages";
+import { TRIAL_DAYS } from "@/lib/pricing";
 
 import { HeroVideo } from "./HeroVideo";
 
 export function Hero() {
-  const trial = PACKAGES.FREE.features.activeDays;
+  const trial = TRIAL_DAYS;
   return (
     <section className="paper relative overflow-hidden">
       {/* lengkung lembut di belakang HP */}

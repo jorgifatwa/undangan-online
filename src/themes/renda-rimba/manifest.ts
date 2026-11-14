@@ -15,7 +15,7 @@ export const manifest = {
     "Hutan tropis dan renda putih: pintu daun yang terbuka, bingkai scallop, piringan hitam, polaroid, dan bunga anthurium.",
   category: "elegan",
   eventTypes: ["WEDDING"],
-  minPackage: "BASIC",
+  price: 99_000,
   variants: RENDA_VARIANTS,
   sections: [
     "cover",

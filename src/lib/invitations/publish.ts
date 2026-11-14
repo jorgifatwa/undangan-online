@@ -3,7 +3,8 @@ import "server-only";
 import type { Invitation } from "@prisma/client";
 
 import { db } from "@/lib/db";
-import { canPublishWithTheme, PACKAGES } from "@/lib/packages";
+import { formatRupiah } from "@/lib/format";
+import { isPurchased, ownsTheme, quoteTheme, TRIAL_DAYS } from "@/lib/pricing";
 import { parseInvitationData } from "@/schemas";
 import { getManifest } from "@/themes/registry";
 
@@ -12,14 +13,14 @@ import { isValidSlug } from "./slug";
 /**
  * Terbitkan / batalkan terbit undangan.
  *
- * Aturan masa uji paket FREE (disetujui pemilik produk):
+ * Aturan masa uji (belum membeli tema; disetujui pemilik produk):
  *  - aktif 3 hari sejak TERBIT PERTAMA (publishedAt tidak pernah di-reset)
  *  - "Batalkan terbit" TIDAK menghentikan hitungan → tidak bisa diperpanjang
- *    dengan terbit ulang; setelah lewat harus upgrade
- * Paket berbayar: expiresAt null — aktif minimal 12 bulan setelah acara dan tetap
- * dapat diakses setelahnya selama layanan berjalan (PAID_ACTIVE di lib/packages).
+ *    dengan terbit ulang; setelah lewat harus membeli tema
+ * Tema sudah dibeli: expiresAt null — aktif minimal 12 bulan setelah acara dan
+ * tetap dapat diakses setelahnya selama layanan berjalan (PAID_ACTIVE, lib/pricing).
  */
-export const FREE_TRIAL_DAYS = 3;
+export const FREE_TRIAL_DAYS = TRIAL_DAYS;
 const DAY = 86400_000;
 
 export interface ChecklistItem {
@@ -85,25 +86,30 @@ export function publishChecklist(inv: Invitation, now = new Date()): ChecklistIt
       : "Ubah alamat undangan di bagian Tema, warna & alamat.",
   });
 
+  // Setelah membeli: tema yang dipakai harus sudah dibayar (pindah ke tema lebih
+  // mahal → bayar selisih dulu). Masa uji: semua tema boleh.
   const manifest = getManifest(inv.themeId);
-  const themeOk = !!manifest && canPublishWithTheme(inv.package, manifest.minPackage);
+  const quote = manifest ? quoteTheme(inv, inv.themeId) : null;
+  const themeOk = !!manifest && (!isPurchased(inv) || ownsTheme(inv, inv.themeId));
   items.push({
     key: "theme",
-    label: "Tema sesuai paket",
+    label: "Tema sudah dibayar",
     ok: themeOk,
     severity: "error",
     message: themeOk
       ? undefined
-      : `Tema ${manifest?.name ?? inv.themeId} butuh paket ${manifest ? PACKAGES[manifest.minPackage].label : "lebih tinggi"}. Ganti tema atau tingkatkan paket.`,
+      : quote?.kind === "upgrade"
+        ? `Tema ${manifest!.name} lebih mahal dari tema yang sudah dibeli. Bayar selisih ${formatRupiah(quote.amount)} atau kembali ke tema sebelumnya.`
+        : "Tema tidak ditemukan. Pilih tema lain.",
   });
 
-  if (inv.package === "FREE" && inv.expiresAt && inv.expiresAt <= now) {
+  if (!isPurchased(inv) && inv.expiresAt && inv.expiresAt <= now) {
     items.push({
       key: "trial",
       label: "Masa uji Gratis",
       ok: false,
       severity: "error",
-      message: "Masa uji 3 hari sudah berakhir. Tingkatkan paket agar undangan bisa aktif kembali.",
+      message: "Masa uji 3 hari sudah berakhir. Beli tema agar undangan bisa aktif kembali.",
     });
   }
   return items;
@@ -119,10 +125,9 @@ export async function publishInvitation(userId: string, id: string, now = new Da
     throw new PublishError(failed[0].message ?? "Lengkapi checklist terlebih dahulu.");
 
   const publishedAt = inv.publishedAt ?? now; // terbit PERTAMA tidak berubah
-  const expiresAt =
-    inv.package === "FREE"
-      ? (inv.expiresAt ?? new Date(publishedAt.getTime() + FREE_TRIAL_DAYS * DAY))
-      : null;
+  const expiresAt = isPurchased(inv)
+    ? null
+    : (inv.expiresAt ?? new Date(publishedAt.getTime() + FREE_TRIAL_DAYS * DAY));
   return db.invitation.update({
     where: { id: inv.id },
     data: { status: "PUBLISHED", publishedAt, expiresAt },

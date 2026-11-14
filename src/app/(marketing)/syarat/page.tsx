@@ -4,16 +4,16 @@ import Link from "next/link";
 import { LegalContact, LegalPage, type LegalSection } from "@/components/marketing/LegalPage";
 import { business } from "@/config/business";
 import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
-import { PAYMENT_TEXT, REFUND_TEXT } from "@/lib/marketing/content";
-import { PACKAGES, PAID_ACTIVE } from "@/lib/packages";
+import { PAYMENT_TEXT, REFUND_TEXT, THEME_CHANGE_TEXT } from "@/lib/marketing/content";
+import { LIMITS, PAID_ACTIVE, TRIAL_DAYS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Syarat & Ketentuan",
-  description: `Syarat & Ketentuan penggunaan ${business.name}: akun, paket & masa aktif, pembayaran, pengembalian dana, dan tanggung jawab atas konten.`,
+  description: `Syarat & Ketentuan penggunaan ${business.name}: akun, harga tema & masa aktif, pembayaran, pengembalian dana, dan tanggung jawab atas konten.`,
   alternates: { canonical: "/syarat" },
 };
 
-const trial = PACKAGES.FREE.features.activeDays;
+const trial = TRIAL_DAYS;
 
 const SECTIONS: LegalSection[] = [
   {
@@ -48,24 +48,38 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    id: "paket",
-    title: "Paket, masa uji & masa aktif",
+    id: "harga",
+    title: "Harga tema, masa uji & masa aktif",
     body: (
       <ul>
-        <li>Paket berlaku per undangan, sesuai harga yang tertera di halaman Harga.</li>
         <li>
-          <strong>Paket Gratis</strong> aktif {trial} hari sejak undangan pertama kali diterbitkan,
-          dengan watermark. Membatalkan terbit tidak menghentikan atau mengulang hitungan masa uji.
-          Setelah masa uji berakhir, undangan tidak dapat dibuka tamu sampai paket ditingkatkan, dan
-          foto serta musiknya dihapus otomatis {MEDIA_RETENTION_DAYS} hari kemudian.
+          Harga ditetapkan per tema, sekali bayar untuk <strong>satu undangan</strong> (bukan per
+          akun), sesuai harga yang tertera di halaman Harga. Satu harga sudah termasuk semua fitur
+          inti undangan.
         </li>
         <li>
-          <strong>Paket berbayar:</strong> {PAID_ACTIVE.long.charAt(0).toLowerCase()}
+          <strong>Masa uji gratis</strong>: semua tema bisa dipakai {trial} hari sejak undangan
+          pertama kali diterbitkan, dengan watermark. Membatalkan terbit tidak menghentikan atau
+          mengulang hitungan masa uji. Setelah masa uji berakhir, undangan tidak dapat dibuka tamu
+          sampai tema dibeli, dan foto serta musiknya dihapus otomatis {MEDIA_RETENTION_DAYS} hari
+          kemudian. Selama masa uji, amplop digital & hadiah tidak ditampilkan di halaman tamu.
+        </li>
+        <li>
+          <strong>Setelah tema dibeli</strong>: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
           {PAID_ACTIVE.long.slice(1)}
         </li>
         <li>
-          Beberapa tema dan fitur membutuhkan paket tertentu. Fitur berlabel &ldquo;Segera
-          hadir&rdquo; belum tersedia dan tidak termasuk dalam pembelian sampai dirilis.
+          <strong>Ganti tema</strong>: {THEME_CHANGE_TEXT}
+        </li>
+        <li>
+          Batas per undangan: galeri hingga {LIMITS.galleryPhotos} foto dan hingga{" "}
+          {LIMITS.customMusicTracks} lagu unggahan sendiri. Kapasitas tambahan dan fitur yang
+          memiliki biaya pemakaian (mis. kirim WhatsApp massal) dapat ditawarkan sebagai{" "}
+          <strong>add-on</strong> terpisah.
+        </li>
+        <li>
+          Fitur berlabel &ldquo;Segera hadir&rdquo; belum tersedia dan tidak termasuk dalam
+          pembelian sampai dirilis.
         </li>
       </ul>
     ),
@@ -76,7 +90,7 @@ const SECTIONS: LegalSection[] = [
     body: (
       <ul>
         <li>{PAYMENT_TEXT}</li>
-        <li>Harga dalam Rupiah. Perubahan harga tidak berlaku bagi paket yang sudah dibayar.</li>
+        <li>Harga dalam Rupiah. Perubahan harga tidak berlaku bagi tema yang sudah dibayar.</li>
       </ul>
     ),
   },
@@ -120,6 +134,12 @@ const SECTIONS: LegalSection[] = [
             penipuan, atau data pribadi orang lain tanpa izin.
           </li>
         </ul>
+        <p>
+          Untuk mencegah penipuan: tautan di undangan hanya diterima dari layanan tepercaya (Google
+          Maps untuk lokasi; YouTube, Zoom, Google Meet, atau Instagram untuk siaran langsung;
+          Instagram untuk akun mempelai), teks bebas tidak pernah dijadikan tautan, dan hanya foto
+          serta musik yang dapat diunggah.
+        </p>
         <p>
           Kami dapat menyembunyikan atau menghapus konten, atau menonaktifkan undangan, yang
           melanggar ketentuan ini atau yang kami terima keluhan sah atasnya (termasuk klaim hak

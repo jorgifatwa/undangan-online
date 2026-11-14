@@ -29,7 +29,7 @@ satu tema tidak memperlambat tema lain.
 ```
 src/themes/
 ├── {slug}/                     satu folder per tema (slug = manifest.id)
-│   ├── manifest.ts             metadata, paket minimum, varian, section, musik
+│   ├── manifest.ts             metadata, harga tema, varian, section, musik
 │   ├── tokens.ts               varian warna (token --inv-*)
 │   ├── fonts.ts                font (next/font/local dari _fonts/)
 │   ├── index.tsx               ThemeDefinition + komponen default export
@@ -59,7 +59,7 @@ pnpm theme:new melati-putih --nama="Melati Putih"
 Perintah ini membuat kerangka yang langsung tampil di `/tema` dan
 `/preview/{slug}` dengan section default. Lanjutkan dengan langkah berikut:
 
-1. Isi `manifest.ts` (deskripsi, kategori, paket), `tokens.ts` (2–4 varian),
+1. Isi `manifest.ts` (deskripsi, kategori, harga), `tokens.ts` (2–4 varian),
    dan `fonts.ts` (§8).
 2. Bila mengadaptasi desain yang sudah ada, ikuti §6 dan §7.
 3. Override `Cover` dan section yang perlu. Section yang tidak di-override
@@ -72,15 +72,15 @@ Untuk menghapus tema, hapus foldernya lalu jalankan `pnpm themes:sync`.
 
 ## 3. Manifest
 
-| Field            | Isi                                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| `id`             | sama persis dengan nama folder (dicek oleh `themes:sync`)                                                 |
-| `minPackage`     | paket berbayar minimum agar undangan **aktif penuh** (min. 12 bulan setelah acara); semua tema tetap bisa dicoba di FREE (3 hari + watermark) |
-| `variants`       | 2–4 varian; yang pertama jadi default                                                                     |
-| `sections`       | section yang didukung tema; section lain tidak pernah dirender                                            |
-| `lockedSections` | lihat §11                                                                                                 |
-| `defaultMusic`   | musik bawaan bila pengguna belum memilih lagu (file `.m4a`, §9)                                           |
-| `thumbnail`      | gradien cadangan bila belum ada screenshot (§13)                                                          |
+| Field            | Isi                                                                                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | sama persis dengan nama folder (dicek oleh `themes:sync`)                                                                                          |
+| `price`          | harga tema (rupiah), sekali bayar per undangan, sudah termasuk semua fitur inti; semua tema tetap bisa dicoba gratis (masa uji 3 hari + watermark) |
+| `variants`       | 2–4 varian; yang pertama jadi default                                                                                                              |
+| `sections`       | section yang didukung tema; section lain tidak pernah dirender                                                                                     |
+| `lockedSections` | lihat §11                                                                                                                                          |
+| `defaultMusic`   | musik bawaan bila pengguna belum memilih lagu (file `.m4a`, §9)                                                                                    |
+| `thumbnail`      | gradien cadangan bila belum ada screenshot (§13)                                                                                                   |
 
 Urutan akhir section ditentukan `resolveSections` (`src/schemas/sections.ts`)
 dengan urutan langkah berikut:
@@ -89,7 +89,7 @@ dengan urutan langkah berikut:
 2. Section terkunci dipindah tepat setelah cover.
 3. Filter dukungan tema.
 4. Filter section yang disembunyikan pengguna.
-5. Filter fitur paket.
+5. Filter hak pakai (mis. amplop digital tampil setelah tema dibeli).
 6. Filter section yang datanya kosong.
 
 ## 4. Token warna & varian
@@ -131,7 +131,7 @@ const definition: ThemeDefinition = {
 - musik, yang baru mulai setelah tamu mengetuk cover
 - mode ringan dan `MotionConfig reducedMotion="user"`
 - jeda animasi saat tab tidak aktif atau section tidak terlihat (`data-inview`)
-- toast, watermark paket FREE, dan urutan section
+- toast, watermark masa uji, dan urutan section
 
 Setiap section dibungkus `SectionShell` dengan `id="inv-{sectionId}"`.
 
@@ -277,8 +277,8 @@ yang:
 
 - selalu tampil **tepat setelah cover**, sesuai urutan di array;
 - tidak bisa dipindah atau disembunyikan di editor (`isSectionLocked`);
-- tetap tampil walau datanya kosong, tetapi tetap dicek dukungan tema dan fitur
-  paket.
+- tetap tampil walau datanya kosong, tetapi tetap dicek dukungan tema dan hak
+  pakai undangan.
 
 Pakai fitur ini untuk section yang menjadi tujuan transisi cover. Contohnya,
 amplop Tirai "berjalan" menjadi kartu ayat.

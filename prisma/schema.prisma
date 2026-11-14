@@ -33,13 +33,14 @@ enum EventType {
   SYUKURAN
 }
 
-/// Paket dibayar sekali per undangan. Harga & fitur didefinisikan di
-/// src/lib/packages.ts (sumber kebenaran server), bukan di database.
-enum PackageTier {
-  FREE
-  BASIC
-  PREMIUM
-  EXCLUSIVE
+/// Isi pesanan (siap Midtrans, Tahap 5). Harga tema ada di manifest tema
+/// (src/themes/*/manifest.ts), add-on di src/lib/pricing/addons.ts.
+enum OrderItemKind {
+  /// Beli tema pertama kali untuk undangan ini.
+  THEME
+  /// Pindah ke tema lebih mahal: bayar selisih (harga baru − kredit tema).
+  THEME_UPGRADE
+  ADDON
 }
 
 enum InvitationStatus {
@@ -161,14 +162,22 @@ model Invitation {
   colorVariant  String?
   /// Data undangan; bentuknya ditentukan Zod schema sesuai eventType.
   data          Json             @default("{}")
-  package       PackageTier      @default(FREE)
   status        InvitationStatus @default(DRAFT)
-  /// Mode privat (Premium+): hanya tamu dengan link personal yang bisa membuka.
+  /// Null = masa uji (3 hari sejak terbit pertama + watermark). Diisi saat tema
+  /// pertama kali dibeli; harga per tema, berlaku PER UNDANGAN.
+  purchasedAt   DateTime?
+  /// Total rupiah yang sudah dibayar untuk tema undangan ini. Pindah ke tema
+  /// dengan harga ≤ kredit gratis; lebih mahal → bayar selisih.
+  themeCredit   Int              @default(0)
+  /// Tema yang sudah pernah dibayar untuk undangan ini (boleh kembali gratis).
+  ownedThemeIds String[]         @default([])
+  /// Mode privat (segera hadir): hanya tamu dengan link personal yang bisa membuka.
   isPrivate     Boolean          @default(false)
   /// Counter denormalisasi agar dashboard cepat; detail ada di InvitationView.
   viewCount     Int              @default(0)
   publishedAt   DateTime?
-  /// Null = aktif permanen (paket berbayar). FREE diisi publishedAt + 3 hari.
+  /// Null = tema sudah dibeli (aktif minimal 12 bulan setelah acara). Masa uji
+  /// diisi publishedAt + 3 hari.
   expiresAt     DateTime?
   /// Retensi: waktu foto & musik undangan FREE kedaluwarsa dihapus otomatis
   /// (expiresAt + 30 hari). Null = media masih ada.
@@ -186,6 +195,7 @@ model Invitation {
   orders Order[]
   views  InvitationView[]
   media  Media[]
+  addons InvitationAddon[]
 
   @@index([userId])
   @@index([status, expiresAt])
@@ -292,8 +302,7 @@ model Order {
   id              String      @id @default(cuid())
   invitationId    String
   userId          String
-  package         PackageTier
-  /// Nominal dalam rupiah, disimpan saat order dibuat (harga bisa berubah).
+  /// Total rupiah = jumlah OrderItem.amount, disimpan saat order dibuat.
   amount          Int
   midtransOrderId String      @unique
   status          OrderStatus @default(PENDING)
@@ -303,14 +312,63 @@ model Order {
   /// Payload notifikasi terakhir dari webhook Midtrans (audit).
   rawNotification Json?
   paidAt          DateTime?
+  /// Waktu item pesanan diterapkan ke undangan (idempoten: webhook ganda aman).
+  appliedAt       DateTime?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitation Invitation  @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      OrderItem[]
 
   @@index([invitationId])
   @@index([userId, status])
+}
+
+/// Satu baris pesanan: tema, selisih upgrade tema, atau add-on.
+model OrderItem {
+  id        String        @id @default(cuid())
+  orderId   String
+  kind      OrderItemKind
+  /// themeId untuk THEME/THEME_UPGRADE, addonId untuk ADDON.
+  refId     String
+  /// Teks yang tampil di tagihan, mis. "Tema Renda Rimba".
+  label     String
+  unitPrice Int
+  qty       Int           @default(1)
+  amount    Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+/// Add-on yang sudah dibeli untuk satu undangan (mis. foto galeri tambahan).
+model InvitationAddon {
+  id           String   @id @default(cuid())
+  invitationId String
+  addonId      String
+  quantity     Int      @default(1)
+  orderId      String?
+  createdAt    DateTime @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId])
+}
+
+/// Jejak audit tindakan admin manual (mis. pnpm admin:grant-theme).
+model AdminAudit {
+  id           String   @id @default(cuid())
+  /// Nama/identitas pelaku yang diisi saat menjalankan + user OS.
+  actor        String
+  action       String
+  invitationId String?
+  detail       Json
+  createdAt    DateTime @default(now())
+
+  @@index([invitationId])
+  @@index([createdAt])
 }
 
 // -----------------------------------------------------------------------------

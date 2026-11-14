@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { INSTAGRAM_RE, normalizeInstagram } from "@/lib/links";
+
 import { baseInvitationShape, optionalText, parentSchema, photoSchema } from "./common";
 
 export const personSchema = z.object({
@@ -15,8 +17,17 @@ export const personSchema = z.object({
   father: parentSchema.optional(),
   mother: parentSchema.optional(),
   photo: photoSchema.optional(),
-  /** Username tanpa @. */
-  instagram: optionalText(40),
+  /** Nama akun Instagram saja ("@nama" & link instagram.com dinormalkan). */
+  instagram: z
+    .preprocess(
+      (v) => (typeof v === "string" ? normalizeInstagram(v) : v),
+      z.string().max(30).optional(),
+    )
+    .transform((v) => (v ? v : undefined))
+    .refine(
+      (v) => v === undefined || INSTAGRAM_RE.test(v),
+      "Isi nama akun Instagram saja, mis. sekar.ayu",
+    ),
 });
 export type Person = z.infer<typeof personSchema>;
 

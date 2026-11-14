@@ -30,6 +30,7 @@ import { SectionShell } from "../../_shared/runtime/SectionShell";
 import { SuedeTexture } from "../../_shared/textures";
 import { Art } from "../art";
 import { CText, CREAM, F, Placed, canvasText, u, type Box } from "../canvas";
+import { safeHref } from "@/lib/links";
 
 /**
  * Section 3 desain (acara). Bagian dekoratif atas memakai koordinat kanvas asli
@@ -239,7 +240,9 @@ export function TiraiEvent() {
   const second = events.find((e) => e !== first);
   const p = dateParts(first.date, first.timezone);
   // Satu tombol peta bila semua acara di tempat yang sama, selain itu per acara.
-  const mapsUrls = [...new Set(events.map((e) => e.mapsUrl).filter(Boolean))] as string[];
+  const mapsUrls = [
+    ...new Set(events.map((e) => safeHref(e.mapsUrl, "maps")).filter(Boolean)),
+  ] as string[];
   const sharedMap = mapsUrls.length === 1 ? mapsUrls[0] : null;
 
   return (
@@ -437,9 +440,9 @@ export function TiraiEvent() {
           <Fragment key={e.id}>
             {i > 0 && <CallaDivider />}
             <EventBlock e={e} />
-            {!sharedMap && e.mapsUrl && (
+            {!sharedMap && safeHref(e.mapsUrl, "maps") && (
               <div style={{ marginTop: u(21.11) }}>
-                <MapsButton href={e.mapsUrl} />
+                <MapsButton href={safeHref(e.mapsUrl, "maps")!} />
               </div>
             )}
           </Fragment>

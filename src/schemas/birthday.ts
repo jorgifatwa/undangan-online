@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { baseInvitationShape, optionalText, parentSchema, photoSchema } from "./common";
+import { baseInvitationShape, optionalText, parentSchema, photoSchema, trustedUrl } from "./common";
 
 export const wishlistItemSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  url: z.url().optional(),
+  url: trustedUrl("wishlist").optional(),
   note: optionalText(200),
 });
 

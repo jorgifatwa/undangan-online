@@ -8,8 +8,7 @@ import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { retentionStatus } from "@/lib/invitations/retention";
 import { displayStatus, summarize } from "@/lib/invitations/summary";
-import { formatTanggal } from "@/lib/format";
-import { PACKAGES } from "@/lib/packages";
+import { formatRupiah, formatTanggal } from "@/lib/format";
 import { invitationUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { getManifest } from "@/themes/registry";
@@ -35,7 +34,7 @@ export default async function DashboardPage() {
       themeId: true,
       data: true,
       status: true,
-      package: true,
+      purchasedAt: true,
       expiresAt: true,
       mediaPurgedAt: true,
       updatedAt: true,
@@ -97,10 +96,13 @@ export default async function DashboardPage() {
                     {s.dateLabel ?? "Tanggal belum valid"}
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    Tema {manifest?.name ?? inv.themeId} · Paket {PACKAGES[inv.package].label}
+                    Tema {manifest?.name ?? inv.themeId} ·{" "}
+                    {inv.purchasedAt
+                      ? "Tema sudah dibeli"
+                      : `Masa uji gratis${manifest ? ` · beli ${formatRupiah(manifest.price)}` : ""}`}
                   </p>
                   {inv.status === "PUBLISHED" &&
-                    inv.package === "FREE" &&
+                    !inv.purchasedAt &&
                     inv.expiresAt &&
                     inv.expiresAt > new Date() && (
                       <p className="mt-1 text-xs text-amber-800">
@@ -121,7 +123,7 @@ export default async function DashboardPage() {
                         <strong>dihapus pada {formatTanggal(r.deleteAt)}</strong> ({r.daysLeft} hari
                         lagi) karena masa uji Gratis sudah berakhir.{" "}
                         <Link href="/harga" className="font-semibold underline">
-                          Tingkatkan paket
+                          Beli tema
                         </Link>{" "}
                         agar undangan aktif kembali dan foto tetap tersimpan.
                       </div>

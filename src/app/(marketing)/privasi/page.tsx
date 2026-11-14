@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { LegalContact, LegalPage, type LegalSection } from "@/components/marketing/LegalPage";
 import { business } from "@/config/business";
 import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
-import { PAID_ACTIVE } from "@/lib/packages";
+import { PAID_ACTIVE } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi",
@@ -105,11 +105,11 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li>Data akun: selama akun aktif, atau sampai Anda meminta penghapusan.</li>
         <li>
-          Undangan paket Gratis: foto dan musik dihapus otomatis {MEDIA_RETENTION_DAYS} hari setelah
-          masa uji berakhir.
+          Undangan yang temanya belum dibeli (masa uji): foto dan musik dihapus otomatis{" "}
+          {MEDIA_RETENTION_DAYS} hari setelah masa uji berakhir.
         </li>
         <li>
-          Undangan paket berbayar: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
+          Undangan yang temanya sudah dibeli: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
           {PAID_ACTIVE.long.slice(1)} Hubungi kami bila ingin undangan dihapus lebih cepat.
         </li>
         <li>

@@ -146,7 +146,7 @@ async function main() {
   await shot(page, "wizard-3-dibuat");
   const inv1 = await db.invitation.findUnique({ where: { id: id1 } });
   check(!!inv1 && inv1.userId === a.user.id, "undangan tersimpan milik user A");
-  check(inv1?.status === "DRAFT" && inv1.package === "FREE", "status DRAF, paket FREE");
+  check(inv1?.status === "DRAFT" && !inv1.purchasedAt, "status DRAF, masa uji (tema belum dibeli)");
   check(inv1?.slug === "laras-bima", `slug otomatis "${inv1?.slug}"`);
   check(!JSON.stringify(inv1?.data).includes("Sekar"), "tanpa data contoh");
 

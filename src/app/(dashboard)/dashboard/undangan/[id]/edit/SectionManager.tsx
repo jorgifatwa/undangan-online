@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import type { PackageFeatures } from "@/lib/packages";
+import type { Entitlements } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_SECTION_ORDER,
@@ -148,7 +148,7 @@ export function SectionManager({
 }: {
   eventType: "WEDDING" | "BIRTHDAY";
   manifest: ThemeManifest;
-  features: PackageFeatures;
+  features: Entitlements;
   /** Data terakhir yang valid (untuk tanda "belum diisi"). */
   invitation: AnyInvitationData | null;
   config: Config;
@@ -187,7 +187,7 @@ export function SectionManager({
                 badges.push({ text: "tidak tampil di tema ini", tone: "neutral" });
               const feature = SECTION_FEATURE[r.id];
               if (feature && !features[feature])
-                badges.push({ text: "butuh paket lebih tinggi", tone: "rose" });
+                badges.push({ text: "tampil setelah tema dibeli", tone: "rose" });
               if (invitation && isSectionEmpty(r.id, invitation))
                 badges.push({ text: "belum diisi", tone: "amber" });
               return (

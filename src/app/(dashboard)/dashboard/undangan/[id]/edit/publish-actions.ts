@@ -12,7 +12,8 @@ import {
 
 export interface PublishState {
   status: "DRAFT" | "PUBLISHED";
-  package: string;
+  /** Tema sudah dibeli (bukan masa uji). */
+  purchased: boolean;
   slug: string;
   publishedAt: string | null;
   expiresAt: string | null;
@@ -21,14 +22,14 @@ export interface PublishState {
 
 const view = (inv: {
   status: string;
-  package: string;
+  purchasedAt: Date | null;
   slug: string;
   publishedAt: Date | null;
   expiresAt: Date | null;
   updatedAt: Date;
 }): PublishState => ({
   status: inv.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
-  package: inv.package,
+  purchased: !!inv.purchasedAt,
   slug: inv.slug,
   publishedAt: inv.publishedAt?.toISOString() ?? null,
   expiresAt: inv.expiresAt?.toISOString() ?? null,
