@@ -314,6 +314,11 @@ export function TiraiIntro() {
         >
           <AccentBouquet w={282} />
         </Placed>
+        <Player />
+        <Placed img={[44, 191.2, 134.5, 168.2]} reveal="sway">
+          <HangingBouquet w={135} />
+        </Placed>
+        {/* teks ayat di atas untaian buket agar selalu terbaca */}
         {q?.translation ? (
           <Verse text={q.translation} source={q.source} skip={introPlayed} />
         ) : (
@@ -325,10 +330,6 @@ export function TiraiIntro() {
             />
           )
         )}
-        <Player />
-        <Placed img={[44, 191.2, 134.5, 168.2]} reveal="sway">
-          <HangingBouquet w={135} />
-        </Placed>
         <Placed img={[111.3, 117, 134.5, 168.2]} reveal="sway-right">
           <HangingBouquet w={135} />
         </Placed>

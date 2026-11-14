@@ -3,7 +3,7 @@
  * atribusi tidak wajib tapi kita tetap mencatatnya), ubah ke WebP, lalu tulis
  * public/placeholders/CREDITS.md dari daftar yang sama agar kredit selalu sinkron.
  *
- * Jalankan: pnpm placeholders
+ * Jalankan: pnpm placeholders  [--only=wedding-groom]
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -42,8 +42,9 @@ const PHOTOS: PhotoSource[] = [
     id: "1771257717271-a0b50e3d9885",
     page: "https://unsplash.com/photos/nXmt5zQ7l0c",
     photographer: "Davin Naziel",
-    crop: { left: 0.42, top: 0.12, width: 0.58, height: 0.8 },
-    usage: "Potret mempelai pria (dipotong dari foto berdua)",
+    // close-up kepala–dada (rasio 2:3 seperti potret mempelai wanita), wajah di sepertiga atas
+    crop: { left: 0.44, top: 0.33, width: 0.31, height: 0.31 },
+    usage: "Potret mempelai pria (dipotong close-up dari foto berdua)",
   },
   {
     file: "wedding-g1",
@@ -265,7 +266,9 @@ ${musicRows}
 async function main() {
   await fs.mkdir(path.join(OUT, "photos"), { recursive: true });
   await fs.mkdir(path.join(OUT, "music"), { recursive: true });
-  for (const p of PHOTOS) await processPhoto(p);
+  // --only=wedding-groom,wedding-bride → hanya unduh ulang foto tertentu
+  const only = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1]?.split(",");
+  for (const p of PHOTOS) if (!only || only.includes(p.file)) await processPhoto(p);
   await fs.writeFile(path.join(OUT, "CREDITS.md"), credits());
   console.log("✓ CREDITS.md");
 }

@@ -131,12 +131,13 @@ export function LaceCard({ skip }: { skip?: boolean }) {
 const VERSE = { x: 123.9, w: 192.2, top: 255, clearTop: 318, bottom: 452, tailRight: 205 } as const;
 
 /**
- * Ayat di kartu renda. Posisi menyesuaikan panjang kutipan agar tidak ada
- * baris yang tertutup ekor buket:
+ * Ayat di kartu renda, seperti desain referensi: teks rata tengah selebar
+ * kolom kartu. Posisi menyesuaikan panjang kutipan:
  *  - pendek → ditengahkan di area bersih di bawah buket (318–452)
- *  - panjang → mulai y 255, baris di samping buket mengalir di kanannya
- *    (float tak terlihat seukuran area ekor), font dikecilkan bila perlu
- * Sumber ayat mengalir di bawah teks. Diuji dengan 1 Korintus 13:4-7.
+ *  - sedang (mis. QS Ar-Rum 21) → selebar kolom, ditengahkan di 255–452
+ *  - sangat panjang (mis. 1 Korintus 13:4-7) → mulai y 255, baris di samping
+ *    ekor buket mengalir di kanannya (float tak terlihat), font dikecilkan
+ * Sumber ayat mengalir di bawah teks.
  */
 export function Verse({ text, source, skip }: { text: string; source?: string; skip?: boolean }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -165,7 +166,16 @@ export function Verse({ text, source, skip }: { text: string; source?: string; s
           return;
         }
       }
-      // 2) kutipan panjang: mulai lebih atas, baris di samping buket mengalir ke kanan
+      // 2) selebar kolom kartu, ditengahkan di 255–452 (font boleh mengecil sampai 90%)
+      const full = VERSE.bottom - VERSE.top;
+      for (const f of [1, 0.95, 0.9]) {
+        const h1 = heightAt(false, f);
+        if (h1 <= full) {
+          setLayout({ top: VERSE.top + (full - h1) / 2, float: false, fit: f });
+          return;
+        }
+      }
+      // 3) sangat panjang: mulai lebih atas, baris di samping buket mengalir ke kanan
       let h = 0;
       const room = VERSE.bottom - VERSE.top;
       let fit = 1;
@@ -226,6 +236,8 @@ export function Verse({ text, source, skip }: { text: string; source?: string; s
     top: u(layout.top),
     width: u(VERSE.w),
     pointerEvents: "none",
+    // di atas untaian buket gantung (yang juga menjuntai ke kartu) agar teks utuh terbaca
+    zIndex: 1,
   };
   return skip ? (
     <div style={pos}>{body}</div>

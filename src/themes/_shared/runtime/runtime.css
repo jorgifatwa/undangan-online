@@ -39,6 +39,10 @@
   background: var(--inv-bg);
   overflow-x: clip;
   box-shadow: 0 0 60px rgb(0 0 0 / 0.45);
+  /* Kontainer: satuan cqw (dipakai tema kanvas, termasuk minHeight di elemen
+     section sendiri) = lebar KOLOM, bukan lebar layar. Tanpa ini, di desktop
+     section menjadi ±(lebar layar / 440)× lebih tinggi dan menyisakan ruang kosong. */
+  container-type: inline-size;
 }
 
 [data-inv-root] .inv-backdrop {
