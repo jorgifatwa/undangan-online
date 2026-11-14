@@ -58,9 +58,9 @@ const FONTS: Record<string, Omit<FontRow, "kb">[]> = {
     },
     {
       original: "SaveTheDate",
-      replacement: "Italianno",
+      replacement: "Herr Von Muellerhoff",
       family: "var(--tb-savedate)",
-      file: "italianno.woff2",
+      file: "herr-von-muellerhoff.woff2",
       sample: "We're",
       size: 40,
       usage: '"We\'re", huruf G, judul kecil',

@@ -298,8 +298,10 @@ export function TiraiCouple() {
       >
         <p
           style={{
-            ...text([0, 0, 24.58], F.script, 34.203, 34.203, -0.068, "center"),
+            ...text([0, 0, 24.58], F.amp, 34.203, 34.203, -0.068, "center"),
             position: "relative",
+            fontStyle: "italic",
+            fontWeight: 500,
           }}
         >
           &amp;

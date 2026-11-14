@@ -20,7 +20,8 @@ export type Box = readonly [x: number, y: number, w: number, h: number];
 /** Font tema (variabel dari fonts.ts). */
 export const F = {
   script: "var(--tb-script), 'Pinyon Script', cursive", // padanan Sloop Script
-  saveDate: "var(--tb-savedate), 'Italianno', cursive", // padanan SaveTheDate
+  saveDate: "var(--tb-savedate), 'Herr Von Muellerhoff', cursive", // padanan SaveTheDate
+  amp: "var(--tb-amp), 'Cormorant Garamond', serif", // padanan Ampersand (& mempelai)
   cormorant: "var(--tb-cormorant), 'Cormorant Garamond', serif",
   verse: "var(--tb-verse), 'Noto Serif', serif",
   body: "var(--tb-body), 'Quattrocento', serif",

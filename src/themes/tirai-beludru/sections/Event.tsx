@@ -76,7 +76,9 @@ function RotatedWord({
       <p
         style={{
           margin: 0,
-          transform: "rotate(-8.85deg)",
+          // Padanan OFL lebih ramping dari font desain → dilebarkan agar
+          // bentang kata (termasuk sapuan awal S & D) sama dengan referensi.
+          transform: "rotate(-8.85deg) scaleX(1.4)",
           fontFamily: F.saveDate,
           fontSize: u(fontSize),
           lineHeight: u(size[1]),
@@ -263,19 +265,11 @@ export function TiraiEvent() {
 
       {/* --- Bagian dekoratif (koordinat kanvas) --- */}
       <div style={{ position: "relative", height: u(741.57) }}>
-        <RotatedWord
-          text="Save"
-          center={[222.16, 136.11]}
-          size={[315.13, 101.62]}
-          fontSize={72.85}
-        />
-        <RotatedWord text="the" center={[244.66, 185.06]} size={[157.56, 50.81]} fontSize={36.42} />
-        <RotatedWord
-          text="Date"
-          center={[228.02, 270.61]}
-          size={[315.13, 101.62]}
-          fontSize={72.85}
-        />
+        {/* Ukuran & posisi disetel ulang untuk Herr Von Muellerhoff (padanan
+            SaveTheDate) agar huruf selebar & setinggi desain referensi. */}
+        <RotatedWord text="Save" center={[222, 128]} size={[460, 101.62]} fontSize={112} />
+        <RotatedWord text="the" center={[240, 182]} size={[240, 50.81]} fontSize={56} />
+        <RotatedWord text="Date" center={[226, 258]} size={[460, 101.62]} fontSize={112} />
         <Placed img={[333.52, 208.11, 30.86, 32.22]} reveal="pop">
           <Art
             slot="butterfly"

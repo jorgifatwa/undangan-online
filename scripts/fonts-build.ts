@@ -154,8 +154,8 @@ const FAMILIES: Family[] = [
     name: "Cormorant Garamond Italic",
     src: "ofl/cormorantgaramond/CormorantGaramond-Italic[wght].ttf",
     license: "ofl/cormorantgaramond/OFL.txt",
-    // hanya kata miring di judul ("SAVE THE DATE!", "DRESS CODE")
-    outputs: [{ file: "cormorant-italic-titles.woff2", chars: "THE CODE", axes: { wght: 500 } }],
+    // hanya kata miring di judul ("SAVE THE DATE!", "DRESS CODE") + "&" mempelai Tirai Beludru
+    outputs: [{ file: "cormorant-italic-titles.woff2", chars: "THE CODE&", axes: { wght: 500 } }],
   },
   {
     name: "Amiri",
@@ -174,10 +174,10 @@ const FAMILIES: Family[] = [
     ],
   },
   {
-    name: "Italianno",
-    src: "ofl/italianno/Italianno-Regular.ttf",
-    license: "ofl/italianno/OFL.txt",
-    outputs: [{ file: "italianno.woff2", chars: LATIN }],
+    name: "Herr Von Muellerhoff",
+    src: "ofl/herrvonmuellerhoff/HerrVonMuellerhoff-Regular.ttf",
+    license: "ofl/herrvonmuellerhoff/OFL.txt",
+    outputs: [{ file: "herr-von-muellerhoff.woff2", chars: LATIN }],
   },
   {
     name: "Noto Serif",

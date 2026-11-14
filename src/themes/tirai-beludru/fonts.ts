@@ -4,7 +4,8 @@ import localFont from "next/font/local";
  * Font Tirai Beludru — padanan OFL untuk font desain referensi (font ekspor
  * Canva tidak dipakai), di-subset oleh `pnpm fonts:build` (src/themes/_fonts/,
  * lisensi di _fonts/licenses/):
- *   Sloop Script → Pinyon Script     SaveTheDate → Italianno
+ *   Sloop Script → Pinyon Script     SaveTheDate → Herr Von Muellerhoff
+ *   Ampersand (& mempelai) → Cormorant Garamond Italic (file sama dengan Renda Rimba)
  *   Cormorant / ClickPrompt → Cormorant Garamond
  *   VerseSerif → Noto Serif          Quattrocento → Quattrocento (OFL asli)
  *   teks Arab → Amiri
@@ -21,12 +22,21 @@ const tbScript = localFont({
   fallback: ["cursive"],
 });
 const tbSaveDate = localFont({
-  src: "../_fonts/italianno.woff2",
+  src: "../_fonts/herr-von-muellerhoff.woff2",
   weight: "400",
   variable: "--tb-savedate",
   display: "swap",
   preload: false,
   fallback: ["cursive"],
+});
+const tbAmp = localFont({
+  src: "../_fonts/cormorant-italic-titles.woff2",
+  weight: "500",
+  style: "italic",
+  variable: "--tb-amp",
+  display: "swap",
+  preload: false,
+  fallback: ["Georgia", "serif"],
 });
 const tbCormorant = localFont({
   src: "../_fonts/cormorant-400-700.woff2",
@@ -63,6 +73,6 @@ const tbArabic = localFont({
   fallback: ["serif"],
 });
 
-export const fontClassName = [tbScript, tbSaveDate, tbCormorant, tbVerse, tbBody, tbArabic]
+export const fontClassName = [tbScript, tbSaveDate, tbAmp, tbCormorant, tbVerse, tbBody, tbArabic]
   .map((f) => f.variable)
   .join(" ");

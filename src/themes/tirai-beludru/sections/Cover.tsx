@@ -298,7 +298,8 @@ export function TiraiCover({ onOpen, startMusic, firstSection }: CoverProps) {
         {/* Judul — teks SSR, langsung terlihat tanpa menunggu JavaScript */}
         <p
           className="tb-fade"
-          style={canvasText([77.07, 157.7, 39.78], F.saveDate, 20.835, 28.524, {
+          // Ukuran disetel untuk Herr Von Muellerhoff (padanan SaveTheDate).
+          style={canvasText([77.07, 157.7, 39.78], F.saveDate, 40, 28.524, {
             letterSpacing: 1.458,
             renderScale: 0.75064,
             color: TEXT,
@@ -319,10 +320,15 @@ export function TiraiCover({ onOpen, startMusic, firstSection }: CoverProps) {
         </p>
         <p
           className="tb-fade"
-          style={canvasText([155.57, 107.36, 128.87], F.saveDate, 29.79, 41.597, {
-            renderScale: 0.40781,
-            color: TEXT,
-          })}
+          // Padanan OFL lebih ramping → diperbesar & dilebarkan (scaleX 1.55,
+          // titik tengah tetap) agar bentangnya sama dengan referensi.
+          style={{
+            ...canvasText([120.13, 109, 128.87], F.saveDate, 44, 41.597, {
+              renderScale: 0.40781,
+              color: TEXT,
+            }),
+            transform: `scale(${0.40781 * 1.55}, 0.40781)`,
+          }}
         >
           We&rsquo;re
         </p>
