@@ -43,10 +43,11 @@ enum OrderItemKind {
   ADDON
 }
 
+/// Draf gratis tanpa batas waktu; terbit hanya setelah tema dibeli. Penangguhan
+/// oleh admin disimpan terpisah (Invitation.suspendedAt) agar status asli tetap.
 enum InvitationStatus {
   DRAFT
   PUBLISHED
-  EXPIRED
 }
 
 enum RsvpStatus {
@@ -176,12 +177,18 @@ model Invitation {
   /// Counter denormalisasi agar dashboard cepat; detail ada di InvitationView.
   viewCount     Int              @default(0)
   publishedAt   DateTime?
-  /// Null = tema sudah dibeli (aktif minimal 12 bulan setelah acara). Masa uji
-  /// diisi publishedAt + 3 hari.
-  expiresAt     DateTime?
-  /// Retensi: waktu foto & musik undangan FREE kedaluwarsa dihapus otomatis
-  /// (expiresAt + 30 hari). Null = media masih ada.
+  /// Perubahan terakhir OLEH PENGGUNA di editor (autosave, alamat, template).
+  /// Dasar retensi draf; proses sistem (cron, migrasi, skrip admin) tidak
+  /// mengubahnya — berbeda dengan updatedAt.
+  lastEditedAt  DateTime         @default(now())
+  /// Retensi draf: foto & musik draf yang belum pernah dibeli dan tidak diubah
+  /// 90 hari dihapus otomatis (teks tetap). Null = media masih ada / belum dibersihkan.
   mediaPurgedAt DateTime?
+  /// Ditangguhkan admin (pelanggaran syarat). Selama terisi: halaman tamu, link
+  /// pratinjau, gambar OG & API tamu → 404; pemilik tidak bisa menerbitkan.
+  suspendedAt   DateTime?
+  /// Alasan singkat yang ditampilkan ke pemilik.
+  suspendReason String?
   /// Template pesan WhatsApp milik pemilik (null = template bawaan). Kolom
   /// terpisah dari `data` agar autosave editor tidak menimpanya.
   shareTemplate String?
@@ -194,11 +201,29 @@ model Invitation {
   wishes Wish[]
   orders Order[]
   views  InvitationView[]
-  media  Media[]
-  addons InvitationAddon[]
+  media        Media[]
+  addons       InvitationAddon[]
+  previewLinks PreviewLink[]
 
   @@index([userId])
-  @@index([status, expiresAt])
+  @@index([status])
+  @@index([purchasedAt, lastEditedAt])
+}
+
+/// Link pratinjau rahasia (/p/{token}) untuk ditunjukkan sebelum membeli.
+/// Satu link aktif per undangan; hanya HASH token yang disimpan.
+model PreviewLink {
+  id           String    @id @default(cuid())
+  invitationId String
+  /// sha256(token) dalam hex — token asli hanya diketahui pemilik saat dibuat.
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId])
 }
 
 model Guest {

@@ -1,8 +1,9 @@
 import { business } from "@/config/business";
 import { formatRupiah } from "@/lib/format";
-import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
+import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
+import { DRAFT_MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
 import { MAX_AUDIO_SECONDS, MAX_PHOTO_BYTES } from "@/lib/media/limits";
-import { LIMITS, PAID_ACTIVE, TRIAL_DAYS } from "@/lib/pricing";
+import { LIMITS, PAID_ACTIVE } from "@/lib/pricing";
 import { ADDONS } from "@/lib/pricing/addons";
 import { THEME_MANIFESTS } from "@/themes/registry";
 
@@ -25,7 +26,6 @@ export const INCLUDED: string[] = [
   "Kirim lewat WhatsApp & pratinjau link bergambar",
   "Peta lokasi & simpan ke kalender",
   "Kutipan siap pakai (Al-Qur'an, Alkitab, umum)",
-  "Tanpa watermark",
   PAID_ACTIVE.short,
 ];
 
@@ -41,13 +41,13 @@ export const COMING_SOON: string[] = [
 /** Kalimat cara bayar (tergantung ada/tidaknya nomor WhatsApp). */
 export const PAYMENT_TEXT = business.whatsapp
   ? "Pembayaran online (QRIS, transfer bank, e-wallet) segera hadir. Sementara itu, hubungi kami lewat WhatsApp untuk membeli tema."
-  : "Pembayaran online (QRIS, transfer bank, e-wallet) segera hadir. Sementara itu, semua tema bisa dicoba gratis.";
+  : "Pembayaran online (QRIS, transfer bank, e-wallet) segera hadir. Sementara itu, semua tema bisa dicoba & dipratinjau gratis.";
 
 export const REFUND_TEXT =
   "Dana dikembalikan penuh bila diminta dalam 3 hari sejak pembayaran dan undangan belum pernah diterbitkan. Setelah undangan diterbitkan, dana tidak dapat dikembalikan, kecuali undangan tidak dapat diakses karena kesalahan layanan kami.";
 
 export const THEME_CHANGE_TEXT =
-  "Selama masa uji, semua tema bebas dicoba. Setelah membeli, pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana), sedangkan pindah ke tema lebih mahal cukup membayar selisih harganya. Isi undangan tetap utuh.";
+  "Sebelum membeli, semua tema bebas dicoba. Setelah membeli, pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana), sedangkan pindah ke tema lebih mahal cukup membayar selisih harganya. Isi undangan tetap utuh.";
 
 const photoMb = Math.round(MAX_PHOTO_BYTES / 1024 / 1024);
 const priceList = THEME_MANIFESTS.map((m) => `${m.name} ${formatRupiah(m.price)}`).join(", ");
@@ -59,7 +59,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Berapa lama undangan aktif?",
-    a: `Masa uji gratis aktif ${TRIAL_DAYS} hari sejak pertama kali diterbitkan, dengan watermark (membatalkan terbit tidak menghentikan hitungan). Setelah tema dibeli: ${PAID_ACTIVE.long.charAt(0).toLowerCase()}${PAID_ACTIVE.long.slice(1)}`,
+    a: `Setelah tema dibeli dan undangan diterbitkan: ${PAID_ACTIVE.long.charAt(0).toLowerCase()}${PAID_ACTIVE.long.slice(1)}`,
   },
   { q: "Bagaimana cara bayar?", a: PAYMENT_TEXT },
   { q: "Apakah tema bisa diganti?", a: THEME_CHANGE_TEXT },
@@ -76,8 +76,12 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Halaman undangan tidak diindeks mesin pencari. Alamat IP tamu tidak disimpan mentah (hanya sidik acak harian untuk mencegah spam), dan Anda bisa menyembunyikan atau menghapus ucapan kapan saja dari editor. Data hanya dipakai untuk menjalankan undangan Anda.",
   },
   {
-    q: "Apa yang terjadi setelah masa uji berakhir?",
-    a: `Undangan tidak bisa dibuka tamu sampai tema dibeli; tamu hanya melihat halaman "tidak aktif" tanpa data pribadi. Foto dan musik undangan yang belum dibeli dihapus otomatis ${MEDIA_RETENTION_DAYS} hari setelah masa uji berakhir.`,
+    q: "Apakah bisa dicoba gratis?",
+    a: `Bisa. Buat undangan, isi semua bagian, ganti tema, dan pratinjau sepuasnya tanpa bayar dan tanpa batas waktu. Undangan bisa diterbitkan & dibagikan ke tamu setelah tema dibeli. Foto dan musik draf yang belum dibeli dan tidak diubah selama ${DRAFT_MEDIA_RETENTION_DAYS} hari dihapus otomatis (teks tetap tersimpan, dengan peringatan 7 hari sebelumnya).`,
+  },
+  {
+    q: "Bisakah keluarga melihat dulu sebelum diterbitkan?",
+    a: `Bisa. Dari editor, buat link pratinjau rahasia dan kirim ke keluarga atau pasangan — bisa dibuka tanpa login, bertanda "PRATINJAU", berlaku ${PREVIEW_LINK_DAYS} hari, dan bisa dicabut kapan saja. RSVP, ucapan, dan amplop digital tidak aktif di link pratinjau.`,
   },
   { q: "Bisakah dana dikembalikan?", a: REFUND_TEXT },
 ];

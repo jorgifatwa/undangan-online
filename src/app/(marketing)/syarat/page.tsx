@@ -3,17 +3,16 @@ import Link from "next/link";
 
 import { LegalContact, LegalPage, type LegalSection } from "@/components/marketing/LegalPage";
 import { business } from "@/config/business";
-import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
+import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
+import { DRAFT_MEDIA_RETENTION_DAYS, RETENTION_WARNING_DAYS } from "@/lib/invitations/retention";
 import { PAYMENT_TEXT, REFUND_TEXT, THEME_CHANGE_TEXT } from "@/lib/marketing/content";
-import { LIMITS, PAID_ACTIVE, TRIAL_DAYS } from "@/lib/pricing";
+import { LIMITS, PAID_ACTIVE } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Syarat & Ketentuan",
   description: `Syarat & Ketentuan penggunaan ${business.name}: akun, harga tema & masa aktif, pembayaran, pengembalian dana, dan tanggung jawab atas konten.`,
   alternates: { canonical: "/syarat" },
 };
-
-const trial = TRIAL_DAYS;
 
 const SECTIONS: LegalSection[] = [
   {
@@ -49,7 +48,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "harga",
-    title: "Harga tema, masa uji & masa aktif",
+    title: "Harga tema, draf gratis & masa aktif",
     body: (
       <ul>
         <li>
@@ -58,11 +57,22 @@ const SECTIONS: LegalSection[] = [
           inti undangan.
         </li>
         <li>
-          <strong>Masa uji gratis</strong>: semua tema bisa dipakai {trial} hari sejak undangan
-          pertama kali diterbitkan, dengan watermark. Membatalkan terbit tidak menghentikan atau
-          mengulang hitungan masa uji. Setelah masa uji berakhir, undangan tidak dapat dibuka tamu
-          sampai tema dibeli, dan foto serta musiknya dihapus otomatis {MEDIA_RETENTION_DAYS} hari
-          kemudian. Selama masa uji, amplop digital & hadiah tidak ditampilkan di halaman tamu.
+          <strong>Draf gratis</strong>: undangan bisa dibuat, diisi, diganti temanya, dan
+          dipratinjau tanpa biaya dan tanpa batas waktu. Undangan baru dapat{" "}
+          <strong>diterbitkan</strong> (dibuka tamu) setelah tema dibeli.
+        </li>
+        <li>
+          <strong>Link pratinjau</strong>: pemilik dapat membuat satu link rahasia untuk
+          memperlihatkan draf tanpa login. Link bertanda &ldquo;PRATINJAU&rdquo;, tidak menerima
+          RSVP, ucapan, maupun menampilkan amplop digital, berlaku {PREVIEW_LINK_DAYS} hari, dan
+          dapat dicabut kapan saja. Siapa pun yang memegang link dapat melihat isi draf, jadi
+          bagikan hanya kepada orang yang Anda percaya.
+        </li>
+        <li>
+          <strong>Penyimpanan draf</strong>: foto dan musik draf yang temanya belum pernah dibeli
+          dan tidak Anda ubah selama {DRAFT_MEDIA_RETENTION_DAYS} hari dihapus otomatis; teks
+          undangan tetap tersimpan. Peringatan tampil di dashboard {RETENTION_WARNING_DAYS} hari
+          sebelumnya, dan menyimpan perubahan apa pun di editor memulai hitungan dari awal.
         </li>
         <li>
           <strong>Setelah tema dibeli</strong>: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
@@ -141,9 +151,11 @@ const SECTIONS: LegalSection[] = [
           serta musik yang dapat diunggah.
         </p>
         <p>
-          Kami dapat menyembunyikan atau menghapus konten, atau menonaktifkan undangan, yang
-          melanggar ketentuan ini atau yang kami terima keluhan sah atasnya (termasuk klaim hak
-          cipta).
+          Kami dapat menyembunyikan atau menghapus konten, atau <strong>menangguhkan</strong>{" "}
+          undangan, yang melanggar ketentuan ini atau yang kami terima keluhan sah atasnya (termasuk
+          klaim hak cipta dan dugaan penipuan). Undangan yang ditangguhkan tidak dapat dibuka tamu
+          maupun lewat link pratinjau dan tidak dapat diterbitkan ulang; alasannya ditampilkan
+          kepada pemilik di dashboard. Pemilik dapat mengajukan banding melalui kontak di bawah.
         </p>
       </>
     ),

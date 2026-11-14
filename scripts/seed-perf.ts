@@ -35,7 +35,7 @@ async function main() {
         slug,
         eventType,
         themeId: m.id,
-        ...planFields("paid", m.id), // tanpa watermark & masa uji — ukur tema murni
+        ...planFields("paid", m.id), // undangan terbit = sudah dibeli
         status: "PUBLISHED",
         publishedAt: new Date(),
         data: inv.data as unknown as Prisma.InputJsonValue,

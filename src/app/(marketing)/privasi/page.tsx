@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 import { LegalContact, LegalPage, type LegalSection } from "@/components/marketing/LegalPage";
 import { business } from "@/config/business";
-import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
+import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
+import { DRAFT_MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
 import { PAID_ACTIVE } from "@/lib/pricing";
 
 export const metadata: Metadata = {
@@ -45,6 +46,11 @@ const SECTIONS: LegalSection[] = [
           <strong>Data teknis untuk keamanan</strong> — sidik acak dari alamat IP yang berganti
           setiap hari (IP asli tidak disimpan) dan cookie penanda perangkat acak, keduanya untuk
           mencegah spam pada RSVP & ucapan; serta log server standar dari penyedia hosting.
+        </p>
+        <p>
+          <strong>Link pratinjau</strong> — bila Anda membuatnya: sidik (hash) link, waktu dibuat,
+          kedaluwarsa, dan waktu dicabut. Pembuka link pratinjau tidak dapat mengirim RSVP atau
+          ucapan, jadi tidak ada data mereka yang tersimpan.
         </p>
         <p>
           <strong>Yang TIDAK kami simpan:</strong> nomor WhatsApp tamu yang Anda ketik di dialog
@@ -105,8 +111,13 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li>Data akun: selama akun aktif, atau sampai Anda meminta penghapusan.</li>
         <li>
-          Undangan yang temanya belum dibeli (masa uji): foto dan musik dihapus otomatis{" "}
-          {MEDIA_RETENTION_DAYS} hari setelah masa uji berakhir.
+          Draf yang temanya belum pernah dibeli: foto dan musik dihapus otomatis bila draf tidak
+          Anda ubah selama {DRAFT_MEDIA_RETENTION_DAYS} hari (teks tetap tersimpan sampai Anda
+          menghapusnya atau meminta penghapusan).
+        </li>
+        <li>
+          Link pratinjau: hanya sidik (hash) link yang disimpan, tidak pernah link aslinya; link
+          berhenti berlaku setelah {PREVIEW_LINK_DAYS} hari atau saat Anda mencabutnya.
         </li>
         <li>
           Undangan yang temanya sudah dibeli: {PAID_ACTIVE.long.charAt(0).toLowerCase()}

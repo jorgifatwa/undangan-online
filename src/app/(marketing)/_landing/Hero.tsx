@@ -2,12 +2,10 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { business } from "@/config/business";
-import { TRIAL_DAYS } from "@/lib/pricing";
 
 import { HeroVideo } from "./HeroVideo";
 
 export function Hero() {
-  const trial = TRIAL_DAYS;
   return (
     <section className="paper relative overflow-hidden">
       {/* lengkung lembut di belakang HP */}
@@ -35,7 +33,7 @@ export function Hero() {
               href="/masuk"
               className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-full px-5 py-3.5 text-[15px] font-medium whitespace-nowrap shadow-[0_12px_30px_-12px_rgb(120_50_25/0.6)] transition-transform hover:-translate-y-0.5 sm:px-6 sm:text-base"
             >
-              Buat Undangan Gratis <ArrowRight className="hidden size-4 sm:block" aria-hidden />
+              Buat & Pratinjau Gratis <ArrowRight className="hidden size-4 sm:block" aria-hidden />
             </Link>
             <Link
               href="/#tema"
@@ -45,7 +43,7 @@ export function Hero() {
             </Link>
           </div>
           <ul className="text-muted-foreground mt-6 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] sm:mt-8 sm:gap-x-5 sm:text-sm">
-            <li>✦ Coba gratis {trial} hari</li>
+            <li>✦ Bayar saat siap disebar</li>
             <li>✦ Tanpa aplikasi</li>
             <li>✦ Ganti tema kapan saja</li>
           </ul>

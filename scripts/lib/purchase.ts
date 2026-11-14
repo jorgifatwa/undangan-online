@@ -12,7 +12,7 @@ export function purchased(themeId: string, at = new Date()) {
   };
 }
 
-/** Undangan uji: "paid" = sudah membeli tema, "trial" = masa uji. */
-export type Plan = "trial" | "paid";
+/** Undangan uji: "paid" = sudah membeli tema, "draft" = belum membeli (draf gratis). */
+export type Plan = "draft" | "paid";
 export const planFields = (plan: Plan, themeId: string) =>
   plan === "paid" ? purchased(themeId) : {};

@@ -6,13 +6,12 @@ import { getAddon } from "./addons";
  * MODEL HARGA: per TEMA, sekali bayar PER UNDANGAN (bukan per akun).
  *  - Harga tema dibaca dari manifest tema (satu-satunya sumber).
  *  - Satu harga = SEMUA fitur inti. Kapasitas/fitur berbiaya → add-on.
- *  - Masa uji: semua tema bisa dipakai 3 hari sejak terbit pertama + watermark.
+ *  - Draf: gratis tanpa batas waktu (semua fitur bisa diisi & dipratinjau);
+ *    TERBIT hanya setelah tema dibeli.
  *  - Ganti tema setelah membeli: ke tema yang sudah dimiliki / harga ≤ kredit
  *    gratis (tanpa pengembalian dana); lebih mahal → bayar selisih.
  * Semua pengecekan server WAJIB memakai helper di sini (bukan hanya UI).
  */
-
-export const TRIAL_DAYS = 3;
 
 /** Masa aktif setelah tema dibeli — satu-satunya sumber kalimat untuk website. */
 export const PAID_ACTIVE = {
@@ -21,7 +20,7 @@ export const PAID_ACTIVE = {
   long: "Aktif minimal 12 bulan setelah tanggal acara, dan tetap dapat diakses setelahnya selama layanan berjalan.",
 } as const;
 
-/** Batas yang DITAMPILKAN ke pengguna (sama untuk masa uji & sudah dibeli). */
+/** Batas yang DITAMPILKAN ke pengguna (sama untuk draf & sudah dibeli). */
 export const LIMITS = {
   /** Foto galeri per undangan (cover, profil, strip, penutup tidak dihitung). */
   galleryPhotos: 12,
@@ -33,7 +32,7 @@ export const LIMITS = {
  * Kuota penyimpanan per undangan — pengaman anti-penyalahgunaan di server saja,
  * TIDAK ditampilkan sebagai fitur. Pengguna normal tidak akan mencapainya.
  */
-export const STORAGE_QUOTA_MB = { trial: 50, paid: 100 } as const;
+export const STORAGE_QUOTA_MB = { draft: 50, paid: 100 } as const;
 
 /** Bentuk minimal undangan yang dibutuhkan helper harga. */
 export interface PurchaseState {
@@ -65,18 +64,13 @@ export function ownsTheme(inv: PurchaseState, themeId: string): boolean {
 }
 
 export interface Entitlements {
-  /** true = masa uji (belum membeli tema). */
-  trial: boolean;
-  watermark: boolean;
+  /** Tema sudah dibeli (syarat terbit). */
+  purchased: boolean;
   /** Tema yang sedang dipakai sudah dibayar (aktif penuh). */
   themePaid: boolean;
   rsvp: boolean;
   wishes: boolean;
   maps: boolean;
-  /**
-   * Amplop digital (rekening/QRIS) TAMPIL di halaman publik hanya setelah
-   * tema dibeli (anti-penipuan); isiannya tetap bisa diisi & dipratinjau.
-   */
   digitalEnvelope: boolean;
   customMusic: boolean;
   galleryLimit: number;
@@ -90,30 +84,28 @@ export function getEntitlements(
   inv: PurchaseState,
   addons: readonly AddonHolding[] = [],
 ): Entitlements {
-  const trial = !isPurchased(inv);
+  const purchased = isPurchased(inv);
   const extraGallery = addons.reduce(
     (n, a) => n + (getAddon(a.addonId)?.effect?.galleryPhotos ?? 0) * a.quantity,
     0,
   );
   return {
-    trial,
-    watermark: trial,
+    purchased,
     themePaid: ownsTheme(inv, inv.themeId),
     rsvp: true,
     wishes: true,
     maps: true,
-    digitalEnvelope: !trial,
+    digitalEnvelope: true,
     customMusic: true,
     galleryLimit: LIMITS.galleryPhotos + extraGallery,
     customMusicTracks: LIMITS.customMusicTracks,
-    storageQuotaMb: trial ? STORAGE_QUOTA_MB.trial : STORAGE_QUOTA_MB.paid,
+    storageQuotaMb: purchased ? STORAGE_QUOTA_MB.paid : STORAGE_QUOTA_MB.draft,
   };
 }
 
 /** Hak pakai untuk pratinjau tema dengan data contoh (semua terbuka). */
 export const PREVIEW_ENTITLEMENTS: Entitlements = {
-  trial: false,
-  watermark: false,
+  purchased: true,
   themePaid: true,
   rsvp: true,
   wishes: true,
@@ -126,20 +118,31 @@ export const PREVIEW_ENTITLEMENTS: Entitlements = {
 };
 
 /**
+ * Link pratinjau rahasia (/p/{token}): RSVP, ucapan & amplop digital NONAKTIF
+ * (dicek di server saat render), selebihnya seperti undangan asli.
+ */
+export const SHARE_PREVIEW_ENTITLEMENTS: Entitlements = {
+  ...PREVIEW_ENTITLEMENTS,
+  rsvp: false,
+  wishes: false,
+  digitalEnvelope: false,
+};
+
+/**
  * Biaya memakai tema `targetThemeId` untuk undangan ini:
- *  - "trial"   : belum membeli → bebas ganti; biaya beli = harga tema
+ *  - "buy"     : belum membeli (draf) → bebas ganti; biaya beli = harga tema
  *  - "owned"   : sudah dimiliki / harga ≤ kredit → gratis
  *  - "upgrade" : lebih mahal dari kredit → bayar selisih
  */
 export type ThemeQuote =
-  | { kind: "trial"; price: number }
+  | { kind: "buy"; price: number }
   | { kind: "owned"; price: number }
   | { kind: "upgrade"; price: number; amount: number };
 
 export function quoteTheme(inv: PurchaseState, targetThemeId: string): ThemeQuote | null {
   const price = themePrice(targetThemeId);
   if (price === null) return null;
-  if (!isPurchased(inv)) return { kind: "trial", price };
+  if (!isPurchased(inv)) return { kind: "buy", price };
   if (ownsTheme(inv, targetThemeId)) return { kind: "owned", price };
   return { kind: "upgrade", price, amount: price - inv.themeCredit };
 }
@@ -170,7 +173,7 @@ export function buildOrderLines(
   const manifest = getManifest(themeId);
   if (!manifest) throw new PricingError("Tema tidak ditemukan.");
   const q = quoteTheme(inv, themeId)!;
-  if (q.kind === "trial")
+  if (q.kind === "buy")
     lines.push({
       kind: "THEME",
       refId: themeId,
@@ -228,8 +231,6 @@ export function applyOrderLines(
     purchasedAt: inv.purchasedAt ? new Date(inv.purchasedAt) : now,
     themeCredit: credit,
     ownedThemeIds: [...owned],
-    /** Tema dibeli → tidak lagi kedaluwarsa (PAID_ACTIVE). */
-    expiresAt: null as Date | null,
     addons,
   };
 }

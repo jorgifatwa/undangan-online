@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { formatTanggal } from "@/lib/format";
+import { PaymentSoon } from "@/components/billing/PaymentSoon";
+import { PAID_ACTIVE } from "@/lib/pricing";
 import type { ChecklistItem } from "@/lib/invitations/publish";
 import { invitationUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -16,12 +17,10 @@ import {
   type PublishState,
 } from "./publish-actions";
 
-const FREE_TRIAL_DAYS = 3;
-
 /**
  * Dialog Terbitkan: simpan dulu → checklist dari data tersimpan → terbit.
- * Masa uji (tema belum dibeli): penjelasan aturan (3 hari sejak terbit pertama,
- * batal terbit tidak menghentikan hitungan).
+ * Terbit hanya setelah tema dibeli (dicek ulang di server); draf tetap gratis
+ * diisi & dipratinjau. Undangan ditangguhkan admin tidak bisa diterbitkan.
  */
 export function PublishDialog({
   id,
@@ -43,9 +42,8 @@ export function PublishDialog({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [justPublished, setJustPublished] = useState(false);
-  const published = state.status === "PUBLISHED";
-  const now = Date.now();
-  const expired = !!state.expiresAt && Date.parse(state.expiresAt) <= now;
+  const [buying, setBuying] = useState(false);
+  const published = state.status === "PUBLISHED" && !state.suspended;
 
   useEffect(() => {
     let alive = true;
@@ -78,9 +76,6 @@ export function PublishDialog({
   }, [onClose]);
 
   const blocking = (items ?? []).filter((i) => i.severity === "error" && !i.ok);
-  const trialEnd = state.expiresAt
-    ? new Date(state.expiresAt)
-    : new Date(now + FREE_TRIAL_DAYS * 86400_000);
   const url = invitationUrl(state.slug);
 
   return (
@@ -109,7 +104,7 @@ export function PublishDialog({
           </button>
         </div>
 
-        {(published || justPublished) && !expired ? (
+        {published || justPublished ? (
           <div className="mt-4 space-y-3 text-sm">
             <p>Tamu sudah bisa membuka undangan di:</p>
             <div className="flex gap-2">
@@ -126,15 +121,7 @@ export function PublishDialog({
                 Salin
               </button>
             </div>
-            {!state.purchased && state.expiresAt && (
-              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-950">
-                Masa uji gratis aktif sampai <strong>{formatTanggal(state.expiresAt)}</strong>.{" "}
-                <Link href="/harga" target="_blank" className="font-semibold underline">
-                  Beli tema
-                </Link>{" "}
-                agar aktif 12 bulan setelah acara, tanpa watermark.
-              </p>
-            )}
+            <p className="text-muted-foreground text-xs">{PAID_ACTIVE.long}</p>
             <p className="text-muted-foreground text-xs">
               Perubahan di editor langsung tampil di halaman undangan.
             </p>
@@ -160,8 +147,7 @@ export function PublishDialog({
                 onClick={() => {
                   if (
                     !window.confirm(
-                      "Batalkan terbit? Tamu tidak bisa membuka undangan sampai diterbitkan lagi." +
-                        (!state.purchased ? " Masa uji gratis tetap berjalan." : ""),
+                      "Batalkan terbit? Tamu tidak bisa membuka undangan sampai diterbitkan lagi.",
                     )
                   )
                     return;
@@ -214,20 +200,12 @@ export function PublishDialog({
               </ul>
             )}
 
-            {!state.purchased && !expired && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950">
-                <p className="font-semibold">Aturan masa uji gratis</p>
-                <ul className="mt-1 list-disc space-y-0.5 pl-4">
-                  <li>
-                    Undangan aktif{" "}
-                    <strong>{FREE_TRIAL_DAYS} hari sejak pertama kali diterbitkan</strong>
-                    {state.publishedAt ? " (sudah berjalan)" : ""} — sampai{" "}
-                    {formatTanggal(trialEnd)}.
-                  </li>
-                  <li>&ldquo;Batalkan terbit&rdquo; tidak menghentikan hitungan masa uji.</li>
-                  <li>Ada watermark. Setelah masa uji, beli tema agar undangan aktif kembali.</li>
-                </ul>
-              </div>
+            {!state.purchased && !state.suspended && (
+              <p className="text-muted-foreground rounded-xl border px-3 py-2.5 text-xs">
+                Draf gratis diisi & dipratinjau sepuasnya. Setelah tema dibeli, undangan bisa
+                diterbitkan dan{" "}
+                {PAID_ACTIVE.long.charAt(0).toLowerCase() + PAID_ACTIVE.long.slice(1)}
+              </p>
             )}
 
             {error && (
@@ -235,14 +213,26 @@ export function PublishDialog({
                 {error}
               </p>
             )}
-            {blocking.some((b) => b.key === "trial" || b.key === "theme") && (
-              <Link
-                href="/harga"
-                target="_blank"
-                className="text-primary inline-block text-sm font-semibold underline"
-              >
-                Lihat harga tema →
-              </Link>
+            {blocking.some((b) => b.key === "purchase" || b.key === "theme") && (
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBuying(true)}
+                    className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-amber-950"
+                  >
+                    {blocking.some((b) => b.key === "theme") ? "Bayar selisih tema" : "Beli tema"}
+                  </button>
+                  <Link
+                    href="/harga"
+                    target="_blank"
+                    className="text-primary text-sm font-semibold underline"
+                  >
+                    Lihat harga →
+                  </Link>
+                </div>
+                {buying && <PaymentSoon what={`membeli tema untuk undangan /${state.slug}`} />}
+              </div>
             )}
             <button
               type="button"

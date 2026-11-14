@@ -72,15 +72,15 @@ Untuk menghapus tema, hapus foldernya lalu jalankan `pnpm themes:sync`.
 
 ## 3. Manifest
 
-| Field            | Isi                                                                                                                                                |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`             | sama persis dengan nama folder (dicek oleh `themes:sync`)                                                                                          |
-| `price`          | harga tema (rupiah), sekali bayar per undangan, sudah termasuk semua fitur inti; semua tema tetap bisa dicoba gratis (masa uji 3 hari + watermark) |
-| `variants`       | 2–4 varian; yang pertama jadi default                                                                                                              |
-| `sections`       | section yang didukung tema; section lain tidak pernah dirender                                                                                     |
-| `lockedSections` | lihat §11                                                                                                                                          |
-| `defaultMusic`   | musik bawaan bila pengguna belum memilih lagu (file `.m4a`, §9)                                                                                    |
-| `thumbnail`      | gradien cadangan bila belum ada screenshot (§13)                                                                                                   |
+| Field            | Isi                                                                                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | sama persis dengan nama folder (dicek oleh `themes:sync`)                                                                                                              |
+| `price`          | harga tema (rupiah), sekali bayar per undangan, sudah termasuk semua fitur inti; draf gratis bisa dibuat & dipratinjau dengan tema apa pun; terbit setelah tema dibeli |
+| `variants`       | 2–4 varian; yang pertama jadi default                                                                                                                                  |
+| `sections`       | section yang didukung tema; section lain tidak pernah dirender                                                                                                         |
+| `lockedSections` | lihat §11                                                                                                                                                              |
+| `defaultMusic`   | musik bawaan bila pengguna belum memilih lagu (file `.m4a`, §9)                                                                                                        |
+| `thumbnail`      | gradien cadangan bila belum ada screenshot (§13)                                                                                                                       |
 
 Urutan akhir section ditentukan `resolveSections` (`src/schemas/sections.ts`)
 dengan urutan langkah berikut:
@@ -131,7 +131,7 @@ const definition: ThemeDefinition = {
 - musik, yang baru mulai setelah tamu mengetuk cover
 - mode ringan dan `MotionConfig reducedMotion="user"`
 - jeda animasi saat tab tidak aktif atau section tidak terlihat (`data-inview`)
-- toast, watermark masa uji, dan urutan section
+- toast, dan urutan section
 
 Setiap section dibungkus `SectionShell` dengan `id="inv-{sectionId}"`.
 

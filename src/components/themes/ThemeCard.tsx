@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import { formatRupiah } from "@/lib/format";
-import { TRIAL_DAYS } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { themeThumb } from "@/themes/registry";
 import { CATEGORY_LABELS, type ThemeManifest } from "@/themes/types";
@@ -82,7 +81,7 @@ export function ThemeCard({
           {priceNote ?? (
             <>
               <span className="text-foreground font-semibold">{formatRupiah(theme.price)}</span>
-              <span className="text-muted-foreground"> · coba gratis {TRIAL_DAYS} hari</span>
+              <span className="text-muted-foreground"> · coba gratis</span>
             </>
           )}
         </p>

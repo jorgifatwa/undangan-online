@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { PaymentSoon } from "@/components/billing/PaymentSoon";
 import { ThemeCard } from "@/components/themes/ThemeCard";
 import { formatRupiah } from "@/lib/format";
-import { PAID_ACTIVE, quoteTheme, TRIAL_DAYS, type PurchaseState } from "@/lib/pricing";
+import { PAID_ACTIVE, quoteTheme, type PurchaseState } from "@/lib/pricing";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import type { ThemeManifest } from "@/themes/types";
@@ -16,7 +16,7 @@ import { inputClass } from "./forms/fields";
 /**
  * Ganti tema & varian. Data undangan tidak pernah dihapus saat ganti tema.
  * Harga per tema (manifest), berlaku per undangan:
- *  - masa uji: bebas mencoba semua tema
+ *  - draf belum dibeli: bebas mencoba semua tema
  *  - sudah membeli: tema yang dimiliki / harga ≤ kredit → gratis; lebih mahal →
  *    hanya PRATINJAU sampai selisihnya dibayar (server juga menolaknya)
  */
@@ -53,7 +53,7 @@ export function ThemePicker({
   const badge = (t: ThemeManifest) => {
     const q = quoteTheme(state, t.id);
     if (!q) return null;
-    if (q.kind === "trial") return `${formatRupiah(q.price)} · coba gratis`;
+    if (q.kind === "buy") return `${formatRupiah(q.price)}`;
     if (q.kind === "owned")
       return purchase.ownedThemeIds.includes(t.id) ? "Dimiliki" : "Gratis (sudah termasuk)";
     return `Bayar selisih ${formatRupiah(q.amount)}`;
@@ -96,13 +96,14 @@ export function ThemePicker({
           {purchase.purchased ? (
             <p>
               Tema <strong>{current.name}</strong> sudah dibeli untuk undangan ini.{" "}
-              {PAID_ACTIVE.short}, tanpa watermark.
+              {PAID_ACTIVE.short}.
             </p>
           ) : (
             <>
               <p>
                 Tema <strong>{current.name}</strong>: {formatRupiah(current.price)}, sekali bayar
-                untuk undangan ini. Saat ini masa uji gratis {TRIAL_DAYS} hari dengan watermark.
+                untuk undangan ini. Draf gratis diisi & dipratinjau; undangan bisa diterbitkan
+                setelah tema dibeli.
               </p>
               <button
                 type="button"
@@ -178,7 +179,7 @@ export function ThemePicker({
           Ganti tema tidak menghapus data.{" "}
           {purchase.purchased
             ? "Pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana); ke tema lebih mahal cukup bayar selisihnya."
-            : "Selama masa uji, semua tema bebas dicoba."}{" "}
+            : "Sebelum membeli, semua tema bebas dicoba."}{" "}
           Section yang tidak didukung tema tetap tersimpan dan ditandai &ldquo;tidak tampil di tema
           ini&rdquo;.
         </p>

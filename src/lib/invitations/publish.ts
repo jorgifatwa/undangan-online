@@ -4,7 +4,7 @@ import type { Invitation } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { formatRupiah } from "@/lib/format";
-import { isPurchased, ownsTheme, quoteTheme, TRIAL_DAYS } from "@/lib/pricing";
+import { isPurchased, ownsTheme, quoteTheme, themePrice } from "@/lib/pricing";
 import { parseInvitationData } from "@/schemas";
 import { getManifest } from "@/themes/registry";
 
@@ -13,18 +13,15 @@ import { isValidSlug } from "./slug";
 /**
  * Terbitkan / batalkan terbit undangan.
  *
- * Aturan masa uji (belum membeli tema; disetujui pemilik produk):
- *  - aktif 3 hari sejak TERBIT PERTAMA (publishedAt tidak pernah di-reset)
- *  - "Batalkan terbit" TIDAK menghentikan hitungan → tidak bisa diperpanjang
- *    dengan terbit ulang; setelah lewat harus membeli tema
- * Tema sudah dibeli: expiresAt null — aktif minimal 12 bulan setelah acara dan
- * tetap dapat diakses setelahnya selama layanan berjalan (PAID_ACTIVE, lib/pricing).
+ * Draf gratis tanpa batas waktu; TERBIT hanya setelah tema dibeli (dicek di
+ * server). Setelah terbit: aktif minimal 12 bulan setelah acara dan tetap dapat
+ * diakses selama layanan berjalan (PAID_ACTIVE) — tidak ada kedaluwarsa.
+ * Undangan DITANGGUHKAN admin (suspendedAt) tidak tampil ke tamu dan tidak bisa
+ * diterbitkan / dibatalkan terbitnya oleh pemilik.
  */
-export const FREE_TRIAL_DAYS = TRIAL_DAYS;
-const DAY = 86400_000;
 
 export interface ChecklistItem {
-  key: "names" | "event" | "eventDate" | "slug" | "theme" | "trial";
+  key: "names" | "event" | "eventDate" | "slug" | "purchase" | "theme" | "suspended";
   label: string;
   ok: boolean;
   /** Peringatan tidak menghalangi terbit. */
@@ -33,8 +30,8 @@ export interface ChecklistItem {
 }
 
 /** true bila undangan bisa dibuka tamu sekarang. */
-export function isActive(inv: Pick<Invitation, "status" | "expiresAt">, now = new Date()) {
-  return inv.status === "PUBLISHED" && (!inv.expiresAt || inv.expiresAt > now);
+export function isActive(inv: Pick<Invitation, "status" | "suspendedAt">) {
+  return inv.status === "PUBLISHED" && !inv.suspendedAt;
 }
 
 /** Checklist sebelum terbit, dihitung dari data TERSIMPAN di server. */
@@ -86,32 +83,44 @@ export function publishChecklist(inv: Invitation, now = new Date()): ChecklistIt
       : "Ubah alamat undangan di bagian Tema, warna & alamat.",
   });
 
-  // Setelah membeli: tema yang dipakai harus sudah dibayar (pindah ke tema lebih
-  // mahal → bayar selisih dulu). Masa uji: semua tema boleh.
+  // Syarat terbit: tema sudah dibeli.
   const manifest = getManifest(inv.themeId);
-  const quote = manifest ? quoteTheme(inv, inv.themeId) : null;
-  const themeOk = !!manifest && (!isPurchased(inv) || ownsTheme(inv, inv.themeId));
+  const price = themePrice(inv.themeId);
   items.push({
-    key: "theme",
-    label: "Tema sudah dibayar",
-    ok: themeOk,
+    key: "purchase",
+    label: "Tema sudah dibeli",
+    ok: isPurchased(inv),
     severity: "error",
-    message: themeOk
+    message: isPurchased(inv)
       ? undefined
-      : quote?.kind === "upgrade"
-        ? `Tema ${manifest!.name} lebih mahal dari tema yang sudah dibeli. Bayar selisih ${formatRupiah(quote.amount)} atau kembali ke tema sebelumnya.`
-        : "Tema tidak ditemukan. Pilih tema lain.",
+      : `Undangan bisa diterbitkan setelah tema ${manifest?.name ?? ""} dibeli${price ? ` (${formatRupiah(price)})` : ""}. Draf tetap bisa diisi & dipratinjau gratis.`,
   });
 
-  if (!isPurchased(inv) && inv.expiresAt && inv.expiresAt <= now) {
+  // Sudah membeli: tema yang dipakai harus sudah dibayar (pindah ke tema lebih
+  // mahal → bayar selisih dulu).
+  const quote = manifest ? quoteTheme(inv, inv.themeId) : null;
+  const themeOk = !!manifest && (!isPurchased(inv) || ownsTheme(inv, inv.themeId));
+  if (isPurchased(inv) || !manifest)
     items.push({
-      key: "trial",
-      label: "Masa uji Gratis",
+      key: "theme",
+      label: "Tema sudah dibayar",
+      ok: themeOk,
+      severity: "error",
+      message: themeOk
+        ? undefined
+        : quote?.kind === "upgrade"
+          ? `Tema ${manifest!.name} lebih mahal dari tema yang sudah dibeli. Bayar selisih ${formatRupiah(quote.amount)} atau kembali ke tema sebelumnya.`
+          : "Tema tidak ditemukan. Pilih tema lain.",
+    });
+
+  if (inv.suspendedAt)
+    items.push({
+      key: "suspended",
+      label: "Undangan tidak ditangguhkan",
       ok: false,
       severity: "error",
-      message: "Masa uji 3 hari sudah berakhir. Beli tema agar undangan bisa aktif kembali.",
+      message: `Undangan ini ditangguhkan admin${inv.suspendReason ? `: ${inv.suspendReason}` : ""}. Hubungi kami untuk banding.`,
     });
-  }
   return items;
 }
 
@@ -125,18 +134,17 @@ export async function publishInvitation(userId: string, id: string, now = new Da
     throw new PublishError(failed[0].message ?? "Lengkapi checklist terlebih dahulu.");
 
   const publishedAt = inv.publishedAt ?? now; // terbit PERTAMA tidak berubah
-  const expiresAt = isPurchased(inv)
-    ? null
-    : (inv.expiresAt ?? new Date(publishedAt.getTime() + FREE_TRIAL_DAYS * DAY));
   return db.invitation.update({
     where: { id: inv.id },
-    data: { status: "PUBLISHED", publishedAt, expiresAt },
+    data: { status: "PUBLISHED", publishedAt },
   });
 }
 
-/** Kembali ke draf. Masa uji FREE tetap berjalan (expiresAt tidak diubah). */
+/** Kembali ke draf (tema yang sudah dibeli tetap dimiliki; bisa terbit lagi). */
 export async function unpublishInvitation(userId: string, id: string) {
   const inv = await db.invitation.findFirst({ where: { id, userId } });
   if (!inv) throw new PublishError("Undangan tidak ditemukan.");
+  if (inv.suspendedAt)
+    throw new PublishError("Undangan ini ditangguhkan admin. Hubungi kami untuk banding.");
   return db.invitation.update({ where: { id: inv.id }, data: { status: "DRAFT" } });
 }

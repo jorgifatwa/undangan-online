@@ -231,15 +231,37 @@ DATABASE_URL="<DATABASE_URL_UNPOOLED staging>" pnpm admin:grant-theme <slug-unda
 
 - Membuat pesanan LUNAS (`paymentType = manual-admin`) dengan item yang sama
   seperti pesanan online (beli tema / bayar selisih upgrade), lalu
-  menerapkannya — undangan aktif 12 bulan setelah acara, tanpa watermark.
+  menerapkannya — undangan bisa diterbitkan pemilik dan aktif minimal 12 bulan
+  setelah acara.
 - Setiap pemakaian **tercatat di tabel `AdminAudit`**: siapa (`--by` + user
   OS), kapan, undangan mana, tema, nominal, catatan.
 - **Ditolak di production** (`NODE_ENV=production` atau host database ada di
   `PROTECTED_DB_HOSTS`) kecuali `ALLOW_ADMIN_GRANT=1` diisi secara sadar.
 
-**Migrasi data lama** (`20261114120000_theme_pricing`, otomatis saat build):
-undangan berpaket BASIC/PREMIUM/EXCLUSIVE dianggap sudah membeli tema yang
-sedang dipakai (kredit = harga tema saat migrasi); FREE tetap masa uji.
+**Penangguhan** (penipuan, konten melanggar, keluhan sah):
+
+```bash
+DATABASE_URL="<...>" pnpm admin:suspend <slug> --by="Nama Anda" --reason="Alasan yang dibaca pemilik"
+DATABASE_URL="<...>" pnpm admin:unsuspend <slug> --by="Nama Anda" [--note="hasil banding"]
+```
+
+- Ditangguhkan → halaman tamu, link pratinjau `/p/…`, gambar `/og`, dan API
+  RSVP/ucapan 404 seperti undangan tidak ada; link pratinjau aktif dicabut.
+  Pemilik melihat "Ditangguhkan" + alasan + kontak banding dan tidak bisa
+  menerbitkan ulang.
+- Tercatat di `AdminAudit`; ditolak di production kecuali
+  `ALLOW_ADMIN_SUSPEND=1`.
+
+**Migrasi data lama**:
+
+- `20261114120000_theme_pricing`: undangan berpaket BASIC/PREMIUM/EXCLUSIVE
+  dianggap sudah membeli tema yang sedang dipakai (kredit = harga tema saat
+  migrasi).
+- `20261115090000_draft_free_publish_paid`: masa uji dihapus — undangan TERBIT
+  yang belum dibeli dikembalikan ke DRAF (data tetap utuh), kolom `expiresAt`
+  & status `EXPIRED` dihapus, `lastEditedAt` diisi dari `updatedAt` (dasar
+  retensi media draf 90 hari). Hitung dulu yang terdampak sebelum deploy:
+  `SELECT count(*) FROM "Invitation" WHERE status IN ('PUBLISHED','EXPIRED') AND "purchasedAt" IS NULL;`
 
 ---
 

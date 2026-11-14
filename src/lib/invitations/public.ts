@@ -28,11 +28,12 @@ export const getPublicInvitation = cache(async (slug: string) => {
       purchasedAt: true,
       themeCredit: true,
       ownedThemeIds: true,
-      expiresAt: true,
+      suspendedAt: true,
       userId: true,
       updatedAt: true,
     },
   });
-  if (!inv || inv.status !== "PUBLISHED") return null;
-  return { ...inv, active: isActive(inv) };
+  // Draf & DITANGGUHKAN → sama seperti tidak ada (404, tanpa membocorkan apa pun)
+  if (!inv || !isActive(inv)) return null;
+  return inv;
 });

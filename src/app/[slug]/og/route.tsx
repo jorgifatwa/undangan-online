@@ -12,7 +12,7 @@ import { getManifest } from "@/themes/registry";
  * Gambar pratinjau link undangan (og:image). URL di metadata membawa ?v={versi}
  * (waktu ubah terakhir) → setiap perubahan menghasilkan URL baru, sehingga
  * cache CDN aman dan WhatsApp mengambil gambar terbaru untuk link yang baru
- * dibagikan. Undangan kedaluwarsa → gambar umum tanpa data pribadi.
+ * dibagikan. Draf / ditangguhkan → 404.
  *
  * Satori menghasilkan PNG ±240 KB (gradien sulit dikompres) — mendekati batas
  * ±300 KB yang aman untuk pratinjau WhatsApp — jadi diubah ke JPEG (target < 150 KB,
@@ -28,11 +28,16 @@ const HEADERS = {
 export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const inv = await getPublicInvitation(slug);
-  if (!inv) return new Response("Tidak ditemukan", { status: 404, headers: HEADERS });
+  // Draf / ditangguhkan / tidak ada → 404 tanpa cache (agar pemulihan langsung berlaku).
+  if (!inv)
+    return new Response("Tidak ditemukan", {
+      status: 404,
+      headers: { ...HEADERS, "Cache-Control": "no-store" },
+    });
 
   const parsed = parseInvitationData(inv.eventType, inv.data);
   const manifest = getManifest(inv.themeId);
-  const ok = inv.active && parsed.ok && manifest;
+  const ok = parsed.ok && manifest;
   const cover =
     ok && parsed.ok
       ? parsed.value.eventType === "WEDDING"

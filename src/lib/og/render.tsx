@@ -12,7 +12,7 @@ import { siteConfig } from "@/lib/site";
  * satori (next/og), memakai gradien & font tema:
  *  - ada foto cover → foto di panel kiri, nama & tanggal di kanan
  *  - tanpa foto     → versi teks penuh
- * Target JPEG < 150 KB. Undangan kedaluwarsa → genericOg (tanpa foto & nama).
+ * Target JPEG < 150 KB. Data tidak terbaca → genericOg (tanpa foto & nama).
  */
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 

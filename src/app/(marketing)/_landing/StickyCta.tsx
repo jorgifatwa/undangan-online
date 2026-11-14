@@ -38,7 +38,7 @@ export function StickyCta() {
         tabIndex={show ? 0 : -1}
         className="bg-primary text-primary-foreground block rounded-full py-3 text-center font-medium"
       >
-        Buat Undangan Gratis
+        Coba Gratis
       </Link>
     </div>
   );

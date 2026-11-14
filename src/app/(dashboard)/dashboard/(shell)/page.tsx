@@ -3,10 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { CopyLinkButton } from "@/components/dashboard/CopyLinkButton";
+import { SuspendedNotice } from "@/components/dashboard/SuspendedNotice";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
-import { retentionStatus } from "@/lib/invitations/retention";
+import { DRAFT_MEDIA_RETENTION_DAYS, retentionStatus } from "@/lib/invitations/retention";
 import { displayStatus, summarize } from "@/lib/invitations/summary";
 import { formatRupiah, formatTanggal } from "@/lib/format";
 import { invitationUrl } from "@/lib/site";
@@ -18,7 +19,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 const STATUS = {
   DRAFT: { label: "Draf", className: "bg-amber-100 text-amber-900" },
   PUBLISHED: { label: "Terbit", className: "bg-emerald-100 text-emerald-900" },
-  EXPIRED: { label: "Kedaluwarsa", className: "bg-neutral-200 text-neutral-700" },
+  SUSPENDED: { label: "Ditangguhkan", className: "bg-red-100 text-red-900" },
 } as const;
 
 /** Daftar undangan milik user. Dashboard lengkap (statistik, tamu) menyusul. */
@@ -35,7 +36,9 @@ export default async function DashboardPage() {
       data: true,
       status: true,
       purchasedAt: true,
-      expiresAt: true,
+      suspendedAt: true,
+      suspendReason: true,
+      lastEditedAt: true,
       mediaPurgedAt: true,
       updatedAt: true,
       _count: { select: { media: true } },
@@ -63,7 +66,7 @@ export default async function DashboardPage() {
           {invitations.map((inv) => {
             const s = summarize(inv.eventType, inv.data);
             const manifest = getManifest(inv.themeId);
-            const status = STATUS[displayStatus(inv.status, inv.expiresAt)];
+            const status = STATUS[displayStatus(inv.status, inv.suspendedAt)];
             return (
               <li key={inv.id} className="bg-card flex gap-4 rounded-2xl border p-3">
                 <div
@@ -99,18 +102,11 @@ export default async function DashboardPage() {
                     Tema {manifest?.name ?? inv.themeId} ·{" "}
                     {inv.purchasedAt
                       ? "Tema sudah dibeli"
-                      : `Masa uji gratis${manifest ? ` · beli ${formatRupiah(manifest.price)}` : ""}`}
+                      : `Draf · belum dibeli${manifest ? ` (${formatRupiah(manifest.price)})` : ""}`}
                   </p>
-                  {inv.status === "PUBLISHED" &&
-                    !inv.purchasedAt &&
-                    inv.expiresAt &&
-                    inv.expiresAt > new Date() && (
-                      <p className="mt-1 text-xs text-amber-800">
-                        Masa uji aktif sampai {formatTanggal(inv.expiresAt)} · sisa{" "}
-                        {Math.max(1, Math.ceil((inv.expiresAt.getTime() - Date.now()) / 86400000))}{" "}
-                        hari
-                      </p>
-                    )}
+                  {inv.suspendedAt && (
+                    <SuspendedNotice reason={inv.suspendReason} slug={inv.slug} compact />
+                  )}
                   {(() => {
                     const r = retentionStatus(inv, inv._count.media > 0);
                     if (!r) return null;
@@ -121,16 +117,22 @@ export default async function DashboardPage() {
                       >
                         Foto & musik undangan ini akan{" "}
                         <strong>dihapus pada {formatTanggal(r.deleteAt)}</strong> ({r.daysLeft} hari
-                        lagi) karena masa uji Gratis sudah berakhir.{" "}
-                        <Link href="/harga" className="font-semibold underline">
-                          Beli tema
+                        lagi) karena draf ini belum dibeli dan tidak diubah selama{" "}
+                        {DRAFT_MEDIA_RETENTION_DAYS} hari. Simpan perubahan di editor untuk menunda,
+                        atau{" "}
+                        <Link
+                          href={`/dashboard/undangan/${inv.id}/edit`}
+                          className="font-semibold underline"
+                        >
+                          beli tema
                         </Link>{" "}
-                        agar undangan aktif kembali dan foto tetap tersimpan.
+                        agar foto tetap tersimpan.
                       </div>
                     ) : (
                       <p className="text-muted-foreground mt-2 text-xs">
-                        Foto & musik dihapus otomatis pada {formatTanggal(r.at)} (masa uji Gratis
-                        berakhir lebih dari 30 hari). Teks undangan tetap tersimpan.
+                        Foto & musik dihapus otomatis pada {formatTanggal(r.at)} (draf tidak diubah
+                        lebih dari {DRAFT_MEDIA_RETENTION_DAYS} hari). Teks undangan tetap
+                        tersimpan.
                       </p>
                     );
                   })()}

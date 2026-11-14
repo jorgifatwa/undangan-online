@@ -9,6 +9,7 @@ import { prune } from "@/lib/editor/prune";
 import { shareInfo } from "@/lib/invitations/share";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
 import type { Entitlements } from "@/lib/pricing";
+import { SuspendedNotice } from "@/components/dashboard/SuspendedNotice";
 import { cn } from "@/lib/utils";
 import {
   birthdayDataSchema,
@@ -33,6 +34,7 @@ import { ClosingForm, DressCodeForm, LiveStreamForm, SalamForm } from "./forms/S
 import { PreviewFrame } from "./PreviewFrame";
 import { SectionManager } from "./SectionManager";
 import { GuestbookPanel } from "./GuestbookPanel";
+import { PreviewLinkDialog } from "./PreviewLinkDialog";
 import { PublishDialog } from "./PublishDialog";
 import { ShareDialog } from "./ShareDialog";
 import type { PublishState } from "./publish-actions";
@@ -43,11 +45,13 @@ type EventType = "WEDDING" | "BIRTHDAY";
 export interface EditorProps {
   id: string;
   slug: string;
-  status: "DRAFT" | "PUBLISHED" | "EXPIRED";
-  /** ISO — terbit pertama (dasar masa uji). */
+  status: "DRAFT" | "PUBLISHED";
+  /** Ditangguhkan admin (null = tidak). */
+  suspended: { reason: string | null } | null;
+  /** ISO — terbit pertama. */
   publishedAt: string | null;
-  /** ISO — akhir masa uji; null = tema sudah dibeli (PAID_ACTIVE) / belum terbit. */
-  expiresAt: string | null;
+  /** ISO — kedaluwarsa link pratinjau yang aktif (null = tidak ada). */
+  previewLinkExpiresAt: string | null;
   eventType: EventType;
   /** Status pembelian tema undangan ini (harga per tema, per undangan). */
   purchase: { purchased: boolean; themeCredit: number; ownedThemeIds: string[] };
@@ -202,21 +206,19 @@ export function Editor(p: EditorProps) {
   const [restore, setRestore] = useState<LocalDraft | null>(null);
   const [showCover, setShowCover] = useState(false);
   const [publish, setPublish] = useState<PublishState>({
-    status: p.status === "DRAFT" ? "DRAFT" : "PUBLISHED",
+    status: p.status,
     purchased: p.purchase.purchased,
+    suspended: !!p.suspended,
     slug: p.slug,
     publishedAt: p.publishedAt,
-    expiresAt: p.expiresAt,
     updatedAt: p.updatedAt,
   });
   const [publishOpen, setPublishOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   /** Template terakhir disimpan dialog Bagikan (dialog dibuka ulang memakai ini). */
   const [shareTemplate, setShareTemplate] = useState(p.shareTemplate);
-  const publishExpired =
-    publish.status === "PUBLISHED" &&
-    !!publish.expiresAt &&
-    Date.parse(publish.expiresAt) <= Date.now();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const live = publish.status === "PUBLISHED" && !publish.suspended;
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const base = useRef(p.updatedAt);
@@ -583,13 +585,7 @@ export function Editor(p: EditorProps) {
       body: (
         <div className="space-y-6">
           {!wedding && <WishlistForm />}
-          <GiftForm
-            featureNote={
-              features.digitalEnvelope
-                ? undefined
-                : "Selama masa uji, amplop digital & hadiah hanya tampil di pratinjau ini. Di halaman tamu, bagian ini muncul setelah tema dibeli (pengaman dari penipuan)."
-            }
-          />
+          <GiftForm featureNote="Amplop digital & hadiah tampil di halaman tamu setelah undangan diterbitkan (tema sudah dibeli). Di link pratinjau, bagian ini disembunyikan." />
         </div>
       ),
     },
@@ -653,7 +649,18 @@ export function Editor(p: EditorProps) {
             >
               Pratinjau penuh
             </Link>
-            {publish.status === "PUBLISHED" && !publishExpired && (
+            {!p.suspended && (
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(true)}
+                data-testid="open-preview-link"
+                className="hover:bg-muted rounded-md border px-2.5 py-1.5 text-sm sm:px-3"
+              >
+                <span className="sm:hidden">Pratinjau</span>
+                <span className="hidden sm:inline">Bagikan pratinjau</span>
+              </button>
+            )}
+            {live && (
               <button
                 type="button"
                 onClick={() => setShareOpen(true)}
@@ -667,16 +674,14 @@ export function Editor(p: EditorProps) {
               onClick={() => setPublishOpen(true)}
               className={cn(
                 "rounded-md px-3 py-1.5 text-sm font-medium",
-                publish.status === "PUBLISHED" && !publishExpired
-                  ? "border border-emerald-600 text-emerald-700"
-                  : "bg-primary text-primary-foreground",
+                publish.suspended
+                  ? "border border-red-300 text-red-800"
+                  : live
+                    ? "border border-emerald-600 text-emerald-700"
+                    : "bg-primary text-primary-foreground",
               )}
             >
-              {publishExpired
-                ? "Masa uji berakhir"
-                : publish.status === "PUBLISHED"
-                  ? "Terbit ✓"
-                  : "Terbitkan"}
+              {publish.suspended ? "Ditangguhkan" : live ? "Terbit ✓" : "Terbitkan"}
             </button>
           </header>
           {publishOpen && (
@@ -695,6 +700,19 @@ export function Editor(p: EditorProps) {
               onClose={() => setPublishOpen(false)}
             />
           )}
+          {previewOpen && (
+            <PreviewLinkDialog
+              id={p.id}
+              initialExpiresAt={p.previewLinkExpiresAt}
+              flushSave={flushSave}
+              onClose={() => setPreviewOpen(false)}
+            />
+          )}
+          {p.suspended && (
+            <div className="px-3 pt-3 sm:px-4">
+              <SuspendedNotice reason={p.suspended.reason} slug={slug} />
+            </div>
+          )}
           {shareOpen && (
             <ShareDialog
               id={p.id}
@@ -702,7 +720,7 @@ export function Editor(p: EditorProps) {
               info={shareInfo(lastValid)}
               initialTemplate={shareTemplate}
               onSaved={setShareTemplate}
-              active={publish.status === "PUBLISHED" && !publishExpired}
+              active={live}
               onClose={() => setShareOpen(false)}
             />
           )}

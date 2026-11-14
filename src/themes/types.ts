@@ -44,7 +44,7 @@ export interface ThemeManifest {
   /**
    * Harga tema dalam rupiah, sekali bayar PER UNDANGAN — SATU-SATUNYA sumber
    * harga (landing, /harga, kartu tema, editor, pesanan membaca dari sini).
-   * Sudah termasuk semua fitur inti; setiap tema bisa dicoba gratis 3 hari.
+   * Sudah termasuk semua fitur inti; draf dengan tema apa pun gratis diisi & dipratinjau.
    */
   price: number;
   /** 2–4 varian; yang pertama adalah default. */
@@ -67,9 +67,8 @@ export interface ThemeManifest {
 export interface ThemeProps {
   invitation: AnyInvitationData;
   variantId?: string;
-  /** Hak pakai undangan (masa uji / dibeli); null = preview tema (tanpa batasan). */
+  /** Hak pakai undangan; null = preview tema (tanpa batasan). */
   features: Entitlements | null;
-  watermark: boolean;
   /** Nama tamu dari ?to= (sudah dibersihkan di server). */
   guestName: string | null;
   /** Paksa mode ringan (?lite=1). */

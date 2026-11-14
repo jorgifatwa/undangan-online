@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 /**
  * Tombol header. Halaman website sengaja STATIS (cepat & bisa di-cache CDN),
  * jadi status login dicek di browser setelah halaman tampil: default "Masuk" +
- * "Buat Undangan Gratis", berganti "Dashboard" bila sesi ada.
+ * "Coba Gratis", berganti "Dashboard" bila sesi ada.
  */
 export function AuthButtons({ compact = false }: { compact?: boolean }) {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
@@ -49,8 +49,7 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
           compact && "px-3",
         )}
       >
-        <span className="sm:hidden">Buat Gratis</span>
-        <span className="hidden sm:inline">Buat Undangan Gratis</span>
+        Coba Gratis
       </Link>
     </div>
   );

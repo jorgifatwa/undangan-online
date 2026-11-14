@@ -5,7 +5,7 @@ import { ThemePricing } from "@/components/marketing/ThemePricing";
 import { business, waLink } from "@/config/business";
 import { INCLUDED, PAYMENT_TEXT } from "@/lib/marketing/content";
 import { landingJsonLd } from "@/lib/marketing/jsonld";
-import { priceRange, TRIAL_DAYS } from "@/lib/pricing";
+import { priceRange } from "@/lib/pricing";
 import { formatRupiah } from "@/lib/format";
 import { siteConfig } from "@/lib/site";
 import { THEME_MANIFESTS, themeThumb } from "@/themes/registry";
@@ -137,14 +137,10 @@ export default function HomePage() {
           <SectionHead
             eyebrow="Harga"
             title="Harga per tema, semua fitur termasuk"
-            lead={`Mulai ${formatRupiah(priceRange().min)}, sekali bayar per undangan — tanpa paket, tanpa langganan. Coba gratis dulu, bayar saat siap disebar.`}
+            lead={`Mulai ${formatRupiah(priceRange().min)}, sekali bayar per undangan — tanpa paket, tanpa langganan. Buat & pratinjau gratis, bayar saat siap disebar.`}
           />
           <div className="mt-10">
-            <ThemePricing
-              themes={[...THEME_MANIFESTS]}
-              included={INCLUDED}
-              trialDays={TRIAL_DAYS}
-            />
+            <ThemePricing themes={[...THEME_MANIFESTS]} included={INCLUDED} />
           </div>
           <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-sm">
             {PAYMENT_TEXT}{" "}

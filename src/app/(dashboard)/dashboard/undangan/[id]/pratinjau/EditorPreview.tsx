@@ -20,12 +20,10 @@ export function EditorPreview({
   initial,
   eventType,
   features,
-  watermark,
 }: {
   initial: { themeId: string; variantId: string | null; invitation: AnyInvitationData };
   eventType: "WEDDING" | "BIRTHDAY";
   features: Entitlements;
-  watermark: boolean;
 }) {
   const [themeId, setThemeId] = useState(initial.themeId);
   const [variantId, setVariantId] = useState(initial.variantId);
@@ -75,7 +73,6 @@ export function EditorPreview({
       invitation={invitation}
       variantId={variantId ?? undefined}
       features={features}
-      watermark={watermark}
       guestName={null}
       startOpened={!showCover}
       wishes={[]}

@@ -4,7 +4,6 @@ import { AnimatePresence, MotionConfig } from "framer-motion";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { resolveSections } from "@/schemas/sections";
-import { siteConfig } from "@/lib/site";
 
 import type { ThemeDefinition, ThemeProps } from "../../types";
 import { ThemeAssetsProvider } from "../assets";
@@ -24,7 +23,7 @@ interface ThemeRootProps extends ThemeProps {
  * Akar setiap undangan. Menangani hal yang SAMA untuk semua tema:
  * token warna varian, font tema, kolom 440px + latar desktop, cover → buka,
  * musik (mulai hanya setelah "Buka Undangan"), mode ringan, reduced motion,
- * jeda animasi saat tab tidak aktif, watermark masa uji, dan urutan section.
+ * jeda animasi saat tab tidak aktif, dan urutan section.
  */
 export function ThemeRoot(props: ThemeRootProps) {
   const { theme, invitation } = props;
@@ -48,7 +47,6 @@ function ThemeRootInner({
   invitation,
   variantId,
   features,
-  watermark,
   guestName,
   forceLite = false,
   preview = false,
@@ -216,7 +214,6 @@ function ThemeRootInner({
                         theme.sections?.[id as Exclude<typeof id, "cover">] ?? DEFAULT_SECTIONS[id];
                       return Section ? <Section key={id} /> : null;
                     })}
-                {watermark && <Watermark />}
               </main>
 
               {/* Lapisan tetap di atas kolom: efek, kontrol musik, toast, cover. */}
@@ -253,19 +250,5 @@ function ThemeRootInner({
         </GuestbookProvider>
       </ThemeAssetsProvider>
     </InvitationContext.Provider>
-  );
-}
-
-function Watermark() {
-  return (
-    <a
-      href={siteConfig.appUrl}
-      target="_blank"
-      rel="noopener"
-      className="block py-6 text-center text-xs opacity-70"
-      style={{ background: "var(--inv-bg-alt)", color: "var(--inv-text-muted)" }}
-    >
-      Undangan ini dibuat gratis dengan <strong>{siteConfig.name}</strong> · Buat punyamu →
-    </a>
   );
 }

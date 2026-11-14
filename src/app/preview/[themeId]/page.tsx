@@ -149,7 +149,6 @@ export default async function PreviewPage({
         )}
         variantId={variantId}
         features={null}
-        watermark={false}
         guestName={sanitizeGuestName(sp.to)}
         forceLite={one("lite") === "1"}
         startOpened={one("open") === "1"}

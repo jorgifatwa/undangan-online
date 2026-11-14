@@ -25,7 +25,7 @@ export async function saveShareTemplateAction(
     where: { id: inv.id },
     // updatedAt dipertahankan: Prisma otomatis memperbaruinya, padahal editor
     // memakainya untuk deteksi konflik autosave (dan versi gambar pratinjau link).
-    data: { shareTemplate: value, updatedAt: inv.updatedAt },
+    data: { shareTemplate: value, updatedAt: inv.updatedAt, lastEditedAt: new Date() },
   });
   return { ok: true };
 }

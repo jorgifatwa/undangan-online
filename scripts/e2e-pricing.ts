@@ -3,11 +3,11 @@
  *
  *   pnpm e2e:pricing
  *
- *  - harga dari manifest, hak pakai masa uji vs dibeli, batas galeri & lagu, add-on
- *  - aturan ganti tema: masa uji bebas, dimiliki/lebih murah gratis, lebih mahal → selisih
+ *  - harga dari manifest, hak pakai draf vs dibeli (tanpa masa uji), batas galeri & lagu, add-on
+ *  - aturan ganti tema: draf bebas, dimiliki/lebih murah gratis, lebih mahal → selisih
  *  - pesanan: beli tema → lunas → diterapkan (idempoten), upgrade bayar selisih
  *  - checklist terbit menolak tema yang belum dibayar
- *  - migrasi data lama: tidak ada kolom package; yang sudah dibeli konsisten
+ *  - migrasi data lama: tanpa kolom package & expiresAt; terbit = sudah dibeli
  *  - pnpm admin:grant-theme: ditolak di production tanpa izin, tercatat di AdminAudit
  */
 import { execFileSync } from "node:child_process";
@@ -23,6 +23,7 @@ import {
   LIMITS,
   PricingError,
   quoteTheme,
+  SHARE_PREVIEW_ENTITLEMENTS,
   STORAGE_QUOTA_MB,
   themePrice,
 } from "../src/lib/pricing";
@@ -84,36 +85,37 @@ async function main() {
   check(themePrice("tirai-beludru") === 149_000, "Tirai Beludru Rp149.000");
 
   console.log("Hak pakai");
-  const trial = { themeId: "renda-rimba", purchasedAt: null, themeCredit: 0, ownedThemeIds: [] };
+  const draft = { themeId: "renda-rimba", purchasedAt: null, themeCredit: 0, ownedThemeIds: [] };
   const bought = {
     themeId: "renda-rimba",
     purchasedAt: new Date(),
     themeCredit: 99_000,
     ownedThemeIds: ["renda-rimba"],
   };
-  const et = getEntitlements(trial);
+  const et = getEntitlements(draft);
   const eb = getEntitlements(bought);
-  check(
-    et.trial && et.watermark && !eb.trial && !eb.watermark,
-    "masa uji: watermark; dibeli: tanpa",
-  );
+  check(!et.purchased && eb.purchased, "draf: belum dibeli; dibeli: purchased");
+  check(!("watermark" in et) && !("trial" in et), "tidak ada lagi hak pakai watermark/masa uji");
   check(
     et.galleryLimit === LIMITS.galleryPhotos && eb.galleryLimit === 12,
-    "galeri 12 foto (sama untuk masa uji & dibeli)",
+    "galeri 12 foto (sama untuk draf & dibeli)",
   );
+  check(et.customMusic && et.customMusicTracks === 3, "draf: unggah musik terbuka, maks. 3 lagu");
   check(
-    et.customMusic && et.customMusicTracks === 3,
-    "masa uji: unggah musik terbuka, maks. 3 lagu",
-  );
-  check(
-    et.storageQuotaMb === STORAGE_QUOTA_MB.trial &&
+    et.storageQuotaMb === STORAGE_QUOTA_MB.draft &&
       et.storageQuotaMb === 50 &&
       eb.storageQuotaMb === 100,
-    "kuota pengaman: 50 MB masa uji, 100 MB dibeli",
+    "kuota pengaman: 50 MB draf, 100 MB dibeli",
   );
   check(
-    !et.digitalEnvelope && eb.digitalEnvelope,
-    "amplop digital tampil di halaman tamu hanya setelah dibeli",
+    et.digitalEnvelope && eb.digitalEnvelope,
+    "amplop bisa diisi & dipratinjau di draf (halaman tamu hanya ada setelah dibeli & terbit)",
+  );
+  check(
+    !SHARE_PREVIEW_ENTITLEMENTS.rsvp &&
+      !SHARE_PREVIEW_ENTITLEMENTS.wishes &&
+      !SHARE_PREVIEW_ENTITLEMENTS.digitalEnvelope,
+    "link pratinjau: RSVP, ucapan & amplop nonaktif",
   );
   check(
     getEntitlements(bought, [{ addonId: "extra-gallery", quantity: 1 }]).galleryLimit === 24,
@@ -131,7 +133,7 @@ async function main() {
   );
 
   console.log("Ganti tema");
-  check(quoteTheme(trial, "tirai-beludru")?.kind === "trial", "masa uji: semua tema bebas dicoba");
+  check(quoteTheme(draft, "tirai-beludru")?.kind === "buy", "draf: semua tema bebas dicoba");
   check(quoteTheme(bought, "renda-rimba")?.kind === "owned", "tema yang dibeli: dimiliki");
   const up = quoteTheme(bought, "tirai-beludru");
   check(up?.kind === "upgrade" && up.amount === 50_000, "ke tema lebih mahal: selisih Rp50.000");
@@ -169,10 +171,6 @@ async function main() {
     "pesanan belum lunas tidak bisa diterapkan",
   );
   await db.order.update({ where: { id: o1.id }, data: { status: "PAID", paidAt: new Date() } });
-  await db.invitation.update({
-    where: { id: inv.id },
-    data: { expiresAt: new Date(Date.now() + DAY) },
-  });
   const r1 = await applyPaidOrder(o1.id);
   let row = await db.invitation.findUniqueOrThrow({ where: { id: inv.id } });
   check(
@@ -180,8 +178,8 @@ async function main() {
       !!row.purchasedAt &&
       row.themeCredit === 99_000 &&
       row.ownedThemeIds.join() === "renda-rimba" &&
-      row.expiresAt === null,
-    "lunas → dibeli, kredit Rp99.000, masa uji berakhir (aktif 12 bulan setelah acara)",
+      row.status === "DRAFT",
+    "lunas → dibeli, kredit Rp99.000 (status tidak diubah; pemilik yang menerbitkan)",
   );
   const r1b = await applyPaidOrder(o1.id);
   row = await db.invitation.findUniqueOrThrow({ where: { id: inv.id } });
@@ -236,16 +234,22 @@ async function main() {
   const boughtRows = await db.invitation.findMany({
     // kecuali undangan uji di atas yang SENGAJA dibuat tidak konsisten
     where: { purchasedAt: { not: null }, NOT: { slug: { startsWith: "uji-harga-" } } },
-    select: { themeId: true, themeCredit: true, ownedThemeIds: true, expiresAt: true },
+    select: { themeId: true, themeCredit: true, ownedThemeIds: true },
   });
   check(
     boughtRows.every(
-      (r) =>
-        r.expiresAt === null &&
-        (r.ownedThemeIds.includes(r.themeId) || r.themeCredit >= (themePrice(r.themeId) ?? 0)),
+      (r) => r.ownedThemeIds.includes(r.themeId) || r.themeCredit >= (themePrice(r.themeId) ?? 0),
     ),
-    `${boughtRows.length} undangan yang sudah dibeli: tema dimiliki & tanpa kedaluwarsa`,
+    `${boughtRows.length} undangan yang sudah dibeli: tema dimiliki`,
   );
+  const exp = (await db.$queryRaw<{ column_name: string }[]>`
+    SELECT column_name FROM information_schema.columns
+    WHERE table_name = 'Invitation' AND column_name = 'expiresAt'`) as unknown[];
+  check(exp.length === 0, "kolom expiresAt sudah tidak ada");
+  const unpaidLive = await db.invitation.count({
+    where: { status: "PUBLISHED", purchasedAt: null },
+  });
+  check(unpaidLive === 0, "tidak ada undangan terbit yang belum dibeli");
 
   console.log("pnpm admin:grant-theme");
   const inv3 = await wedding("uji-harga-admin", "tirai-beludru");

@@ -22,6 +22,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "media",
   "preview",
   "u", // tautan lama /u/{slug} → dialihkan 301
+  "p", // link pratinjau rahasia /p/{token}
   "og",
   // --- Akun & autentikasi ---
   "daftar",

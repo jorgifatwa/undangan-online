@@ -22,11 +22,9 @@ const FILTERS = [
 export function ThemePricing({
   themes,
   included,
-  trialDays,
 }: {
   themes: ThemeManifest[];
   included: string[];
-  trialDays: number;
 }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
   const shown = themes
@@ -65,7 +63,7 @@ export function ThemePricing({
                   <span className="font-heading text-2xl">{formatRupiah(t.price)}</span>
                 </p>
                 <p className="text-muted-foreground text-left text-xs">
-                  Sekali bayar untuk satu undangan · coba gratis {trialDays} hari
+                  Sekali bayar untuk satu undangan · coba gratis
                 </p>
                 <div className="mt-3 flex gap-2">
                   <Link

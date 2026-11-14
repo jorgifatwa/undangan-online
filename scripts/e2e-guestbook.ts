@@ -32,7 +32,8 @@ async function invitation(
   eventType: "WEDDING" | "BIRTHDAY",
   themeId: string,
   status: "PUBLISHED" | "DRAFT" = "PUBLISHED",
-  plan: "trial" | "paid" = "trial",
+  /** Undangan TERBIT selalu sudah dibeli (syarat terbit). */
+  plan: "draft" | "paid" = status === "PUBLISHED" ? "paid" : "draft",
 ) {
   await db.invitation.deleteMany({ where: { slug } });
   const date = new Date(Date.now() + 40 * 86400_000).toISOString().slice(0, 10);
@@ -334,22 +335,39 @@ async function main() {
       out.push((await post(slug, { name: `Banjir ${i}`, message: `b ${i}` })).status);
     return out;
   };
-  const basicFlood = await flood(cg.slug, 130);
-  const basicOk = basicFlood.filter((c) => c === 200).length;
-  check(basicOk === 120, `masa uji: maks 120 kiriman / menit (${basicOk} diterima dari 130)`);
-  const prem = await invitation(
-    owner.id,
-    "uji-cgnat-premium",
-    "WEDDING",
-    "renda-rimba",
-    "PUBLISHED",
-    "paid",
-  );
-  const premFlood = await flood(prem.slug, 200);
+  // 290 kiriman "barusan" dimasukkan langsung (mengirim 300 lewat HTTP di dev
+  // bisa lebih dari 1 menit sehingga jendela bergeser), lalu 15 lewat API.
+  await db.wish.createMany({
+    data: Array.from({ length: 290 }, (_, i) => ({
+      invitationId: cg.id,
+      name: `Seed ${i}`,
+      message: "s",
+      ipHash: `seed-${i}`,
+      createdAt: new Date(),
+    })),
+  });
+  const fl = await flood(cg.slug, 15);
+  const flOk = fl.filter((c) => c === 200).length;
   check(
-    premFlood.every((c) => c === 200),
-    `tema dibeli: 200 kiriman / menit dari banyak tamu diterima (${premFlood.filter((c) => c === 200).length}/200)`,
+    flOk === 10 && fl.at(-1) === 429,
+    `maks 300 kiriman / menit per undangan dari banyak tamu (290 + ${flOk} diterima dari 15)`,
   );
+
+  console.log("Ditangguhkan");
+  await db.invitation.update({
+    where: { id: cg.id },
+    data: { suspendedAt: new Date(), suspendReason: "Uji" },
+  });
+  r = await post(cg.slug, { name: "Tamu", message: "halo" }, "203.0.113.77");
+  check(r.status === 404, "ditangguhkan: kirim RSVP/ucapan → 404");
+  check(
+    (await fetch(`${base}/api/u/${cg.slug}/wishes`)).status === 404,
+    "ditangguhkan: daftar ucapan → 404",
+  );
+  await db.invitation.update({
+    where: { id: cg.id },
+    data: { suspendedAt: null, suspendReason: null },
+  });
 
   r = await post(draft.slug, { name: "X", message: "draf" });
   check(r.status === 404, "undangan draf/tidak aktif → 404");

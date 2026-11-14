@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 
 import { db } from "@/lib/db";
 import { requireOwnedInvitation } from "@/lib/invitations/access";
+import { activePreviewLink } from "@/lib/invitations/preview-link";
 import { invitationAddons } from "@/lib/orders/service";
 import { getEntitlements } from "@/lib/pricing";
 import { storage } from "@/lib/storage";
-import { displayStatus, summarize } from "@/lib/invitations/summary";
+import { summarize } from "@/lib/invitations/summary";
 import { parseInvitationData } from "@/schemas";
 import { THEME_MANIFESTS } from "@/themes/registry";
 
@@ -29,7 +30,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     );
   }
   const eventType = parsed.value.eventType;
-  const [library, audio, addons] = await Promise.all([
+  const [library, audio, addons, previewLink] = await Promise.all([
     db.musicTrack.findMany({
       where: { isActive: true },
       orderBy: [{ sortOrder: "asc" }, { title: "asc" }],
@@ -45,12 +46,14 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       take: 10,
     }),
     invitationAddons(invitation.id),
+    activePreviewLink(invitation.id),
   ]);
   return (
     <Editor
       id={invitation.id}
       slug={invitation.slug}
-      status={displayStatus(invitation.status, invitation.expiresAt)}
+      status={invitation.status}
+      suspended={invitation.suspendedAt ? { reason: invitation.suspendReason } : null}
       eventType={eventType}
       purchase={{
         purchased: !!invitation.purchasedAt,
@@ -62,7 +65,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
       variantId={invitation.colorVariant}
       updatedAt={invitation.updatedAt.toISOString()}
       publishedAt={invitation.publishedAt?.toISOString() ?? null}
-      expiresAt={invitation.expiresAt?.toISOString() ?? null}
+      previewLinkExpiresAt={previewLink?.expiresAt.toISOString() ?? null}
       data={parsed.value.data as unknown as Record<string, unknown>}
       title={summarize(invitation.eventType, invitation.data).title}
       shareTemplate={invitation.shareTemplate}

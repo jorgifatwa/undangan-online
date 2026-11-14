@@ -100,11 +100,32 @@ async function main() {
   );
   const rb = await (await fetch(`${base}/robots.txt`)).text();
   check(
-    /Disallow: \/dashboard/.test(rb) && /Disallow: \/preview\//.test(rb) && /Sitemap: /.test(rb),
-    "robots.txt: blokir dashboard & preview, cantumkan sitemap",
+    /Disallow: \/dashboard/.test(rb) &&
+      /Disallow: \/preview\//.test(rb) &&
+      /Disallow: \/p\//.test(rb) &&
+      /Sitemap: /.test(rb),
+    "robots.txt: blokir dashboard, preview & link pratinjau, cantumkan sitemap",
   );
   const inv = await fetch(`${base}/perf-renda-rimba`);
   check(/noindex/.test(inv.headers.get("x-robots-tag") ?? ""), "halaman undangan tetap noindex");
+  // Aturan lama (masa uji 3 hari, watermark) tidak boleh tersisa di teks website.
+  // "3 hari sejak pembayaran" (pengembalian dana) tetap boleh.
+  for (const p of ["/", "/harga", "/tema", "/tentang", "/syarat", "/privasi"]) {
+    const plain = (await (await fetch(`${base}${p}`)).text())
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/3 hari sejak pembayaran/g, "");
+    const bad = plain.match(/masa uji|uji coba|\b3 hari\b|watermark/i);
+    check(
+      !bad,
+      `${p}: tanpa teks masa uji/3 hari/watermark${bad ? ` (ditemukan "${bad[0]}")` : ""}`,
+    );
+  }
+  const harga = await (await fetch(`${base}/harga`)).text();
+  check(
+    harga.includes("Draf gratis tanpa batas waktu") && harga.includes("90"),
+    "/harga: draf gratis + retensi 90 hari",
+  );
   for (const p of ["/syarat", "/privasi"]) {
     const b = await (await fetch(`${base}${p}`)).text();
     check(
@@ -121,9 +142,10 @@ async function main() {
   await sleep(1500);
   const t0 = await text(m);
   check(
-    t0.includes("Masuk") && t0.includes("Buat Gratis"),
-    "header belum login: Masuk + Buat Undangan Gratis",
+    t0.includes("Masuk") && t0.includes("Coba Gratis"),
+    "header belum login: Masuk + Coba Gratis",
   );
+  check(t0.includes("Buat & Pratinjau Gratis"), "hero: Buat & Pratinjau Gratis");
   const video = await m.waitForSelector("video[data-playing]", { timeout: 15000 }).then(
     () => true,
     () => false,

@@ -12,27 +12,28 @@ import {
 
 export interface PublishState {
   status: "DRAFT" | "PUBLISHED";
-  /** Tema sudah dibeli (bukan masa uji). */
+  /** Tema sudah dibeli (syarat terbit). */
   purchased: boolean;
+  /** Ditangguhkan admin: tidak tampil ke tamu & tidak bisa diterbitkan ulang. */
+  suspended: boolean;
   slug: string;
   publishedAt: string | null;
-  expiresAt: string | null;
   updatedAt: string;
 }
 
 const view = (inv: {
   status: string;
   purchasedAt: Date | null;
+  suspendedAt: Date | null;
   slug: string;
   publishedAt: Date | null;
-  expiresAt: Date | null;
   updatedAt: Date;
 }): PublishState => ({
   status: inv.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
   purchased: !!inv.purchasedAt,
+  suspended: !!inv.suspendedAt,
   slug: inv.slug,
   publishedAt: inv.publishedAt?.toISOString() ?? null,
-  expiresAt: inv.expiresAt?.toISOString() ?? null,
   updatedAt: inv.updatedAt.toISOString(),
 });
 

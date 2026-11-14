@@ -96,6 +96,8 @@ export async function saveInvitation(
       data: data as unknown as Prisma.InputJsonValue,
       themeId: manifest.id,
       colorVariant: variant.id,
+      // Aksi pengguna → hitungan retensi draf 90 hari dimulai ulang.
+      lastEditedAt: new Date(),
     },
   });
   if (res.count === 0) {
@@ -135,7 +137,7 @@ export async function updateSlug(
   try {
     ({ updatedAt } = await db.invitation.update({
       where: { id: inv.id },
-      data: { slug },
+      data: { slug, lastEditedAt: new Date() },
       select: { updatedAt: true },
     }));
   } catch (e) {

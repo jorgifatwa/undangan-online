@@ -12,45 +12,18 @@
  * - DITOLAK di production (NODE_ENV=production atau host database tercantum di
  *   PROTECTED_DB_HOSTS) kecuali ALLOW_ADMIN_GRANT=1 diisi secara sadar.
  */
-import os from "node:os";
-
 import { PrismaClient, type Prisma } from "@prisma/client";
 
 import { applyPaidOrder, createOrder } from "../src/lib/orders/service";
 import { formatRupiah } from "../src/lib/format";
 
-const args = process.argv.slice(2);
-const opt = (k: string) => args.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
-const slug = args.find((a) => !a.startsWith("--"));
+import { adminActor, assertAdminAllowed, cliArgs } from "./lib/admin";
+
+const { opt, positional } = cliArgs();
+const slug = positional[0];
 const by = opt("by")?.trim();
 const themeId = opt("theme");
 const note = opt("note") ?? null;
-
-function dbHost() {
-  try {
-    return new URL(process.env.DATABASE_URL ?? "").hostname;
-  } catch {
-    return "?";
-  }
-}
-
-function assertAllowed() {
-  const host = dbHost().toLowerCase();
-  const protectedHosts = (process.env.PROTECTED_DB_HOSTS ?? "")
-    .split(",")
-    .map((h) => h.trim().toLowerCase())
-    .filter(Boolean);
-  const production =
-    process.env.NODE_ENV === "production" || protectedHosts.some((h) => host.includes(h));
-  if (production && process.env.ALLOW_ADMIN_GRANT !== "1") {
-    console.error(
-      `✗ admin:grant-theme DIBATALKAN: database "${host}" adalah PRODUCTION. ` +
-        "Jalankan dengan ALLOW_ADMIN_GRANT=1 bila memang disengaja (tetap tercatat di AdminAudit).",
-    );
-    process.exit(2);
-  }
-  return { host, production };
-}
 
 async function main() {
   if (!slug || !by) {
@@ -59,7 +32,7 @@ async function main() {
     );
     process.exit(1);
   }
-  const { host, production } = assertAllowed();
+  const { host, production } = assertAdminAllowed("admin:grant-theme", "ALLOW_ADMIN_GRANT");
   const db = new PrismaClient();
   try {
     const inv = await db.invitation.findUnique({ where: { slug } });
@@ -74,7 +47,7 @@ async function main() {
       },
     );
     const res = await applyPaidOrder(order.id);
-    const actor = `${by} (os:${os.userInfo().username}@${os.hostname()})`;
+    const actor = adminActor(by);
     await db.adminAudit.create({
       data: {
         actor,

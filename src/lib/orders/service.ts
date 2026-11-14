@@ -58,7 +58,7 @@ export async function createOrder(
 
 /**
  * Terapkan pesanan LUNAS ke undangan: tema dibeli/diganti, kredit bertambah,
- * add-on tercatat, masa uji berakhir (expiresAt null). Idempoten — panggilan
+ * add-on tercatat (undangan siap diterbitkan). Idempoten — panggilan
  * ganda (mis. webhook terkirim dua kali) tidak menggandakan kredit.
  */
 export async function applyPaidOrder(orderId: string) {
@@ -80,7 +80,6 @@ export async function applyPaidOrder(orderId: string) {
           purchasedAt: next.purchasedAt,
           themeCredit: next.themeCredit,
           ownedThemeIds: next.ownedThemeIds,
-          expiresAt: next.expiresAt,
         },
       });
       for (const a of next.addons)

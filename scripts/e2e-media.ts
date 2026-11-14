@@ -53,7 +53,7 @@ async function user(email: string, name: string) {
   return { u, token };
 }
 
-async function invitation(userId: string, slug: string, plan: "trial" | "paid") {
+async function invitation(userId: string, slug: string, plan: "draft" | "paid") {
   await db.invitation.deleteMany({ where: { slug } });
   const data = buildInitialData({
     eventType: "WEDDING",
@@ -184,9 +184,9 @@ async function main() {
   const f = await makeFiles();
   const a = await user("e2e-a@test.local", "Uji A");
   const c = await user("e2e-c@test.local", "Uji C");
-  const free = await invitation(a.u.id, "uji-media-free", "trial");
+  const free = await invitation(a.u.id, "uji-media-free", "draft");
   const basic = await invitation(a.u.id, "uji-media-basic", "paid");
-  const invC = await invitation(c.u.id, "uji-media-c", "trial");
+  const invC = await invitation(c.u.id, "uji-media-c", "draft");
 
   const browser = await launchBrowser();
   const page = await browser.newPage();
@@ -423,7 +423,7 @@ async function main() {
   );
   check(
     await waitText(page, "12 dari maks. 12 foto", 60000),
-    "galeri penuh di 12 foto (masa uji = sudah dibeli)",
+    "galeri penuh di 12 foto (draf = sudah dibeli)",
   );
   await waitStatus(page, "Tersimpan", 20000);
   await sleep(800);
@@ -468,7 +468,7 @@ async function main() {
   check(
     (await text(page)).includes("0 dari maks. 3 lagu") &&
       (await text(page)).includes("Pilih file musik"),
-    "masa uji: unggah musik sendiri tersedia (maks. 3 lagu)",
+    "draf: unggah musik sendiri tersedia (maks. 3 lagu)",
   );
   await scrollToText(page, "Unggah musik sendiri");
   await sleep(300);

@@ -15,6 +15,7 @@ import { RESERVED_SLUGS, SLUG_RE } from "@/lib/invitations/reserved";
  *  - /{slug} (halaman undangan) & /{slug}/og (gambar pratinjau): header
  *    X-Robots-Tag noindex; halaman → cookie penanda perangkat tamu
  *    (lihat lib/guestbook/device.ts)
+ *  - /p/{token} (link pratinjau rahasia): noindex, no-referrer, no-store
  *  - /dashboard: proteksi login (logika di authConfig.callbacks.authorized)
  * Tautan lama /u/{slug} dialihkan 301 di next.config.ts (sebelum middleware).
  */
@@ -48,6 +49,14 @@ export default function middleware(req: NextRequest, ev: NextFetchEvent) {
           req.nextUrl.protocol === "https:" || req.headers.get("x-forwarded-proto") === "https",
         ),
       );
+    return res;
+  }
+  if (pathname.startsWith("/p/")) {
+    // Link pratinjau rahasia: jangan diindeks & jangan bocorkan token lewat Referer.
+    const res = NextResponse.next();
+    res.headers.set("X-Robots-Tag", NOINDEX);
+    res.headers.set("Referrer-Policy", "no-referrer");
+    res.headers.set("Cache-Control", "private, no-store");
     return res;
   }
   if (pathname.startsWith("/dashboard")) return authMiddleware(req, ev);

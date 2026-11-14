@@ -2,7 +2,7 @@ import "server-only";
 
 import type { Invitation, Media, Prisma } from "@prisma/client";
 
-import { MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
+import { DRAFT_MEDIA_RETENTION_DAYS, isPurgedSinceEdit } from "@/lib/invitations/retention";
 
 import { db } from "@/lib/db";
 import { invitationAddons } from "@/lib/orders/service";
@@ -356,7 +356,7 @@ export async function deleteByUrls(userId: string, invitationId: string, urls: s
  *  - baris FAILED > 24 jam → dihapus
  *  - file final milik undangan yang sudah dihapus → dihapus
  *  - file di raw/ tanpa baris Media > 24 jam → dihapus
- *  - RETENSI: undangan masa uji (tema belum dibeli) yang kedaluwarsa > 30 hari → semua foto & musiknya
+ *  - RETENSI: draf yang belum pernah dibeli & tidak diubah pengguna > 90 hari → semua foto & musiknya
  *    dihapus, URL-nya dikosongkan dari data undangan (teks tetap utuh)
  */
 export async function cleanupMedia(now = new Date()) {
@@ -411,15 +411,17 @@ export async function cleanupMedia(now = new Date()) {
       report.orphanRaw++;
     }
   }
-  // Retensi media undangan masa uji (lib/invitations/retention.ts)
-  const due = await db.invitation.findMany({
-    where: {
-      purchasedAt: null,
-      mediaPurgedAt: null,
-      expiresAt: { lt: new Date(now.getTime() - MEDIA_RETENTION_DAYS * 86400_000) },
-    },
-    select: { id: true, data: true },
-  });
+  // Retensi draf yang ditinggalkan (lib/invitations/retention.ts). Hanya
+  // `updatedAt` yang ikut berubah — lastEditedAt (aksi pengguna) TIDAK disentuh.
+  const due = (
+    await db.invitation.findMany({
+      where: {
+        purchasedAt: null,
+        lastEditedAt: { lt: new Date(now.getTime() - DRAFT_MEDIA_RETENTION_DAYS * 86400_000) },
+      },
+      select: { id: true, data: true, purchasedAt: true, lastEditedAt: true, mediaPurgedAt: true },
+    })
+  ).filter((inv) => !isPurgedSinceEdit(inv));
   for (const inv of due) {
     const files = await db.media.findMany({ where: { invitationId: inv.id } });
     for (const m of files) {

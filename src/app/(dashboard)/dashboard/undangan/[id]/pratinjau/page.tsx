@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Pratinjau Undangan", robots: { index
 
 /**
  * Pratinjau undangan milik user (termasuk draf) dengan komponen tema yang SAMA
- * dengan halaman publik /[slug] dan hak pakai undangan itu (masa uji / dibeli).
+ * dengan halaman publik /[slug] dan hak pakai undangan itu.
  * Hanya pemilik — undangan orang lain → 404.
  */
 export default async function PratinjauPage({
@@ -35,12 +35,8 @@ export default async function PratinjauPage({
   const parsed = parseInvitationData(invitation.eventType, invitation.data);
   if (!manifest || !Theme || !parsed.ok) notFound();
 
-  // Pratinjau PEMILIK: amplop digital tetap terlihat walau masa uji (di halaman
-  // tamu baru tampil setelah tema dibeli — lihat getEntitlements).
-  const features = {
-    ...getEntitlements(invitation, await invitationAddons(invitation.id)),
-    digitalEnvelope: true,
-  };
+  // Pratinjau PEMILIK: semua fitur terlihat (lihat getEntitlements).
+  const features = getEntitlements(invitation, await invitationAddons(invitation.id));
 
   // Mode editor (iframe di halaman edit): data diperbarui lewat postMessage.
   if (editor === "1") {
@@ -53,7 +49,6 @@ export default async function PratinjauPage({
         }}
         eventType={parsed.value.eventType}
         features={features}
-        watermark={features.watermark}
       />
     );
   }
@@ -72,7 +67,6 @@ export default async function PratinjauPage({
         invitation={parsed.value}
         variantId={invitation.colorVariant ?? undefined}
         features={features}
-        watermark={features.watermark}
         guestName={sanitizeGuestName(to)}
         wishes={wishes.map((w) => ({ ...w, createdAt: w.createdAt.toISOString() }))}
         preview

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { auth } from "@/auth";
-
 import { db } from "@/lib/db";
 import { sanitizeGuestName } from "@/lib/guest";
 import { guestbookStats } from "@/lib/guestbook/service";
@@ -13,8 +11,6 @@ import { invitationUrl, siteConfig } from "@/lib/site";
 import { parseInvitationData } from "@/schemas";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
-
-import { Expired } from "./Expired";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -31,12 +27,12 @@ const ROBOTS: Metadata["robots"] = {
 
 /**
  * Pratinjau link (WhatsApp dll.): judul, deskripsi, gambar /og. Undangan
- * kedaluwarsa → metadata umum tanpa nama/tanggal.
+ * tidak ditemukan → metadata umum tanpa nama/tanggal.
  */
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const inv = await getPublicInvitation(slug);
-  const parsed = inv?.active ? parseInvitationData(inv.eventType, inv.data) : null;
+  const parsed = inv ? parseInvitationData(inv.eventType, inv.data) : null;
   if (!inv || !parsed?.ok)
     return { title: { absolute: `Undangan · ${siteConfig.name}` }, robots: ROBOTS };
 
@@ -77,8 +73,8 @@ export const dynamic = "force-dynamic";
  * Halaman undangan publik: domain/{slug} (tautan lama /u/{slug} → 301 ke sini).
  * Rute website statis (harga, tema, …) selalu didahulukan Next.js; slug
  * dicadangkan & format tidak valid langsung 404 tanpa query database.
- * Draf → 404. Masa aktif habis → halaman "tidak aktif" tanpa data pribadi.
- * Hak pakai (masa uji / tema dibeli) diterapkan DI SERVER lewat `features`.
+ * Draf & DITANGGUHKAN → 404 (sama seperti tidak ada; lihat getPublicInvitation).
+ * Hak pakai diterapkan DI SERVER lewat `features`.
  */
 export default async function InvitationPage({ params, searchParams }: Props) {
   const { slug } = await params;
@@ -86,10 +82,6 @@ export default async function InvitationPage({ params, searchParams }: Props) {
 
   const invitation = await getPublicInvitation(slug);
   if (!invitation) notFound();
-  if (!invitation.active) {
-    const session = await auth();
-    return <Expired owner={session?.user?.id === invitation.userId} invitationId={invitation.id} />;
-  }
 
   const manifest = getManifest(invitation.themeId);
   const Theme = THEME_COMPONENTS[invitation.themeId];
@@ -114,7 +106,6 @@ export default async function InvitationPage({ params, searchParams }: Props) {
       invitation={parsed.value}
       variantId={invitation.colorVariant ?? undefined}
       features={features}
-      watermark={features.watermark}
       guestName={sanitizeGuestName(to)}
       forceLite={lite === "1"}
       wishes={wishes.map((w) => ({

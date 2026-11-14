@@ -67,7 +67,6 @@ export function DemoPreview({
       invitation={withNames(invitation, names.primary, names.secondary)}
       variantId={variantId}
       features={null}
-      watermark={false}
       guestName="Tamu Undangan"
       wishes={[]}
       preview

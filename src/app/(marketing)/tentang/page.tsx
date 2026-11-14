@@ -74,7 +74,7 @@ export default function TentangPage() {
           href="/masuk"
           className="bg-primary text-primary-foreground rounded-full px-6 py-3 font-medium"
         >
-          Buat Undangan Gratis
+          Buat & Pratinjau Gratis
         </Link>
         <Link
           href="/tema"

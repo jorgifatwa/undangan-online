@@ -32,8 +32,8 @@ export function summarize(eventType: string, json: unknown) {
   };
 }
 
-/** Status yang ditampilkan: undangan terbit yang lewat masa aktif = kedaluwarsa. */
-export function displayStatus(status: string, expiresAt: Date | null) {
-  if (status === "PUBLISHED" && expiresAt && expiresAt < new Date()) return "EXPIRED" as const;
-  return status as "DRAFT" | "PUBLISHED" | "EXPIRED";
+/** Status yang ditampilkan: penangguhan admin menimpa status draf/terbit. */
+export function displayStatus(status: string, suspendedAt: Date | null) {
+  if (suspendedAt) return "SUSPENDED" as const;
+  return status as "DRAFT" | "PUBLISHED";
 }

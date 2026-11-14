@@ -6,7 +6,7 @@
  *
  *  - metadata pratinjau link (og:title/description/image, ?to=) + noindex
  *  - gambar /og: JPEG 1200×630 < 300 KB, versi berubah saat undangan diubah,
- *    kedaluwarsa → tanpa data pribadi, draf → 404
+ *    ditangguhkan → 404 tanpa data pribadi, draf → 404
  *  - URL undangan di root /{slug}; tautan lama /u/{slug} → 301; rute website aman
  *  - dialog Bagikan: link ?to=, nomor WA, template tersimpan (updatedAt tetap)
  */
@@ -97,9 +97,9 @@ async function main() {
       slug,
       eventType: "WEDDING",
       themeId: "renda-rimba",
+      ...planFields("paid", "renda-rimba"),
       status: "PUBLISHED",
       publishedAt: new Date(),
-      expiresAt: new Date(Date.now() + 3 * DAY),
       data: data as Prisma.InputJsonValue,
     },
   });
@@ -155,19 +155,24 @@ async function main() {
 
   await db.invitation.update({
     where: { id: inv.id },
-    data: { expiresAt: new Date(Date.now() - 60_000) },
+    data: { suspendedAt: new Date(), suspendReason: "Uji" },
   });
-  const exp = (await get(`/${slug}`)).body.toString();
+  const sus = await get(`/${slug}`);
+  const susHtml = sus.body.toString();
+  check(sus.status === 404, "ditangguhkan: /slug 404");
   check(
-    !exp.includes("Kirana") && !exp.includes("Galih") && !exp.includes("Semarang"),
-    "kedaluwarsa: metadata tanpa nama/kota",
+    !susHtml.includes("Kirana") && !susHtml.includes("Galih") && !susHtml.includes("Semarang"),
+    "ditangguhkan: metadata tanpa nama/kota",
   );
-  const expOg = await get(`/${slug}/og`);
-  check(expOg.status === 200, "kedaluwarsa: /og memberi gambar umum");
-  if (shots) await sharp(expOg.body).toFile(`${shots}/2-og-kedaluwarsa.jpg`);
+  const susOg = await get(`/${slug}/og`);
+  check(susOg.status === 404, "ditangguhkan: /og 404");
+  check(
+    String(susOg.headers["cache-control"] ?? "").includes("no-store"),
+    "404 /og tidak di-cache (pemulihan langsung berlaku)",
+  );
   await db.invitation.update({
     where: { id: inv.id },
-    data: { status: "DRAFT", expiresAt: new Date(Date.now() + 3 * DAY) },
+    data: { suspendedAt: null, suspendReason: null, status: "DRAFT" },
   });
   check((await get(`/${slug}/og`)).status === 404, "draf: /og 404");
   await db.invitation.update({ where: { id: inv.id }, data: { status: "PUBLISHED" } });
@@ -268,13 +273,10 @@ async function main() {
       if (themeId === "renda-rimba") {
         await db.invitation.update({
           where: { id: pi.id },
-          data: { expiresAt: new Date(Date.now() - 60_000) },
+          data: { suspendedAt: new Date(), suspendReason: "Uji" },
         });
         const ex = await get(`/${pi.slug}/og`);
-        check(
-          ex.body.equals(expOg.body),
-          "kedaluwarsa + foto → gambar umum yang sama persis (tanpa foto & nama)",
-        );
+        check(ex.status === 404, "ditangguhkan + foto → /og 404 (tanpa foto & nama)");
       }
     }
   }

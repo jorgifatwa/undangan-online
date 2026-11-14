@@ -4,7 +4,7 @@ import type { RsvpStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { isActive } from "@/lib/invitations/publish";
-import { getEntitlements, isPurchased } from "@/lib/pricing";
+import { getEntitlements } from "@/lib/pricing";
 
 import { guestbookInputSchema, type GuestbookStats } from "./schema";
 
@@ -20,7 +20,7 @@ import { guestbookInputSchema, type GuestbookStats } from "./schema";
  *  4. per IP: dilonggarkan jauh (CGNAT seluler & Wi-Fi gedung membuat banyak tamu
  *     sungguhan berbagi IP) — hanya menahan serangan massal:
  *     100 / undangan / 10 menit, 300 lintas undangan / 10 menit
- *  5. per undangan (banjir dari banyak IP): 120 / menit; tema sudah dibeli 300 / menit
+ *  5. per undangan (banjir dari banyak IP): 300 / menit
  *  6. ucapan sama persis dari perangkat/IP yang sama dalam 1 jam → tidak digandakan
  */
 const MIN_FILL_MS = 3000;
@@ -29,8 +29,8 @@ export const LIMITS = {
   perDevice: 5,
   perIpInvitation: 100,
   perIpGlobal: 300,
-  /** Per undangan per menit: masa uji 120, tema sudah dibeli 300 (acara besar). */
-  perInvitationMinute: { trial: 120, purchased: 300 },
+  /** Per undangan per menit (acara besar dari banyak IP). */
+  perInvitationMinute: 300,
 } as const;
 export const RATE_LIMIT_MESSAGE =
   "Terlalu banyak ucapan dalam waktu singkat, coba lagi sebentar lagi.";
@@ -59,7 +59,7 @@ async function activeInvitation(slug: string) {
     select: {
       id: true,
       status: true,
-      expiresAt: true,
+      suspendedAt: true,
       themeId: true,
       purchasedAt: true,
       themeCredit: true,
@@ -164,7 +164,7 @@ export async function submitGuestbook(
     perDevice >= LIMITS.perDevice ||
     ipInv >= LIMITS.perIpInvitation ||
     ipAll >= LIMITS.perIpGlobal ||
-    invMinute >= LIMITS.perInvitationMinute[isPurchased(inv) ? "purchased" : "trial"]
+    invMinute >= LIMITS.perInvitationMinute
   )
     return { ok: false, status: 429, error: RATE_LIMIT_MESSAGE, rateLimited: true };
 

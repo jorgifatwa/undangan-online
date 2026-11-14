@@ -37,15 +37,18 @@
     "media:cleanup": "tsx --env-file=.env --conditions=react-server scripts/media-cleanup.ts",
     "e2e:media": "tsx --env-file=.env --conditions=react-server scripts/e2e-media.ts",
     "e2e:retention": "tsx --env-file=.env --conditions=react-server scripts/e2e-retention.ts",
-    "e2e:publish": "tsx --env-file=.env scripts/e2e-publish.ts",
+    "e2e:publish": "tsx --env-file=.env --conditions=react-server scripts/e2e-publish.ts",
     "seed:perf": "tsx --env-file=.env scripts/seed-perf.ts",
     "e2e:guestbook": "tsx --env-file=.env scripts/e2e-guestbook.ts",
     "e2e:share": "tsx --env-file=.env scripts/e2e-share.ts",
+    "e2e:preview-link": "tsx --env-file=.env scripts/e2e-preview-link.ts",
     "deploy:check": "tsx scripts/deploy-check.ts",
     "e2e:landing": "tsx --env-file=.env scripts/e2e-landing.ts",
     "e2e:pricing": "tsx --env-file=.env --conditions=react-server scripts/e2e-pricing.ts",
     "e2e:safety": "tsx --env-file=.env --conditions=react-server scripts/e2e-safety.ts",
-    "admin:grant-theme": "tsx --env-file=.env --conditions=react-server scripts/admin-grant-theme.ts"
+    "admin:grant-theme": "tsx --env-file=.env --conditions=react-server scripts/admin-grant-theme.ts",
+    "admin:suspend": "tsx --env-file=.env scripts/admin-suspend.ts suspend",
+    "admin:unsuspend": "tsx --env-file=.env scripts/admin-suspend.ts unsuspend"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

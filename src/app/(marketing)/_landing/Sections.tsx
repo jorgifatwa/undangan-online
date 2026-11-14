@@ -278,14 +278,15 @@ export function FinalCta({ waHref }: { waHref: string | null }) {
           Undangan digital pertamamu bisa siap sebelum teh hangatmu dingin.
         </h2>
         <p className="mt-4 text-white/75">
-          Coba semua tema gratis. Beli tema hanya saat undangan siap dibagikan.
+          Buat & pratinjau dengan tema apa pun tanpa bayar. Beli tema hanya saat undangan siap
+          dibagikan.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
             href="/masuk"
             className="text-clay bg-background rounded-full px-7 py-3.5 font-medium transition-transform hover:-translate-y-0.5"
           >
-            Buat Undangan Gratis
+            Buat & Pratinjau Gratis
           </Link>
           {waHref && (
             <a
