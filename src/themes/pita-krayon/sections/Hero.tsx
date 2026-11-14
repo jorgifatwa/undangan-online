@@ -1,0 +1,204 @@
+"use client";
+
+import { useInvitation } from "../../_shared/runtime/context";
+import { CrayonNumber } from "../CrayonNumber";
+import { box, Orn, Section, Sticker, txt, Typewriter, u, useDecor, useNick } from "../canvas";
+import { Cake, PartyHat, Ribbon, Sparkle } from "../ornaments";
+
+/**
+ * Pembuka (section "salam", dikunci tepat setelah cover): "{NAMA} IS TURNING"
+ * diketik, angka umur krayon raksasa "digoreskan", foto masa kecil bergaya
+ * stiker (PNG tanpa latar → garis mengikuti siluet) bertopi glitter, kue
+ * coretan di depan, pita & kilau. Kanvas 430×610 seperti desain.
+ */
+export function Hero() {
+  const { inv } = useInvitation();
+  const nick = useNick();
+  const { lang } = useDecor();
+  if (inv.eventType !== "BIRTHDAY") return null;
+  const c = inv.data.celebrant;
+  const age = c.age;
+  const photo = c.childPhoto ?? c.photo;
+  const line1 = age !== undefined ? nick : lang === "id" ? nick : `${nick}'S`;
+  const line2 =
+    age !== undefined
+      ? lang === "id"
+        ? "GENAP"
+        : "IS TURNING"
+      : lang === "id"
+        ? "ULANG TAHUN!"
+        : "BIRTHDAY!";
+  const digits = age !== undefined ? String(age).length : 0;
+  // tinggi angka: 1–2 digit setinggi desain; 3 digit sedikit lebih kecil
+  const numH = digits >= 3 ? 190 : 225;
+
+  return (
+    <Section id="salam" minHeight={620} threshold={0.12}>
+      <h2
+        style={{
+          ...txt(37, 1.02, { color: "var(--inv-red)", weight: 700, ls: 4, upper: true }),
+          position: "relative",
+          paddingTop: u(36),
+          zIndex: 3,
+        }}
+      >
+        <span style={{ display: "block", whiteSpace: "nowrap" }}>
+          <Typewriter text={line1} delay={0.1} />
+        </span>
+        <span style={{ display: "block", whiteSpace: "nowrap" }}>
+          <Typewriter text={line2} delay={0.1 + line1.length * 0.055 + 0.15} />
+        </span>
+      </h2>
+
+      {/* angka umur krayon (di belakang foto) */}
+      {age !== undefined && (
+        <div
+          style={{
+            ...box(0, 112, 430, numH),
+            display: "flex",
+            justifyContent: "center",
+            zIndex: 1,
+          }}
+        >
+          <div className="pk-crayon-reveal" style={{ ["--d" as string]: "0.35s" }}>
+            <CrayonNumber value={age} height={u(numH)} />
+          </div>
+        </div>
+      )}
+
+      {/* foto stiker */}
+      {photo && (
+        <div
+          data-a="pop"
+          style={{ ...box(118, 222, 194, 340), zIndex: 2, ["--d" as string]: "0.6s" }}
+        >
+          <Sticker
+            photo={photo}
+            sizes="(max-width: 440px) 46vw, 200px"
+            position={`${photo.focusX ?? 50}% ${photo.focusY ?? 100}%`}
+            alt={photo.alt ?? c.name}
+          />
+        </div>
+      )}
+      <Orn
+        slot="party-hat-glitter"
+        l={photo ? 196 : 250}
+        t={photo ? 160 : 120}
+        w={66}
+        ratio={1.36}
+        rotate={12}
+        a="drop"
+        d={0.9}
+        z={3}
+        fallback={<PartyHat glitter />}
+      />
+
+      {/* kue di depan foto */}
+      <Orn
+        slot="cake"
+        l={photo ? 117 : 95}
+        t={photo ? 368 : 300}
+        w={photo ? 196 : 240}
+        ratio={1.53}
+        tint
+        a="up"
+        d={0.8}
+        z={4}
+        fallback={<Cake />}
+      />
+
+      <Orn
+        slot="ribbon-c"
+        l={38}
+        t={104}
+        w={62}
+        ratio={1.32}
+        rotate={-12}
+        a="fade"
+        d={0.5}
+        wiggle
+        fallback={<Ribbon />}
+      />
+      <Orn
+        slot="ribbon-a"
+        l={334}
+        t={44}
+        w={50}
+        ratio={1.02}
+        rotate={8}
+        a="fade"
+        d={0.55}
+        wiggle
+        fallback={<Ribbon />}
+      />
+      <Orn
+        slot="ribbon-b"
+        l={342}
+        t={258}
+        w={54}
+        ratio={1.36}
+        rotate={-6}
+        a="fade"
+        d={0.6}
+        wiggle
+        fallback={<Ribbon />}
+      />
+      <Orn
+        slot="ribbon-c"
+        l={44}
+        t={352}
+        w={52}
+        ratio={1.32}
+        rotate={10}
+        a="fade"
+        d={0.65}
+        wiggle
+        fallback={<Ribbon />}
+      />
+      <Orn
+        slot="sparkle-pair"
+        l={56}
+        t={286}
+        w={28}
+        ratio={1.22}
+        tint={false}
+        a="fade"
+        d={0.7}
+        fallback={<Sparkle />}
+      />
+      <Orn
+        slot="sparkle-b"
+        l={322}
+        t={296}
+        w={16}
+        ratio={1.03}
+        tint={false}
+        a="fade"
+        d={0.75}
+        fallback={<Sparkle />}
+      />
+      <Orn
+        slot="sparkle-c"
+        l={312}
+        t={402}
+        w={20}
+        ratio={1.03}
+        tint={false}
+        a="fade"
+        d={0.8}
+        fallback={<Sparkle />}
+      />
+      <Orn
+        slot="sparkle-a"
+        l={348}
+        t={96}
+        w={14}
+        ratio={1.37}
+        tint={false}
+        a="fade"
+        d={0.85}
+        fallback={<Sparkle />}
+      />
+    </Section>
+  );
+}

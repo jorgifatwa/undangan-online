@@ -134,6 +134,8 @@ const birthdayInput: BirthdayInput = {
     nickname: "Kirana",
     age: 17,
     photo: { url: `${P}/birthday-celebrant.webp`, alt: "Kirana", focusY: 35 },
+    // foto masa kecil (tema yang mendukung, mis. Pita Krayon) — contoh memakai foto yang sama
+    childPhoto: { url: `${P}/birthday-celebrant.webp`, alt: "Kirana kecil" },
     father: { name: "Dimas Prakoso" },
     mother: { name: "Lestari Ayuningtyas" },
   },
@@ -165,6 +167,10 @@ const birthdayInput: BirthdayInput = {
   gift: {
     accounts: [{ bank: "BCA", number: "5550001112", holder: "Lestari Ayuningtyas" }],
     confirmContacts: [],
+  },
+  // section "cerita" — hanya tema yang mendukung (tema lain tidak menampilkannya)
+  story: {
+    text: "Tujuh belas rasanya masih nggak nyata. Tumbuh besar itu kayak naik roller coaster — seru, deg-degan, kadang bikin capek juga. Ada saat-saat aku bingung dan nggak yakin sama apa pun, tapi selalu ada orang-orang yang menemani.\n\nSalah satu hal paling berharga di masa remajaku adalah punya teman-teman yang bikin hidup terasa lebih ringan. Makasih sudah jadi bagian dari kenangan terbaikku, sudah mendengarkan cerita random-ku, dan tetap ada di hari-hari burukku.\n\nMakasih sudah tumbuh bareng aku. Makasih sudah jadi bagian dari ceritaku. 🤍",
   },
 };
 

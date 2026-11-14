@@ -11,14 +11,26 @@ import path from "node:path";
 
 export interface ReferenceSite {
   /** Slug tema hasil adaptasi. */
-  theme: "tirai-beludru" | "renda-rimba";
+  theme: "tirai-beludru" | "renda-rimba" | "pita-krayon";
   label: string;
+  /** Judul bagian di ASSET-AUDIT.md (penanda tema saat dibaca assets:sync). */
+  auditHeading: string;
   /** Folder proyek referensi (bisa diubah lewat env). */
   dir: string;
   liveUrl: string;
   /** Halaman cover (tanpa membuka) dan halaman isi undangan. */
   coverPath: string;
   detailsPath: string;
+  /**
+   * Situs ekspor Canva (tanpa folder proyek): `pnpm ref:assets` mengunduh
+   * gambar `_assets/media/*` dari halaman live ke `{dir}/assets/` (gitignored)
+   * lalu memindainya. Isi undangan berada di container scroll internal, jadi
+   * screenshot dipotong per section dengan koordinat tetap (`slices`, px CSS
+   * pada lebar 430).
+   */
+  canva?: {
+    slices: { key: string; label: string; top: number; height: number }[];
+  };
 }
 
 export const REFERENCES: ReferenceSite[] = [
@@ -29,6 +41,7 @@ export const REFERENCES: ReferenceSite[] = [
     liveUrl: process.env.REF_JORGI_URL ?? "https://nadia-jorgi-wedding.vercel.app",
     coverPath: "/",
     detailsPath: "/details",
+    auditHeading: "## Tirai Beludru",
   },
   {
     theme: "renda-rimba",
@@ -37,6 +50,33 @@ export const REFERENCES: ReferenceSite[] = [
     liveUrl: process.env.REF_SUBAGJA_URL ?? "https://annisa-rizki-wedding.vercel.app",
     coverPath: "/",
     detailsPath: "/details",
+    auditHeading: "## Renda Rimba",
+  },
+  {
+    theme: "pita-krayon",
+    label: "Pita Krayon (ref. genz-birthday)",
+    // Tanpa folder proyek: aset diunduh dari situs live ke sini (gitignored).
+    dir: process.env.REF_GENZ_DIR ?? path.resolve(process.cwd(), ".reference/genz"),
+    liveUrl: process.env.REF_GENZ_URL ?? "https://pleasurein.my.id",
+    coverPath: "/genz-birhday",
+    detailsPath: "/genz-birhday/page-2",
+    auditHeading: "## Pita Krayon",
+    canva: {
+      slices: [
+        { key: "hero", label: "Pembuka: THIS GIRL IS TURNING + angka krayon", top: 0, height: 610 },
+        { key: "quote-music", label: "Kutipan + pemutar musik", top: 610, height: 290 },
+        { key: "greeting", label: "Salam + nama + foto berpita", top: 900, height: 670 },
+        { key: "event", label: "Save the date + kalender + detail acara", top: 1570, height: 760 },
+        { key: "wishes", label: "RSVP & ucapan (embed easyrsvp)", top: 2330, height: 380 },
+        { key: "story", label: "Birthday Story", top: 2700, height: 470 },
+        {
+          key: "countdown",
+          label: "See you on + hitung mundur + strip foto",
+          top: 3170,
+          height: 472,
+        },
+      ],
+    },
   },
 ];
 
@@ -283,6 +323,105 @@ export const SLOT_MAP: Record<string, Record<string, SlotInfo>> = {
       role: "Lottie bintang berkilau (sama dengan Tirai Beludru)",
     },
   },
+  "pita-krayon": {
+    "02f7f4af01b8b8a81b8501a2e0ff2ddd": {
+      slot: "ribbon-a",
+      svg: "Ribbon",
+      role: "Pita merah (cover & pembuka)",
+    },
+    "9d1b29979865116f3af6dc9de6ec006d": {
+      slot: "ribbon-b",
+      svg: "Ribbon",
+      role: "Pita merah kecil",
+    },
+    bfbd3af9bd4c7709978d8407f3b3c932: { slot: "ribbon-c", svg: "Ribbon", role: "Pita merah lebar" },
+    "0ad3ef59b8cc74c1140840b20ffb177d": {
+      slot: "party-hat",
+      svg: "PartyHat",
+      role: "Topi pesta bergaris (cover)",
+    },
+    "1b7bc2516073a1eccdab4d9a4778c466": {
+      slot: "party-hat-glitter",
+      svg: "PartyHat glitter",
+      role: "Topi pesta glitter (pembuka)",
+    },
+    "0b48288b2d5287bdd84df58bd53312b4": {
+      slot: "scribble-circle",
+      svg: "ScribbleCircle",
+      role: "Lingkaran coretan (hari H di kalender)",
+    },
+    "0c328e7aaddbd2376d3a01f34aed09d8": { slot: "sparkle-a", svg: "Sparkle", role: "Kilau pensil" },
+    "1576104a402a88ae53f5d7fcd5768cb7": {
+      slot: "sparkle-b",
+      svg: "Sparkle",
+      role: "Kilau pensil kecil",
+    },
+    "7927610807516a7b8c9f595726ac4d7a": {
+      slot: "sparkle-pair",
+      svg: "Sparkle ×2",
+      role: "Sepasang kilau pensil",
+    },
+    b43ef3d947b36fec895e52635ab88d21: {
+      slot: "sparkle-c",
+      svg: "Sparkle",
+      role: "Kilau pensil terang",
+    },
+    "21b01e4aa0403bad67ccb63302265ef2": {
+      slot: "wavy-frame",
+      svg: "WavyFrame",
+      role: "Bingkai bergelombang berpita (foto profil)",
+    },
+    "26edb319e6b72a049f6d355770dcacc8": {
+      slot: "disco-ball",
+      svg: "DiscoBall",
+      role: "Disco ball coretan (save the date)",
+    },
+    "386c4386955ad65dd8f44008846a1c8c": {
+      slot: "scallop-frame",
+      svg: "ScallopFrame",
+      role: "Bingkai scallop merah (foto cover)",
+    },
+    c9a5e94c645782b552e2bc1dc6666d57: {
+      slot: "cake",
+      svg: "Cake",
+      role: "Kue ulang tahun coretan",
+    },
+    "83069972693dd15d127a94f9d02e0301": {
+      slot: null,
+      svg: "—",
+      role: "Angka krayon “7” — diganti SVG digit 0–9 (keputusan pemilik: goresan seragam)",
+    },
+    a528aad8de022adcfd045e26e84ff62d: {
+      slot: null,
+      svg: "—",
+      role: "Angka krayon “1” — diganti SVG digit 0–9 (keputusan pemilik: goresan seragam)",
+    },
+    "07dad2c041a443a3a3d9dbdb0282e3b3": {
+      slot: null,
+      svg: "—",
+      role: "Grafik pemutar musik statis (template Canva) — diganti kartu pemutar yang berfungsi",
+    },
+    "15cef90412437c445458005771e70646": {
+      slot: null,
+      svg: "—",
+      role: "Foto pribadi (tidak pernah dipakai di tema)",
+    },
+    "1d3cdad31b12740c8b7cc5a9fc2b6fd9": {
+      slot: null,
+      svg: "—",
+      role: "Foto pribadi (tidak pernah dipakai di tema)",
+    },
+    "2987177443bde951d3241d6c2e726912": {
+      slot: null,
+      svg: "—",
+      role: "Foto pribadi (tidak pernah dipakai di tema)",
+    },
+    "743e4dc73d7511be6f59f4d4d0347bd5": {
+      slot: null,
+      svg: "—",
+      role: "Foto pribadi (tidak pernah dipakai di tema)",
+    },
+  },
 };
 
 /** Klasifikasi file yang tidak ada di SLOT_MAP. */
@@ -307,5 +446,9 @@ export const JORGI_SECTION_LABELS: Record<string, string> = {
   "section-gallery": "Galeri",
   "section-closing": "Penutup",
 };
+
+/** Label section situs Canva per key (untuk shots.json). */
+export const canvaSlice = (ref: ReferenceSite, key: string) =>
+  ref.canva?.slices.find((s) => s.key === key);
 
 export const baseName = (p: string) => path.basename(p).replace(/\.[^.]+$/, "");

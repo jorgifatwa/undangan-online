@@ -1,0 +1,291 @@
+/*
+ * Pita Krayon — gaya khusus tema. Semua selector dibatasi
+ * [data-theme="pita-krayon"] dan hanya transform/opacity yang dianimasikan.
+ *
+ * Animasi masuk: kelas `pk-in` dipasang sekali saat section terlihat (setelah
+ * cover dibuka). Elemen [data-a] & huruf mesin ketik (.pk-tw) menunggu kelas
+ * itu. Koreografi mengikuti desain Canva: judul diketik huruf per huruf,
+ * ornamen muncul serentak, angka krayon "digoreskan", kalender berurutan,
+ * lingkaran hari-H digambar.
+ */
+
+[data-theme="pita-krayon"] {
+  background: var(--inv-bg);
+  color: var(--inv-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Mesin ketik (huruf per huruf) ===== */
+[data-theme="pita-krayon"] .pk-sec:not(.pk-in) .pk-tw {
+  opacity: 0;
+}
+[data-theme="pita-krayon"] .pk-in .pk-tw,
+[data-theme="pita-krayon"] .pk-cover .pk-tw {
+  /* fade linear sangat singkat — BUKAN steps(): progres akhir bisa tercatat
+     0,9999999 sehingga steps(1, end) tertahan di opacity 0 */
+  animation: pk-fade 0.06s linear var(--d, 0s) both;
+}
+
+/* ===== Animasi masuk ===== */
+[data-theme="pita-krayon"] .pk-sec:not(.pk-in) [data-a] {
+  opacity: 0;
+}
+[data-theme="pita-krayon"] .pk-in [data-a] {
+  animation-duration: 0.7s;
+  animation-timing-function: ease-out;
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+}
+[data-theme="pita-krayon"] .pk-in [data-a="fade"] {
+  animation-name: pk-fade;
+}
+[data-theme="pita-krayon"] .pk-in [data-a="up"] {
+  animation-name: pk-up;
+}
+[data-theme="pita-krayon"] .pk-in [data-a="pop"] {
+  animation-name: pk-pop;
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+[data-theme="pita-krayon"] .pk-in [data-a="drop"] {
+  animation-name: pk-drop;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+[data-theme="pita-krayon"] .pk-in [data-a="tilt"] {
+  animation-name: pk-tilt;
+  animation-duration: 0.9s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+[data-theme="pita-krayon"] .pk-in [data-a="strip"] {
+  animation-name: pk-strip;
+  animation-duration: 0.9s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+[data-theme="pita-krayon"] .pk-in [data-a="draw"] {
+  animation-name: pk-draw;
+  animation-duration: 0.75s;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+@keyframes pk-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pk-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes pk-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-6deg);
+  }
+}
+@keyframes pk-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-22px) scale(0.92);
+  }
+}
+@keyframes pk-tilt {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-3deg);
+  }
+}
+@keyframes pk-strip {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotate(14deg);
+  }
+}
+/* lingkaran coretan "digambar": muncul sambil berputar sedikit */
+@keyframes pk-draw {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotate(-40deg);
+  }
+}
+
+/* ===== Angka krayon "digoreskan": sapuan dari bawah ke atas (2 transform) ===== */
+[data-theme="pita-krayon"] .pk-crayon-reveal {
+  overflow: hidden;
+}
+[data-theme="pita-krayon"] .pk-crayon-reveal > * {
+  display: block;
+}
+[data-theme="pita-krayon"] .pk-sec:not(.pk-in) .pk-crayon-reveal {
+  transform: translateY(100%);
+}
+[data-theme="pita-krayon"] .pk-sec:not(.pk-in) .pk-crayon-reveal > * {
+  transform: translateY(-100%);
+}
+[data-theme="pita-krayon"] .pk-in .pk-crayon-reveal,
+[data-theme="pita-krayon"] .pk-in .pk-crayon-reveal > * {
+  animation: pk-reveal 1.05s cubic-bezier(0.55, 0.05, 0.25, 1) var(--d, 0.2s) both;
+}
+[data-theme="pita-krayon"] .pk-in .pk-crayon-reveal > * {
+  animation-name: pk-reveal-inner;
+}
+@keyframes pk-reveal {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes pk-reveal-inner {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ===== Goyang halus pita (berulang; mati di mode ringan / reduced motion) ===== */
+[data-theme="pita-krayon"] .pk-wiggle {
+  animation: pk-wiggle var(--wd, 4.6s) ease-in-out var(--wdl, 0s) infinite alternate;
+  transform-origin: 50% 8%;
+}
+@keyframes pk-wiggle {
+  from {
+    rotate: -3deg;
+  }
+  to {
+    rotate: 3deg;
+  }
+}
+
+/* ===== Cover ===== */
+[data-theme="pita-krayon"] .pk-cover {
+  transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+[data-theme="pita-krayon"] .pk-cover.pk-opening {
+  transform: translateY(-100%);
+}
+[data-theme="pita-krayon"] .pk-cover.pk-skipped {
+  transform: translateY(-100%);
+  transition: none;
+  pointer-events: none;
+}
+/* elemen cover masuk saat halaman dimuat (tanpa menunggu JS; nama tetap terlihat) */
+[data-theme="pita-krayon"] .pk-cover [data-ca] {
+  animation: pk-pop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) var(--d, 0s) both;
+}
+[data-theme="pita-krayon"] .pk-cover [data-ca="fade"] {
+  animation-name: pk-fade;
+}
+[data-theme="pita-krayon"] .pk-cover .pk-open-btn {
+  animation: pk-pulse 2.4s ease-in-out 2.2s infinite;
+}
+@keyframes pk-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ===== Kontrol ===== */
+[data-theme="pita-krayon"] .pk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  background: var(--inv-deep);
+  color: #fff;
+  border-radius: 0.6rem;
+  font-family: var(--pk-hand), cursive;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: transform 0.15s ease;
+}
+[data-theme="pita-krayon"] .pk-btn:active {
+  transform: scale(0.96);
+}
+[data-theme="pita-krayon"] .pk-btn:focus-visible,
+[data-theme="pita-krayon"] .pk-focus:focus-visible {
+  outline: 3px solid var(--inv-accent);
+  outline-offset: 3px;
+}
+
+/* ===== Mode ringan & prefers-reduced-motion ===== */
+[data-theme="pita-krayon"][data-lite] .pk-wiggle,
+[data-theme="pita-krayon"][data-lite] .pk-cover .pk-open-btn {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="pita-krayon"] [data-a],
+  [data-theme="pita-krayon"] [data-ca],
+  [data-theme="pita-krayon"] .pk-tw,
+  [data-theme="pita-krayon"] .pk-wiggle,
+  [data-theme="pita-krayon"] .pk-open-btn,
+  [data-theme="pita-krayon"] .pk-crayon-reveal,
+  [data-theme="pita-krayon"] .pk-crayon-reveal > * {
+    animation: none !important;
+  }
+  [data-theme="pita-krayon"] .pk-sec:not(.pk-in) [data-a],
+  [data-theme="pita-krayon"] .pk-sec:not(.pk-in) .pk-tw {
+    opacity: 1;
+  }
+  [data-theme="pita-krayon"] .pk-sec:not(.pk-in) .pk-crayon-reveal,
+  [data-theme="pita-krayon"] .pk-sec:not(.pk-in) .pk-crayon-reveal > * {
+    transform: none;
+  }
+  [data-theme="pita-krayon"] .pk-cover {
+    transition: none;
+  }
+}
+
+/* ===== Penggeser progres lagu (kartu pemutar) ===== */
+[data-theme="pita-krayon"] .pk-range {
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+}
+[data-theme="pita-krayon"] .pk-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--inv-red) var(--p, 0%),
+    rgb(255 255 255 / 0.85) var(--p, 0%)
+  );
+}
+[data-theme="pita-krayon"] .pk-range::-moz-range-track {
+  height: 3px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.85);
+}
+[data-theme="pita-krayon"] .pk-range::-moz-range-progress {
+  height: 3px;
+  background: var(--inv-red);
+}
+[data-theme="pita-krayon"] .pk-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--inv-red);
+  border: 2px solid #fff;
+}
+[data-theme="pita-krayon"] .pk-range::-moz-range-thumb {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--inv-red);
+  border: 2px solid #fff;
+}

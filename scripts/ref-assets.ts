@@ -73,7 +73,52 @@ export interface RefAsset {
 const PREFIX: Record<ReferenceSite["theme"], string> = {
   "tirai-beludru": "tb",
   "renda-rimba": "rr",
+  "pita-krayon": "pk",
 };
+
+/**
+ * Situs ekspor Canva: unduh semua gambar `_assets/media/*` yang dimuat halaman
+ * cover & isi ke `{ref.dir}/assets/` (gitignored). Foto pribadi ikut terunduh
+ * untuk keperluan audit saja — SLOT_MAP menandainya "tidak pernah dipakai".
+ */
+async function downloadCanva(ref: ReferenceSite) {
+  const out = path.join(ref.dir, "assets");
+  await fs.mkdir(out, { recursive: true });
+  const urls = new Set<string>();
+  const browser = await launchBrowser();
+  try {
+    for (const p of [ref.coverPath, ref.detailsPath]) {
+      const page = await browser.newPage();
+      await page.setViewport({ width: REF_WIDTH, height: 4000, isMobile: true, hasTouch: true });
+      page.on("request", (r) => {
+        if (/\/_assets\/media\/[0-9a-f]{32}\.(png|jpe?g|webp|gif|svg)$/i.test(r.url()))
+          urls.add(r.url());
+      });
+      await page.goto(`${ref.liveUrl}${p}`, { waitUntil: "networkidle2", timeout: 90000 });
+      await new Promise((r) => setTimeout(r, 2500));
+      await page.close();
+    }
+  } finally {
+    await browser.close();
+  }
+  let n = 0;
+  for (const u of urls) {
+    const file = path.join(out, path.basename(new URL(u).pathname));
+    try {
+      await fs.access(file);
+      continue;
+    } catch {
+      /* belum ada → unduh */
+    }
+    const r = await fetch(u);
+    if (!r.ok) continue;
+    await fs.writeFile(file, Buffer.from(await r.arrayBuffer()));
+    n++;
+  }
+  console.log(
+    `  ${urls.size} gambar ditemukan, ${n} baru diunduh → ${path.relative(process.cwd(), out)}`,
+  );
+}
 
 async function walk(dir: string): Promise<string[]> {
   const out: string[] = [];
@@ -108,7 +153,7 @@ async function sourceFiles(ref: ReferenceSite): Promise<{ file: string; text: st
 async function scan(ref: ReferenceSite): Promise<RefAsset[]> {
   const src = await sourceFiles(ref);
   const assets: RefAsset[] = [];
-  for (const sub of SCAN_DIRS) {
+  for (const sub of ref.canva ? ["assets"] : SCAN_DIRS) {
     for (const abs of await walk(path.join(ref.dir, sub))) {
       const rel = path.relative(ref.dir, abs);
       const isImage = IMAGE_EXT.test(abs);
@@ -180,12 +225,20 @@ async function positions(ref: ReferenceSite, assets: RefAsset[]) {
     for (const kind of ["cover", "details"] as const) {
       const url = `${ref.liveUrl}${kind === "cover" ? ref.coverPath : ref.detailsPath}`;
       process.stdout.write(`  ${ref.theme} ${kind}: ${url}\n`);
+      // Canva: isi berada di container scroll internal → tinggi dari irisan tetap.
+      const canvaEnd = ref.canva
+        ? Math.max(...ref.canva.slices.map((s) => s.top + s.height)) + 40
+        : 0;
       const probe = await openTall(browser, url, 900, 2500);
-      const h = kind === "cover" ? 900 : Math.min(16000, (await contentHeight(probe)) + 200);
+      const h =
+        kind === "cover" ? 900 : canvaEnd || Math.min(16000, (await contentHeight(probe)) + 200);
       await probe.close();
       const page = await openTall(browser, url, h, 6000);
 
-      const sections = await collectSections(page, kind);
+      const sections =
+        ref.canva && kind === "details"
+          ? ref.canva.slices.map((s) => ({ ...s }))
+          : await collectSections(page, kind);
       const usages = await collectAssetUsages(page);
       // Kelompokkan per (aset, section); simpan pemakaian terbesar tiap section.
       const sectionOf = (y: number) =>
@@ -213,7 +266,9 @@ async function positions(ref: ReferenceSite, assets: RefAsset[]) {
               ? ref.theme === "tirai-beludru"
                 ? JORGI_SECTION_LABELS.cover
                 : "Cover"
-              : (JORGI_SECTION_LABELS[sec.label] ?? sec.label);
+              : ref.canva
+                ? sec.label
+                : (JORGI_SECTION_LABELS[sec.label] ?? sec.label);
           const slug = sec.key.replace(/[^a-z0-9-]/gi, "").slice(0, 24) || "s";
 
           // Jendela potret: section (maks 1000 px) yang memuat aset.
@@ -253,7 +308,7 @@ async function positions(ref: ReferenceSite, assets: RefAsset[]) {
 
 /* ------------------------------ ASSET-AUDIT.md ----------------------------- */
 
-const STATUS_VALUES = ["belum dicek", "free", "pro", "milik"] as const;
+const STATUS_VALUES = ["belum dicek", "free", "pro", "milik", "dev"] as const;
 
 /** Baca status & catatan yang sudah diisi pemilik (kolom terakhir tabel). */
 async function readExistingAudit(): Promise<Map<string, { status: string; note: string }>> {
@@ -309,7 +364,7 @@ async function writeAudit(assets: RefAsset[]) {
 
   const md = `# Audit Aset Referensi
 
-Daftar SEMUA gambar & animasi Lottie di folder referensi kedua tema. Isi kolom
+Daftar SEMUA gambar & animasi Lottie di folder referensi setiap tema. Isi kolom
 **Status** dengan salah satu nilai berikut (huruf kecil, persis):
 
 | Status | Arti | Dipakai di tema |
@@ -318,28 +373,28 @@ Daftar SEMUA gambar & animasi Lottie di folder referensi kedua tema. Isi kolom
 | \`free\` | elemen Free Canva — boleh dipakai aslinya | file asli (WebP) |
 | \`pro\` | elemen Pro Canva — harus diganti | versi SVG |
 | \`milik\` | buatan / upload sendiri — boleh dipakai aslinya | file asli (WebP) |
+| \`dev\` | belum dicek pemilik di Canva — dipakai sementara | file asli, **build production DITOLAK** (kecuali \`ALLOW_DEV_ASSETS=1\`) |
 
 > ⚠️ Elemen *Free* Canva tetap tunduk pada Canva Content License, yang membatasi
 > pemakaian di template/produk yang dijual atau didistribusikan ke pengguna lain.
 > Pastikan ketentuannya sebelum menandai \`free\`.
 
-Setelah mengisi, jalankan \`pnpm assets:sync\` → aset \`free\`/\`milik\` yang punya
+Setelah mengisi, jalankan \`pnpm assets:sync\` → aset \`free\`/\`milik\`/\`dev\` yang punya
 **Slot tema** dikonversi ke WebP dan disalin ke \`src/themes/{tema}/assets/\`.
 Kolom selain Status & Catatan dibuat ulang oleh \`pnpm ref:assets\`
 (Status & Catatan yang sudah diisi DIPERTAHANKAN).
 
 Pratinjau thumbnail & posisi tiap aset: **/preview/aset-referensi** (development).
 
-## Tirai Beludru (referensi Jorgi)
+${REFERENCES.map(
+  (
+    ref,
+  ) => `${ref.auditHeading} (${ref.label.replace(/^.*\(ref\. /, "referensi ").replace(/\)$/, "")})
 
 ${header}
-${rows("tirai-beludru")}
-
-## Renda Rimba (referensi Subagja)
-
-${header}
-${rows("renda-rimba")}
-`;
+${rows(ref.theme)}
+`,
+).join("\n")}`;
   await fs.writeFile(AUDIT_FILE, md);
 }
 
@@ -347,6 +402,10 @@ async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
   const all: RefAsset[] = [];
   for (const ref of REFERENCES) {
+    if (ref.canva && !process.argv.includes("--no-live")) {
+      console.log(`▶ ${ref.label}: mengunduh aset Canva`);
+      await downloadCanva(ref);
+    }
     console.log(`▶ ${ref.label}: memindai ${ref.dir}`);
     all.push(...(await scan(ref)));
   }

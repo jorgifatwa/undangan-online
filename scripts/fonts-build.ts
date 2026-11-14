@@ -80,6 +80,30 @@ interface Family {
 }
 
 const FAMILIES: Family[] = [
+  // ---- Pita Krayon (padanan FF Providence Sans → Gaegu; angka hitung mundur Arimo) ----
+  {
+    name: "Gaegu",
+    src: "ofl/gaegu/Gaegu-Regular.ttf",
+    license: "ofl/gaegu/OFL.txt",
+    // Gaegu aslinya membawa ribuan glif Korea → hanya Latin
+    outputs: [{ file: "gaegu-400.woff2", chars: LATIN }],
+  },
+  {
+    name: "Gaegu Bold",
+    src: "ofl/gaegu/Gaegu-Bold.ttf",
+    license: "ofl/gaegu/OFL.txt",
+    outputs: [
+      { file: "gaegu-700.woff2", chars: LATIN },
+      { file: "gaegu-700.ttf", chars: LATIN, og: true },
+    ],
+  },
+  {
+    name: "Arimo Italic",
+    src: "ofl/arimo/Arimo-Italic[wght].ttf",
+    license: "ofl/arimo/OFL.txt",
+    // hanya angka hitung mundur ("0:00:00:00") seperti desain referensi
+    outputs: [{ file: "arimo-countdown.woff2", chars: "0123456789:", axes: { wght: 700 } }],
+  },
   // ---- Renda Rimba ----
   {
     name: "Jost",

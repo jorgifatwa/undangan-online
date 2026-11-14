@@ -79,6 +79,8 @@ Untuk menghapus tema, hapus foldernya lalu jalankan `pnpm themes:sync`.
 | `variants`       | 2–4 varian; yang pertama jadi default                                                                                                                                  |
 | `sections`       | section yang didukung tema; section lain tidak pernah dirender                                                                                                         |
 | `lockedSections` | lihat §11                                                                                                                                                              |
+| `sectionOrder`   | (opsional) urutan bawaan khusus tema bila undangan belum punya urutan sendiri; tanpa ini dipakai urutan umum per jenis acara                                           |
+| `editorFields`   | (opsional) isian editor khusus tema: `"childPhoto"` (foto masa kecil, efek stiker PNG), `"decorLanguage"` (bahasa teks hiasan en/id)                                   |
 | `defaultMusic`   | musik bawaan bila pengguna belum memilih lagu (file `.m4a`, §9)                                                                                                        |
 | `thumbnail`      | gradien cadangan bila belum ada screenshot (§13)                                                                                                                       |
 
@@ -178,6 +180,11 @@ Pola Tirai Beludru dan Renda Rimba untuk desain Canva/HTML milik pemilik:
   - `belum dicek` atau `pro`: tema memakai **pengganti SVG orisinal**
     (`_shared/ornaments`, `_shared/textures`).
   - `free` atau `milik`, dan barisnya punya **slot**: file asli dipakai.
+  - `dev`: aset referensi yang **belum dicek pemilik** (mis. di Canva). File
+    asli dipakai di development, tetapi **`pnpm build` ditolak**
+    (`pnpm check:assets`, otomatis di `prebuild`) selama masih ada aset `dev`,
+    kecuali `ALLOW_DEV_ASSETS=1` diisi secara sadar (staging / pengukuran
+    lokal). Production yang lupa mengisi apa pun otomatis tertahan.
 - **Sinkronisasi:** `pnpm assets:sync` mengonversi file berstatus
   `free`/`milik` ke WebP, menyimpannya di `src/themes/{tema}/assets/{slot}.webp`,
   dan menulis `assets/index.generated.ts`.
@@ -197,6 +204,10 @@ Pola Tirai Beludru dan Renda Rimba untuk desain Canva/HTML milik pemilik:
   - foto demo template
   - ikon situs dan gambar OG referensi
   - file berstatus `pro`
+- **Situs ekspor Canva** (tanpa folder proyek, mis. referensi Pita Krayon):
+  `pnpm ref:assets` mengunduh gambar `_assets/media/*` dari halaman live ke
+  `{dir}/assets/` (gitignored); screenshot dipotong per section dengan
+  koordinat tetap (`canva.slices` di `scripts/lib/reference.ts`).
 - **Foto contoh** berasal dari Unsplash (`public/placeholders/`, kredit di
   `CREDITS.md`).
 

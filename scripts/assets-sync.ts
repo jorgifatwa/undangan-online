@@ -3,12 +3,14 @@
  *
  *   pnpm assets:sync
  *
- * Untuk tiap baris berstatus `free` atau `milik` yang punya "Slot tema":
+ * Untuk tiap baris berstatus `free`, `milik`, atau `dev` yang punya "Slot tema":
  *   - gambar dikonversi ke WebP (dioptimalkan, maks 1600 px; animasi GIF/WebP
  *     dipertahankan), SVG disalin apa adanya (tetap tajam & kecil),
  *   - disimpan sebagai src/themes/{tema}/assets/{slot}.{webp|svg}.
  * Lalu menulis src/themes/{tema}/assets/index.generated.ts (peta slot → file).
  * Baris `pro` / `belum dicek` → tidak disalin (tema memakai versi SVG).
+ * Baris `dev` (belum dicek pemilik) → disalin & dicatat di DEV_SLOTS;
+ * `pnpm build` menolak build bila ada DEV_SLOTS (lihat scripts/check-dev-assets.ts).
  * File yang pernah dibuat script ini tapi statusnya kini tidak lagi
  * free/milik akan DIHAPUS. File lain di folder assets tidak disentuh.
  */
@@ -19,7 +21,7 @@ import sharp from "sharp";
 import { AUDIT_FILE, REFERENCES, type ReferenceSite } from "./lib/reference";
 
 type Theme = ReferenceSite["theme"];
-const ALLOWED = new Set(["free", "milik"]);
+const ALLOWED = new Set(["free", "milik", "dev"]);
 
 /**
  * Ukuran maksimum (sisi terpanjang, px) per slot, sesuai ukuran tampil di kolom
@@ -59,15 +61,15 @@ async function parseAudit(): Promise<Row[]> {
   const rows: Row[] = [];
   let theme: Theme | null = null;
   for (const line of text.split("\n")) {
-    if (line.startsWith("## Tirai Beludru")) theme = "tirai-beludru";
-    else if (line.startsWith("## Renda Rimba")) theme = "renda-rimba";
+    const heading = REFERENCES.find((r) => line.startsWith(r.auditHeading));
+    if (heading) theme = heading.theme;
     if (!theme || !line.startsWith("|")) continue;
     const cells = line
       .split("|")
       .slice(1, -1)
       .map((c) => c.trim());
     const id = cells[0]?.replace(/`/g, "");
-    if (!/^(tb|rr)-/.test(id ?? "")) continue;
+    if (!/^[a-z]{2}-/.test(id ?? "")) continue;
     // Kolom: ID | File | Dimensi | Peran | Section | Slot | SVG | Sama dengan | Status | Catatan
     const slot = cells[5]?.replace(/`/g, "");
     rows.push({
@@ -121,6 +123,10 @@ async function syncTheme(theme: Theme, rows: Row[]) {
   let totalOut = 0;
   const imports: string[] = [];
   const entries: string[] = [];
+  const devSlots = [...chosen]
+    .filter(([, r]) => r.status === "dev")
+    .map(([slot]) => slot)
+    .sort();
   for (const [slot, r] of [...chosen].sort(([a], [b]) => a.localeCompare(b))) {
     const src = path.join(ref.dir, r.file);
     const isSvg = /\.svg$/i.test(r.file);
@@ -182,13 +188,13 @@ async function syncTheme(theme: Theme, rows: Row[]) {
   for (const old of before) {
     if (!written.includes(old)) {
       await fs.rm(path.join(process.cwd(), old), { force: true });
-      console.log(`  ✗ dihapus: ${old} (status bukan free/milik lagi)`);
+      console.log(`  ✗ dihapus: ${old} (status bukan free/milik/dev lagi)`);
     }
   }
 
   const file = written.length
-    ? `${HEADER}import type { ThemeAssets } from "../../_shared/assets";\n${imports.length ? `\n${imports.join("\n")}\n` : ""}\nexport const THEME_ASSETS: ThemeAssets = {\n${entries.join("\n")}\n};\n\nexport const GENERATED_FILES = ${JSON.stringify(written)};\n`
-    : `${HEADER}import type { ThemeAssets } from "../../_shared/assets";\n\n/** Belum ada aset berstatus free/milik → tema memakai versi SVG. */\nexport const THEME_ASSETS: ThemeAssets = {};\n\nexport const GENERATED_FILES = [];\n`;
+    ? `${HEADER}import type { ThemeAssets } from "../../_shared/assets";\n${imports.length ? `\n${imports.join("\n")}\n` : ""}\nexport const THEME_ASSETS: ThemeAssets = {\n${entries.join("\n")}\n};\n\nexport const GENERATED_FILES = ${JSON.stringify(written)};\n\n/** Slot berstatus "dev" (belum dicek pemilik) — build production menolaknya. */\nexport const DEV_SLOTS = ${JSON.stringify(devSlots)};\n`
+    : `${HEADER}import type { ThemeAssets } from "../../_shared/assets";\n\n/** Belum ada aset berstatus free/milik → tema memakai versi SVG. */\nexport const THEME_ASSETS: ThemeAssets = {};\n\nexport const GENERATED_FILES = [];\n\nexport const DEV_SLOTS = [];\n`;
   await fs.writeFile(path.join(dir, "index.generated.ts"), file);
   console.log(
     `▶ ${theme}: ${written.length} aset asli dipakai, sisanya SVG — total ${totalSrc} KB → ${totalOut} KB`,

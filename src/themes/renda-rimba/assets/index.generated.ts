@@ -23,49 +23,30 @@ import vinyl from "./vinyl.webp";
 import waxSealGold from "./wax-seal-gold.webp";
 
 export const THEME_ASSETS: ThemeAssets = {
-  anthurium: anthurium,
+  "anthurium": anthurium,
   "bouquet-hanging": bouquetHanging,
   "bouquet-hanging-2": bouquetHanging2,
-  butterfly: { src: "/theme-assets/renda-rimba/butterfly.anim.webp", width: 307, height: 320 },
+  "butterfly": { src: "/theme-assets/renda-rimba/butterfly.anim.webp", width: 307, height: 320 },
   "calla-lily": callaLily,
   "card-texture": cardTexture,
   "carved-corner": carvedCorner,
   "drape-bg": drapeBg,
   "flowers-burgundy": flowersBurgundy,
   "gift-box": giftBox,
-  heart: heart,
+  "heart": heart,
   "lace-card": laceCard,
   "leaf-bg": leafBg,
-  lily: lily,
+  "lily": lily,
   "oval-frame": ovalFrame,
   "pearl-curve": pearlCurve,
-  pearls: pearls,
+  "pearls": pearls,
   "sparkle-star": sparkleStar,
   "stamp-card": stampCard,
-  vinyl: vinyl,
+  "vinyl": vinyl,
   "wax-seal-gold": waxSealGold,
 };
 
-export const GENERATED_FILES = [
-  "src/themes/renda-rimba/assets/anthurium.webp",
-  "src/themes/renda-rimba/assets/bouquet-hanging.webp",
-  "src/themes/renda-rimba/assets/bouquet-hanging-2.webp",
-  "public/theme-assets/renda-rimba/butterfly.anim.webp",
-  "src/themes/renda-rimba/assets/calla-lily.webp",
-  "src/themes/renda-rimba/assets/card-texture.webp",
-  "src/themes/renda-rimba/assets/carved-corner.webp",
-  "src/themes/renda-rimba/assets/drape-bg.webp",
-  "src/themes/renda-rimba/assets/flowers-burgundy.webp",
-  "src/themes/renda-rimba/assets/gift-box.webp",
-  "src/themes/renda-rimba/assets/heart.webp",
-  "src/themes/renda-rimba/assets/lace-card.webp",
-  "src/themes/renda-rimba/assets/leaf-bg.webp",
-  "src/themes/renda-rimba/assets/lily.webp",
-  "src/themes/renda-rimba/assets/oval-frame.webp",
-  "src/themes/renda-rimba/assets/pearl-curve.webp",
-  "src/themes/renda-rimba/assets/pearls.webp",
-  "src/themes/renda-rimba/assets/sparkle-star.webp",
-  "src/themes/renda-rimba/assets/stamp-card.webp",
-  "src/themes/renda-rimba/assets/vinyl.webp",
-  "src/themes/renda-rimba/assets/wax-seal-gold.webp",
-];
+export const GENERATED_FILES = ["src/themes/renda-rimba/assets/anthurium.webp","src/themes/renda-rimba/assets/bouquet-hanging.webp","src/themes/renda-rimba/assets/bouquet-hanging-2.webp","public/theme-assets/renda-rimba/butterfly.anim.webp","src/themes/renda-rimba/assets/calla-lily.webp","src/themes/renda-rimba/assets/card-texture.webp","src/themes/renda-rimba/assets/carved-corner.webp","src/themes/renda-rimba/assets/drape-bg.webp","src/themes/renda-rimba/assets/flowers-burgundy.webp","src/themes/renda-rimba/assets/gift-box.webp","src/themes/renda-rimba/assets/heart.webp","src/themes/renda-rimba/assets/lace-card.webp","src/themes/renda-rimba/assets/leaf-bg.webp","src/themes/renda-rimba/assets/lily.webp","src/themes/renda-rimba/assets/oval-frame.webp","src/themes/renda-rimba/assets/pearl-curve.webp","src/themes/renda-rimba/assets/pearls.webp","src/themes/renda-rimba/assets/sparkle-star.webp","src/themes/renda-rimba/assets/stamp-card.webp","src/themes/renda-rimba/assets/vinyl.webp","src/themes/renda-rimba/assets/wax-seal-gold.webp"];
+
+/** Slot berstatus "dev" (belum dicek pemilik) — build production menolaknya. */
+export const DEV_SLOTS = [];

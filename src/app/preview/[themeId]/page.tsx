@@ -39,6 +39,20 @@ function withGallery(inv: AnyInvitationData, n: string | undefined): AnyInvitati
   return { ...inv, data: { ...inv.data, gallery } } as AnyInvitationData;
 }
 
+/** ?umur=N: usia yang berulang tahun (uji tampilan angka, mis. 1/7/17/99). */
+function withAge(inv: AnyInvitationData, n: string | undefined): AnyInvitationData {
+  const age = Number(n);
+  if (!n || inv.eventType !== "BIRTHDAY" || !Number.isInteger(age) || age < 0 || age > 150)
+    return inv;
+  return { ...inv, data: { ...inv.data, celebrant: { ...inv.data.celebrant, age } } };
+}
+
+/** ?bahasa=id: teks hiasan tema berbahasa Indonesia (decorLang). */
+function withDecorLang(inv: AnyInvitationData, v: string | undefined): AnyInvitationData {
+  if (v !== "id" || inv.eventType !== "BIRTHDAY") return inv;
+  return { ...inv, data: { ...inv.data, decorLang: "id" } };
+}
+
 /** ?minimal=1: data persis seperti hasil wizard (nama, tanggal, kota — tanpa foto). */
 function minimalData(
   eventType: "WEDDING" | "BIRTHDAY",
@@ -100,6 +114,7 @@ export async function generateMetadata({
  *        &quote=<id kutipan siap pakai> (uji tampilan & font kutipan)
  *        &ref=1 (tanpa section yang tidak ada di desain referensi → urutan sama dengan desain)
  *        &demo=1 (demo landing page: tanpa toolbar, nama diganti lewat postMessage)
+ *        &umur=N (usia ulang tahun) &bahasa=id (teks hiasan berbahasa Indonesia)
  */
 export default async function PreviewPage({
   params,
@@ -136,16 +151,22 @@ export default async function PreviewPage({
     <>
       <Theme
         key={`${eventType}-${one("k") ?? ""}`}
-        invitation={withGallery(
-          withQuote(
-            one("minimal") === "1"
-              ? minimalData(eventType, one("salam"))
-              : one("ref") === "1"
-                ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
-                : dummyFor(eventType, manifest.defaultMusic),
-            one("quote"),
+        invitation={withDecorLang(
+          withAge(
+            withGallery(
+              withQuote(
+                one("minimal") === "1"
+                  ? minimalData(eventType, one("salam"))
+                  : one("ref") === "1"
+                    ? referenceLike(dummyFor(eventType, manifest.defaultMusic))
+                    : dummyFor(eventType, manifest.defaultMusic),
+                one("quote"),
+              ),
+              one("galeri"),
+            ),
+            one("umur"),
           ),
-          one("galeri"),
+          one("bahasa"),
         )}
         variantId={variantId}
         features={null}
