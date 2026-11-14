@@ -36,8 +36,9 @@ for (const theme of fs.readdirSync(themesDir)) {
   if (theme.startsWith("_")) continue;
   const file = path.join(themesDir, theme, "assets/index.generated.ts");
   if (!fs.existsSync(file)) continue;
-  const m = fs.readFileSync(file, "utf8").match(/DEV_SLOTS = (\[[^\]]*\])/);
-  const slots = m ? (JSON.parse(m[1]) as string[]) : [];
+  // tahan format (prettier bisa memecah array per baris + koma di akhir)
+  const m = fs.readFileSync(file, "utf8").match(/DEV_SLOTS\s*=\s*\[([^\]]*)\]/);
+  const slots = m ? [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]) : [];
   if (slots.length) found.push({ theme, slots });
 }
 

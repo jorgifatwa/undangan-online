@@ -14,7 +14,13 @@ import { PrismaClient } from "@prisma/client";
 import { encode } from "next-auth/jwt";
 import type { Frame, Page } from "puppeteer-core";
 
+import { THEME_MANIFESTS } from "../src/themes/registry";
 import { launchBrowser } from "./lib/browser";
+
+/** Tema ulang tahun menurut manifest (urutan kartu = urutan registry). */
+const BDAY = THEME_MANIFESTS.filter((m) => m.eventTypes.includes("BIRTHDAY" as never)).map(
+  (m) => m.id,
+);
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
@@ -204,7 +210,7 @@ async function main() {
   await sleep(300);
   const bday = await cards();
   check(
-    all.length >= 3 && bday.length === 1 && bday[0] === "confetti-party",
+    all.length === THEME_MANIFESTS.length && bday.join() === BDAY.join(),
     `filter tema: ${all.length} → ulang tahun ${bday.join(",")}`,
   );
   check(!!(await m.$('a[href="/preview/confetti-party"]')), "tombol “Coba tema ini” ke /preview");
@@ -229,8 +235,8 @@ async function main() {
     els.map((e) => e.getAttribute("data-theme-price-card")),
   );
   check(
-    bdayCards.length === 1 && bdayCards[0] === "confetti-party",
-    `tab ulang tahun: hanya Confetti Party (${bdayCards.join(",")})`,
+    bdayCards.join() === BDAY.join(),
+    `tab ulang tahun: hanya tema ulang tahun (${bdayCards.join(",")})`,
   );
 
   // FAQ & lainnya

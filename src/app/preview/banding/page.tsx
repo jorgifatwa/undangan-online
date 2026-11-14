@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { fontClassName as pitaFonts } from "@/themes/pita-krayon/fonts";
 import { fontClassName as rendaFonts } from "@/themes/renda-rimba/fonts";
 import { fontClassName as tiraiFonts } from "@/themes/tirai-beludru/fonts";
 
@@ -36,6 +37,16 @@ const SECTION_OF: Record<string, Record<string, string | null>> = {
     PBMNCKVBbxG1xrkl: "amplop",
     PBSZNtrRL3kdDwvG: "ucapan",
     PBk2RB5fMH0sd4tc: "penutup",
+  },
+  "pita-krayon": {
+    cover: null,
+    hero: "salam",
+    "quote-music": "ayat",
+    greeting: "profil",
+    event: "acara",
+    wishes: "ucapan",
+    story: "cerita",
+    countdown: "hitungMundur",
   },
 };
 
@@ -197,9 +208,41 @@ const FONTS: Record<string, Omit<FontRow, "kb">[]> = {
       crop: [1, 120, 165, 200, 36],
     },
   ],
+  "pita-krayon": [
+    {
+      original: "FF Providence Sans Bold",
+      replacement: "Gaegu Bold",
+      family: "var(--pk-hand)",
+      file: "gaegu-700.woff2",
+      sample: "THIS GIRL IS TURNING",
+      size: 34,
+      usage: "Semua judul (cover, pembuka, save the date, cerita)",
+      crop: [1, 100, 30, 230, 90],
+    },
+    {
+      original: "FF Providence Sans",
+      replacement: "Gaegu",
+      family: "var(--pk-hand)",
+      file: "gaegu-400.woff2",
+      sample: "With heartfelt gratitude, I would be truly honored",
+      size: 18,
+      usage: "Semua teks isi",
+      crop: [2, 30, 330, 370, 60],
+    },
+    {
+      original: "Arimo Bold Italic",
+      replacement: "Arimo (OFL, subset angka)",
+      family: "var(--pk-count)",
+      file: "arimo-countdown.woff2",
+      sample: "0:00:00:00",
+      size: 36,
+      usage: "Angka hitung mundur",
+    },
+  ],
 };
 
 const LABEL: Record<string, string> = {
+  "pita-krayon": "Pita Krayon (ref. genz-birthday)",
   "tirai-beludru": "Tirai Beludru (ref. Jorgi)",
   "renda-rimba": "Renda Rimba (ref. Subagja)",
 };
@@ -263,7 +306,7 @@ export default async function BandingPage() {
   );
 
   return (
-    <div className={`${tiraiFonts} ${rendaFonts}`}>
+    <div className={`${tiraiFonts} ${rendaFonts} ${pitaFonts}`}>
       <Banding themes={themes} />
     </div>
   );

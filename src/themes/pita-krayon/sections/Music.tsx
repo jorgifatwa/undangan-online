@@ -94,25 +94,18 @@ function Player() {
         )}
       </div>
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <p
-          style={{
-            ...txt(14, 1.2, { color: "#fff", align: "left", weight: 700 }),
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {a.available ? (a.current?.title ?? "Musik") : "Musik belum tersedia"}
-        </p>
+        {!a.available && (
+          <p style={{ ...txt(12, 1.2, { color: "#fff", align: "left" }) }}>Musik belum tersedia</p>
+        )}
         <input
           type="range"
           min={0}
           max={1000}
           value={Math.round(a.progress * 1000)}
           onChange={(e) => a.seek(Number(e.target.value) / 1000)}
-          aria-label="Posisi lagu"
+          aria-label={`Posisi lagu${a.current?.title ? `: ${a.current.title}` : ""}`}
           className="pk-range"
-          style={{ ["--p" as string]: `${(a.progress * 100).toFixed(1)}%`, marginTop: u(8) }}
+          style={{ ["--p" as string]: `${(a.progress * 100).toFixed(1)}%`, marginTop: u(10) }}
           disabled={!a.available}
         />
         <div
@@ -149,7 +142,7 @@ function Player() {
             type="button"
             onClick={a.toggle}
             aria-label={a.playing ? "Jeda musik" : "Putar musik"}
-            style={{ ...btn, background: "rgb(255 255 255 / 0.12)" }}
+            style={btn}
           >
             <Ic d={a.playing ? ICON.pause : ICON.play} size={22} />
           </button>
@@ -171,25 +164,36 @@ function Player() {
   );
 }
 
+/** Kutipan bawaan desain bila pengguna belum memilih kutipan (bisa diganti di editor). */
+const DEFAULT_QUOTE = {
+  en: {
+    text: "Having a birthday is like reaching a higher peak on a mountain. Pause to admire the view; reflect on how far you have come.",
+    source: "Richelle E. Goodrich",
+  },
+  id: {
+    text: "Berulang tahun itu seperti mencapai puncak gunung yang lebih tinggi. Berhentilah sejenak menikmati pemandangan; renungkan sejauh apa kamu telah melangkah.",
+    source: "Richelle E. Goodrich",
+  },
+} as const;
+
 export function QuoteMusic() {
   const { inv } = useInvitation();
-  const { t } = useDecor();
-  const q = inv.data.quote;
-  const text = q?.translation || q?.arabic;
+  const { t, lang } = useDecor();
+  const own = inv.data.quote?.translation || inv.data.quote?.arabic;
+  const q = own ? inv.data.quote : DEFAULT_QUOTE[lang];
+  const text = own ?? DEFAULT_QUOTE[lang].text;
   const hasTracks = (inv.data.music?.tracks.length ?? 0) > 0;
-  if (!text && !hasTracks) return null;
+
   return (
-    <Section id="ayat" style={{ padding: `${u(18)} ${u(44)} ${u(46)}` }}>
-      {text && (
-        <figure data-a="fade" style={{ margin: 0 }}>
-          <blockquote style={{ ...txt(16, 1.4), whiteSpace: "pre-line", margin: 0 }}>
-            &ldquo;{text}&rdquo;
-          </blockquote>
-          {q?.source && (
-            <figcaption style={{ ...txt(15, 1.3), marginTop: u(14) }}>-{q.source}</figcaption>
-          )}
-        </figure>
-      )}
+    <Section id="ayat" style={{ padding: `${u(18)} ${u(62)} ${u(46)}` }}>
+      <figure data-a="fade" style={{ margin: 0 }}>
+        <blockquote style={{ ...txt(15, 1.22), whiteSpace: "pre-line", margin: 0 }}>
+          &ldquo;{text}&rdquo;
+        </blockquote>
+        {q?.source && (
+          <figcaption style={{ ...txt(15, 1.3), marginTop: u(14) }}>-{q.source}</figcaption>
+        )}
+      </figure>
       <Player />
       {hasTracks && (
         <p data-a="fade" style={{ ...txt(14, 1.3), marginTop: u(12), ["--d" as string]: "0.5s" }}>

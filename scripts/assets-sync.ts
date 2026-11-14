@@ -89,8 +89,9 @@ const camel = (s: string) =>
 async function previouslyGenerated(dir: string): Promise<string[]> {
   try {
     const text = await fs.readFile(path.join(dir, "index.generated.ts"), "utf8");
-    const m = text.match(/GENERATED_FILES = (\[[^\]]*\])/);
-    return m ? (JSON.parse(m[1]) as string[]) : [];
+    // tahan format (prettier bisa memecah array per baris + koma di akhir)
+    const m = text.match(/GENERATED_FILES\s*=\s*\[([^\]]*)\]/);
+    return m ? [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]) : [];
   } catch {
     return [];
   }

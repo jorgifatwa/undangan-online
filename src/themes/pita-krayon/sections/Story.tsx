@@ -2,9 +2,13 @@
 
 import { eventStart, firstEvent } from "@/lib/datetime";
 
+import Image from "next/image";
+
+import type { Photo } from "@/schemas/common";
+
 import { useCountdown } from "../../_shared/hooks";
 import { useInvitation } from "../../_shared/runtime/context";
-import { F, Orn, Section, txt, Typewriter, u, useDecor } from "../canvas";
+import { box, F, Orn, Section, txt, Typewriter, u, useCountdownStrip, useDecor } from "../canvas";
 import { Cake, Ribbon, Sparkle } from "../ornaments";
 
 /** Cerita ulang tahun (section "cerita"): judul diketik + paragraf teks polos. */
@@ -53,7 +57,7 @@ export function Story() {
             key={i}
             data-a="fade"
             style={{
-              ...txt(15.5, 1.42),
+              ...txt(14.5, 1.3),
               whiteSpace: "pre-line",
               overflowWrap: "anywhere",
               marginTop: i ? u(16) : 0,
@@ -68,100 +72,155 @@ export function Story() {
   );
 }
 
+/** Strip foto photobooth miring (3 foto pertama galeri) seperti desain. */
+function CountdownStrip({ photos }: { photos: Photo[] }) {
+  return (
+    <div data-a="strip" style={{ ...box(262, 92, 128), zIndex: 2, ["--d" as string]: "0.5s" }}>
+      <div
+        style={{
+          transform: "rotate(-11deg)",
+          transformOrigin: "50% 0",
+          background: "var(--inv-deep)",
+          padding: u(8),
+          display: "flex",
+          flexDirection: "column",
+          gap: u(8),
+          boxShadow: `0 ${u(10)} ${u(20)} rgb(0 0 0 / 0.18)`,
+        }}
+      >
+        {photos.map((p, i) => (
+          <div
+            key={i}
+            style={{
+              position: "relative",
+              aspectRatio: "3 / 4",
+              overflow: "hidden",
+              background: "var(--inv-bg-alt)",
+            }}
+          >
+            <Image
+              src={p.url}
+              alt={p.alt ?? `Foto ${i + 1}`}
+              fill
+              sizes="(max-width: 440px) 27vw, 112px"
+              style={{
+                objectFit: "cover",
+                objectPosition: `${p.focusX ?? 50}% ${p.focusY ?? 40}%`,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
- * "SEE YOU ON 8.8.26" + hitung mundur (angka Arimo miring merah seperti
- * desain) + kue coretan. Setelah hari-H: hitung mundur disembunyikan.
+ * "SEE YOU ON 8.8.26" + hitung mundur (Arimo, angka & label merah seperti
+ * desain) + strip foto miring di kanan + kue coretan di kiri bawah.
+ * Setelah hari-H: hitung mundur disembunyikan.
  */
 export function Countdown() {
   const { inv } = useInvitation();
   const { t } = useDecor();
+  const strip = useCountdownStrip();
   const e = firstEvent(inv.data.events);
   const cd = useCountdown(eventStart(e));
   const [y, m, d] = e.date.split("-");
   const short = `${Number(d)}.${Number(m)}.${y.slice(2)}`;
   const vals = [cd.days, cd.hours, cd.minutes, cd.seconds];
   return (
-    <Section id="hitungMundur" minHeight={360} style={{ padding: `${u(34)} ${u(26)} 0` }}>
-      <h2
-        style={{ ...txt(40, 1.02, { color: "var(--inv-red)", weight: 700, ls: 2, align: "left" }) }}
+    <Section id="hitungMundur" minHeight={strip.length ? 470 : 380}>
+      <div
+        style={{
+          position: "relative",
+          padding: `${u(84)} 0 0 ${u(24)}`,
+          width: u(strip.length ? 250 : 430),
+          zIndex: 3,
+        }}
       >
-        <span style={{ display: "block" }}>
-          <Typewriter text={t.seeYou} delay={0.1} />
-        </span>
-        <span style={{ display: "block" }}>
-          <Typewriter text={`${t.seeYouOn} ${short}`} delay={0.1 + t.seeYou.length * 0.055} />
-        </span>
-      </h2>
-      {!cd.done && (
-        <div
-          data-a="up"
-          role="timer"
-          aria-label={`${cd.days} hari ${cd.hours} jam ${cd.minutes} menit lagi`}
-          style={{ display: "flex", gap: u(6), marginTop: u(14), ["--d" as string]: "0.6s" }}
+        <h2
+          style={{
+            ...txt(40, 0.98, { color: "var(--inv-red)", weight: 700, ls: 2, align: "left" }),
+          }}
         >
-          {vals.map((v, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start" }}>
-              <div style={{ textAlign: "center" }}>
-                <p
-                  style={{
-                    fontFamily: F.count,
-                    fontStyle: "italic",
-                    fontWeight: 700,
-                    fontSize: u(i === 0 ? 38 : 38),
-                    lineHeight: 1,
-                    color: "var(--inv-red)",
-                    fontVariantNumeric: "tabular-nums",
-                    minWidth: u(i === 0 ? 30 : 50),
-                  }}
-                  suppressHydrationWarning
-                >
-                  {cd.ready ? (i === 0 ? v : String(v).padStart(2, "0")) : i === 0 ? "0" : "00"}
-                </p>
-                <p
-                  style={{
-                    ...txt(11, 1, {
+          <span style={{ display: "block", whiteSpace: "nowrap" }}>
+            <Typewriter text={t.seeYou} delay={0.1} />
+          </span>
+          <span style={{ display: "block", whiteSpace: "nowrap" }}>
+            <Typewriter text={`${t.seeYouOn} ${short}`} delay={0.1 + t.seeYou.length * 0.055} />
+          </span>
+        </h2>
+        {!cd.done && (
+          <div
+            data-a="up"
+            role="timer"
+            aria-label={`${cd.days} hari ${cd.hours} jam ${cd.minutes} menit lagi`}
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              marginTop: u(12),
+              ["--d" as string]: "0.6s",
+            }}
+          >
+            {vals.map((v, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start" }}>
+                <div style={{ textAlign: "center" }}>
+                  <p
+                    style={{
+                      fontFamily: F.count,
+                      fontSize: u(33),
+                      lineHeight: 1,
+                      color: i === 3 ? "var(--inv-ink)" : "var(--inv-red)",
+                      fontVariantNumeric: "tabular-nums",
+                      minWidth: u(i === 0 ? 22 : 40),
+                    }}
+                    suppressHydrationWarning
+                  >
+                    {cd.ready ? (i === 0 ? v : String(v).padStart(2, "0")) : i === 0 ? "0" : "00"}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: F.count,
+                      fontSize: u(10),
                       color: "var(--inv-red)",
-                      font: "system-ui, sans-serif",
-                      ls: 0.5,
-                    }),
-                    marginTop: u(6),
-                  }}
-                >
-                  {t.units[i]}
-                </p>
+                      marginTop: u(6),
+                      letterSpacing: u(0.3),
+                    }}
+                  >
+                    {t.units[i]}
+                  </p>
+                </div>
+                {i < 3 && (
+                  <span
+                    aria-hidden
+                    style={{
+                      fontFamily: F.count,
+                      fontSize: u(31),
+                      lineHeight: 1,
+                      color: "var(--inv-red)",
+                      padding: `0 ${u(4)}`,
+                    }}
+                  >
+                    :
+                  </span>
+                )}
               </div>
-              {i < 3 && (
-                <span
-                  aria-hidden
-                  style={{
-                    fontFamily: F.count,
-                    fontSize: u(34),
-                    lineHeight: 1,
-                    color: "var(--inv-red)",
-                    padding: `0 ${u(2)}`,
-                  }}
-                >
-                  :
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={{ position: "relative", height: u(230) }}>
-        <Orn slot="cake" l={-26} t={10} w={170} ratio={1.53} a="up" d={0.7} fallback={<Cake />} />
-        <Orn
-          slot="sparkle-pair"
-          l={330}
-          t={60}
-          w={26}
-          ratio={1.22}
-          tint={false}
-          a="fade"
-          d={0.8}
-          fallback={<Sparkle />}
-        />
+            ))}
+          </div>
+        )}
       </div>
+      {strip.length > 0 && <CountdownStrip photos={strip} />}
+      <Orn
+        slot="cake"
+        l={-8}
+        t={strip.length ? 330 : 250}
+        w={142}
+        ratio={1.53}
+        a="up"
+        d={0.7}
+        fallback={<Cake />}
+      />
     </Section>
   );
 }

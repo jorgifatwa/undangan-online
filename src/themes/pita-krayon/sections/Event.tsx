@@ -63,7 +63,7 @@ function Calendar({ event }: { event: InvitationEvent }) {
             )}
             <p
               style={{
-                ...txt(19, 1, { color: "var(--inv-deep)", weight: 700, ls: 1 }),
+                ...txt(21, 1, { color: "var(--inv-deep)", weight: 700, ls: 1 }),
                 marginTop: u(10),
               }}
             >
@@ -72,8 +72,8 @@ function Calendar({ event }: { event: InvitationEvent }) {
             <p
               data-a="drop"
               style={{
-                ...txt(i === 1 ? 70 : 62, 1, { color: "var(--inv-deep)", weight: 700 }),
-                marginTop: u(i === 1 ? 26 : 32),
+                ...txt(i === 1 ? 86 : 80, 1, { color: "var(--inv-deep)", weight: 700 }),
+                marginTop: u(i === 1 ? 18 : 22),
                 ["--d" as string]: `${0.45 + i * 0.22}s`,
               }}
             >
@@ -169,12 +169,12 @@ export function SaveTheDate() {
   const first = firstEvent(events);
   return (
     <Section id="acara" style={{ paddingBottom: u(48), textAlign: "center" }}>
-      <div style={{ position: "relative", height: u(240) }}>
+      <div style={{ position: "relative", height: u(200) }}>
         <Orn
           slot="disco-ball"
-          l={20}
-          t={18}
-          w={158}
+          l={24}
+          t={-4}
+          w={150}
           ratio={1.272}
           tint={false}
           a="drop"
@@ -183,9 +183,9 @@ export function SaveTheDate() {
         />
         <h2
           style={{
-            ...box(190, 44, 220),
-            ...txt(52, 1.02, { color: "var(--inv-red)", weight: 700, ls: 2.5 }),
-            transform: "rotate(-4deg)",
+            ...box(186, 8, 238),
+            ...txt(66, 0.98, { color: "var(--inv-red)", weight: 700, ls: 2 }),
+            transform: "rotate(-6deg)",
           }}
         >
           {t.saveDate.map((w, i) => (

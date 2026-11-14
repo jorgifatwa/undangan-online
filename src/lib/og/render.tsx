@@ -23,7 +23,8 @@ type FontFile =
   | "lora-500.ttf"
   | "fredoka-600.ttf"
   | "nunito-700.ttf"
-  | "jakarta-600.ttf";
+  | "jakarta-600.ttf"
+  | "gaegu-700.ttf";
 
 interface OgStyle {
   names: { file: FontFile; family: string; size: number };
@@ -41,6 +42,10 @@ const STYLES: Record<string, OgStyle> = {
   "confetti-party": {
     names: { file: "fredoka-600.ttf", family: "Fredoka", size: 112 },
     text: { file: "nunito-700.ttf", family: "Nunito" },
+  },
+  "pita-krayon": {
+    names: { file: "gaegu-700.ttf", family: "Gaegu", size: 116 },
+    text: { file: "gaegu-700.ttf", family: "Gaegu" },
   },
 };
 const DEFAULT_STYLE: OgStyle = {

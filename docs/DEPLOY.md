@@ -116,11 +116,19 @@ Isi di **Vercel → Project → Settings → Environment Variables**, centang
 | `R2_BUCKET`              | mis. `undangan-online-staging`                 |                                       |
 | `R2_PUBLIC_URL`          | `https://pub-xxxx.r2.dev`                      | tanpa `/` di akhir                    |
 | `CRON_SECRET`            | `openssl rand -hex 24`                         | huruf & angka saja                    |
+| `ALLOW_DEV_ASSETS`       | `1`                                            | **staging saja** — lihat di bawah     |
 
 **Jangan** isi di Vercel: `AUTH_TRUST_HOST` (Vercel sudah dipercaya otomatis),
 `ALLOW_SEED_PERF`, `PROTECTED_DB_HOSTS`, `NODE_ENV`.
 
 Variabel `NEXT_PUBLIC_*` ditanam saat build → setelah mengubahnya, **Redeploy**.
+
+**Aset berstatus `dev`** (ASSET-AUDIT.md, aset referensi yang belum dicek
+pemilik — saat ini 14 ornamen Pita Krayon): `pnpm build` **ditolak**
+(`pnpm check:assets`, otomatis di `prebuild`) selama aset itu masih ada.
+Staging boleh memakainya dengan `ALLOW_DEV_ASSETS=1`. **Production (VPS) TIDAK
+boleh** mengisi variabel ini — ubah dulu status aset menjadi `milik`/`free`
+(atau `pro` → versi SVG) lalu `pnpm assets:sync`.
 
 ---
 

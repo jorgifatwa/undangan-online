@@ -124,6 +124,26 @@ export function useNick() {
   return (c.nickname || c.name.split(/\s+/)[0] || "").trim();
 }
 
+/** Section tidak disembunyikan pengguna (urutan & tampilan di editor). */
+export function useSectionShown(id: SectionId) {
+  const { inv } = useInvitation();
+  return inv.data.sections.find((s) => s.id === id)?.visible !== false;
+}
+
+/**
+ * Strip foto di section hitung mundur (seperti desain "SEE YOU ON") memakai
+ * 3 foto galeri pertama bila galeri & hitung mundur sama-sama tampil; section
+ * galeri lalu melanjutkan dari foto ke-4 (tanpa foto ganda).
+ */
+export const COUNTDOWN_STRIP = 3;
+export function useCountdownStrip() {
+  const { inv } = useInvitation();
+  const countdown = useSectionShown("hitungMundur");
+  const gallery = useSectionShown("galeri");
+  const on = countdown && gallery;
+  return on ? inv.data.gallery.slice(0, COUNTDOWN_STRIP) : [];
+}
+
 /* ------------------------------ Animasi masuk ------------------------------ */
 
 /** true sekali setelah elemen terlihat (threshold), tidak kembali false. */
@@ -177,6 +197,12 @@ export function Section({
   const ref = useRef<HTMLDivElement | null>(null);
   const { opened } = useInvitation();
   const entered = useEnter(ref, threshold, opened);
+  // Padding TIDAK boleh di elemen container: cqw dihitung dari content box,
+  // jadi padding horizontal akan mengecilkan semua satuan u(). Padding
+  // dipindah ke pembungkus isi (tidak berposisi → ornamen absolut tetap
+  // berkoordinat terhadap section).
+  const { padding, paddingTop, paddingBottom, paddingLeft, paddingRight, textAlign, ...outer } =
+    style ?? {};
   return (
     <SectionShell
       id={id}
@@ -190,11 +216,13 @@ export function Section({
         overflow,
         contentVisibility: "visible",
         color: "var(--inv-ink)",
-        ...style,
+        ...outer,
       }}
     >
       <div ref={ref} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
-      {children}
+      <div style={{ padding, paddingTop, paddingBottom, paddingLeft, paddingRight, textAlign }}>
+        {children}
+      </div>
     </SectionShell>
   );
 }

@@ -4,7 +4,7 @@ import localFont from "next/font/local";
  * Font Pita Krayon — padanan OFL untuk font desain referensi (font Canva tidak
  * dipakai), di-subset oleh `pnpm fonts:build` (src/themes/_fonts/):
  *   FF Providence Sans (Regular & Bold) → Gaegu 400 & 700 (Latin saja)
- *   Arimo Bold Italic (angka hitung mundur) → Arimo, hanya "0–9:"
+ *   Arimo (angka & label hitung mundur) → Arimo 400, subset kecil
  * Total ±25 KB. Semua `display: swap` + `preload: false`. Nama konstanta =
  * nama font-family → berawalan tema (pk…).
  */
@@ -20,8 +20,8 @@ const pkHand = localFont({
 });
 const pkCount = localFont({
   src: "../_fonts/arimo-countdown.woff2",
-  weight: "700",
-  style: "italic",
+  weight: "400",
+  style: "normal",
   variable: "--pk-count",
   display: "swap",
   preload: false,

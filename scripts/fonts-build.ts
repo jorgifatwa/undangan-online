@@ -98,11 +98,17 @@ const FAMILIES: Family[] = [
     ],
   },
   {
-    name: "Arimo Italic",
-    src: "ofl/arimo/Arimo-Italic[wght].ttf",
+    name: "Arimo",
+    src: "ofl/arimo/Arimo[wght].ttf",
     license: "ofl/arimo/OFL.txt",
-    // hanya angka hitung mundur ("0:00:00:00") seperti desain referensi
-    outputs: [{ file: "arimo-countdown.woff2", chars: "0123456789:", axes: { wght: 700 } }],
+    // hanya angka & label hitung mundur ("0:00:00:00", DAYS/HARI…) seperti desain
+    outputs: [
+      {
+        file: "arimo-countdown.woff2",
+        chars: "0123456789: DAYSHOURMINTECJKLG",
+        axes: { wght: 400 },
+      },
+    ],
   },
   // ---- Renda Rimba ----
   {

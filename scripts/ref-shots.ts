@@ -65,11 +65,17 @@ async function main() {
       await cover.close();
 
       // Isi undangan: viewport setinggi konten, lalu potong per section.
+      // Situs Canva: isi di container scroll internal → tinggi & irisan tetap.
+      const canvaEnd = ref.canva
+        ? Math.max(...ref.canva.slices.map((x) => x.top + x.height)) + 40
+        : 0;
       const probe = await openTall(browser, `${ref.liveUrl}${ref.detailsPath}`, 900, 2500);
-      const h = Math.min(16000, (await contentHeight(probe)) + 200);
+      const h = canvaEnd || Math.min(16000, (await contentHeight(probe)) + 200);
       await probe.close();
       const page = await openTall(browser, `${ref.liveUrl}${ref.detailsPath}`, h, 7000);
-      const sections = await collectSections(page, "details");
+      const sections = ref.canva
+        ? ref.canva.slices.map((x) => ({ ...x }))
+        : await collectSections(page, "details");
       let i = 1;
       for (const s of sections) {
         if (s.height < 80) continue;
