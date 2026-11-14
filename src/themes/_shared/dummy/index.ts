@@ -134,8 +134,8 @@ const birthdayInput: BirthdayInput = {
     nickname: "Kirana",
     age: 17,
     photo: { url: `${P}/birthday-celebrant.webp`, alt: "Kirana", focusY: 35 },
-    // foto masa kecil (tema yang mendukung, mis. Pita Krayon) — contoh memakai foto yang sama
-    childPhoto: { url: `${P}/birthday-celebrant.webp`, alt: "Kirana kecil" },
+    // foto tanpa latar (efek stiker) untuk tema yang mendukung, mis. Pita Krayon
+    childPhoto: { url: `${P}/birthday-child-cutout.webp`, alt: "Kirana" },
     father: { name: "Dimas Prakoso" },
     mother: { name: "Lestari Ayuningtyas" },
   },

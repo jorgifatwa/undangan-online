@@ -43,6 +43,7 @@
     "e2e:guestbook": "tsx --env-file=.env scripts/e2e-guestbook.ts",
     "e2e:share": "tsx --env-file=.env scripts/e2e-share.ts",
     "e2e:preview-link": "tsx --env-file=.env scripts/e2e-preview-link.ts",
+    "e2e:pita-krayon": "tsx --env-file=.env --conditions=react-server scripts/e2e-pita-krayon.ts",
     "deploy:check": "tsx scripts/deploy-check.ts",
     "e2e:landing": "tsx --env-file=.env scripts/e2e-landing.ts",
     "e2e:pricing": "tsx --env-file=.env --conditions=react-server scripts/e2e-pricing.ts",

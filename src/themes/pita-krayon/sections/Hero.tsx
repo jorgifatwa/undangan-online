@@ -29,8 +29,8 @@ export function Hero() {
         ? "ULANG TAHUN!"
         : "BIRTHDAY!";
   const digits = age !== undefined ? String(age).length : 0;
-  // tinggi angka: 1–2 digit setinggi desain; 3 digit sedikit lebih kecil
-  const numH = digits >= 3 ? 190 : 225;
+  // tinggi kotak angka (glyph ±0,7×): "17" ≈ 270×223 px seperti desain; 3 digit lebih kecil
+  const numH = digits >= 3 ? 240 : 300;
 
   return (
     <Section id="salam" minHeight={620} threshold={0.12}>
@@ -54,9 +54,11 @@ export function Hero() {
       {age !== undefined && (
         <div
           style={{
-            ...box(0, 112, 430, numH),
+            ...box(0, 92, 430, numH),
             display: "flex",
-            justifyContent: "center",
+            // satu digit: di kiri siluet (seperti "1" pada "17" di desain) agar tetap terlihat
+            justifyContent: digits === 1 && photo ? "flex-start" : "center",
+            paddingLeft: digits === 1 && photo ? u(10) : undefined,
             zIndex: 1,
           }}
         >
@@ -66,25 +68,20 @@ export function Hero() {
         </div>
       )}
 
-      {/* foto stiker */}
+      {/* foto stiker (potongan siluet bergaris merah, di depan angka) */}
       {photo && (
         <div
           data-a="pop"
-          style={{ ...box(118, 222, 194, 340), zIndex: 2, ["--d" as string]: "0.6s" }}
+          style={{ ...box(104, 222, 222, 380), zIndex: 2, ["--d" as string]: "0.6s" }}
         >
-          <Sticker
-            photo={photo}
-            sizes="(max-width: 440px) 46vw, 200px"
-            position={`${photo.focusX ?? 50}% ${photo.focusY ?? 100}%`}
-            alt={photo.alt ?? c.name}
-          />
+          <Sticker photo={photo} sizes="(max-width: 440px) 46vw, 200px" alt={photo.alt ?? c.name} />
         </div>
       )}
       <Orn
         slot="party-hat-glitter"
-        l={photo ? 196 : 250}
-        t={photo ? 160 : 120}
-        w={66}
+        l={photo ? 200 : 250}
+        t={photo ? 150 : 120}
+        w={64}
         ratio={1.36}
         rotate={12}
         a="drop"
@@ -96,9 +93,9 @@ export function Hero() {
       {/* kue di depan foto */}
       <Orn
         slot="cake"
-        l={photo ? 117 : 95}
-        t={photo ? 368 : 300}
-        w={photo ? 196 : 240}
+        l={photo ? 120 : 95}
+        t={photo ? 312 : 300}
+        w={photo ? 190 : 240}
         ratio={1.53}
         tint
         a="up"

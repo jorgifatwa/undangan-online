@@ -13,6 +13,7 @@ import { QuoteMusic } from "./sections/Music";
 import { Profile } from "./sections/Profile";
 import { SaveTheDate } from "./sections/Event";
 import { Countdown, Story } from "./sections/Story";
+import { WishCard } from "./sections/Wishes";
 import "./theme.css";
 
 /**
@@ -33,6 +34,7 @@ const definition: ThemeDefinition = {
     acara: SaveTheDate,
     dressCode: DressCode,
     liveStream: LiveStream,
+    ucapan: WishCard,
     cerita: Story,
     hitungMundur: Countdown,
     galeri: PhotoStrips,

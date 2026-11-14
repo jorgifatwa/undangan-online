@@ -29,6 +29,7 @@ Lisensi: https://unsplash.com/license
 | `photos/birthday-g3.webp` | Galeri | Jorge Ibanez | [Unsplash](https://unsplash.com/photos/cK6ixOQx1fI) |
 | `photos/birthday-g4.webp` | Galeri | behrouz sasani | [Unsplash](https://unsplash.com/photos/iSiP73IHgng) |
 | `photos/birthday-g5.webp` | Galeri | Alexander Mass | [Unsplash](https://unsplash.com/photos/KzrfaMQSsP4) |
+| `photos/birthday-child-cutout.webp` | Foto masa kecil tanpa latar (contoh efek stiker Pita Krayon) — latar dihapus dari `birthday-g4.webp` dengan Apple Vision (di perangkat) | behrouz sasani | [Unsplash](https://unsplash.com/photos/iSiP73IHgng) |
 
 ## Musik (Pixabay Content License)
 

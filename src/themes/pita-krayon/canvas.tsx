@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import type { Photo } from "@/schemas/common";
 import type { SectionId } from "@/schemas/sections";
@@ -334,19 +334,36 @@ export function Orn({
 
 /* ------------------------------- Foto stiker ------------------------------- */
 
+/** true bila gambar punya piksel transparan (dicek sekali pada salinan 24 px). */
+function detectAlpha(img: HTMLImageElement): boolean {
+  try {
+    const c = document.createElement("canvas");
+    c.width = c.height = 24;
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return false;
+    ctx.drawImage(img, 0, 0, 24, 24);
+    const d = ctx.getImageData(0, 0, 24, 24).data;
+    for (let i = 3; i < d.length; i += 4) if (d[i] < 200) return true;
+  } catch {
+    /* kanvas tercemar (lintas domain) → anggap foto biasa */
+  }
+  return false;
+}
+
 /**
- * Foto bergaya stiker: garis tepi tebal warna tema mengikuti bentuk gambar
- * (drop-shadow mengikuti kanal alpha). PNG tanpa latar → garis mengikuti
- * siluet; foto biasa → sudut membulat bergaris. Statis (tanpa animasi filter).
+ * Foto bergaya stiker potongan seperti desain (anak berpotongan bergaris merah):
+ *  - PNG/WebP TANPA LATAR (terdeteksi otomatis): garis tepi mengikuti siluet asli.
+ *  - Foto biasa: dipotong berbentuk lengkung kepala-bahu (siluet potret) lalu
+ *    diberi garis tepi yang sama — garis mengikuti potongan (drop-shadow pada
+ *    pembungkus mengikuti kanal alpha hasil clip-path).
+ * Filter statis, tidak dianimasikan.
  */
 export function Sticker({
   photo,
   sizes,
   priority,
-  edge = 5,
-  radius = 18,
-  fit = "contain",
-  position = "50% 100%",
+  edge = 6,
+  position,
   alt = "",
 }: {
   photo: Photo;
@@ -354,30 +371,43 @@ export function Sticker({
   priority?: boolean;
   /** tebal garis tepi (px kanvas) */
   edge?: number;
-  radius?: number;
-  fit?: "contain" | "cover";
   position?: string;
   alt?: string;
 }) {
+  const id = useId().replace(/:/g, "");
+  const [alpha, setAlpha] = useState(false);
   const e = u(edge);
+  const ring = `drop-shadow(${e} 0 0 var(--inv-red)) drop-shadow(calc(-1 * ${e}) 0 0 var(--inv-red)) drop-shadow(0 ${e} 0 var(--inv-red)) drop-shadow(0 calc(-1 * ${e}) 0 var(--inv-red)) drop-shadow(0 ${u(5)} ${u(7)} rgb(0 0 0 / 0.2))`;
   return (
-    <div
-      className="pk-sticker"
-      style={{
-        position: "absolute",
-        inset: 0,
-        filter: `drop-shadow(${e} 0 0 var(--inv-red)) drop-shadow(calc(-1 * ${e}) 0 0 var(--inv-red)) drop-shadow(0 ${e} 0 var(--inv-red)) drop-shadow(0 calc(-1 * ${e}) 0 var(--inv-red)) drop-shadow(0 ${u(6)} ${u(8)} rgb(0 0 0 / 0.18))`,
-      }}
-    >
-      <Image
-        src={photo.url}
-        alt={alt}
-        fill
-        sizes={sizes}
-        priority={priority}
-        draggable={false}
-        style={{ objectFit: fit, objectPosition: position, borderRadius: u(radius) }}
-      />
+    <div className="pk-sticker" style={{ position: "absolute", inset: 0, filter: ring }}>
+      <svg width="0" height="0" aria-hidden style={{ position: "absolute" }}>
+        <clipPath id={`${id}-arch`} clipPathUnits="objectBoundingBox">
+          {/* kepala bulat di atas bahu yang melebar — tepi sedikit bergelombang */}
+          <path d="M0.5 0.02 C0.74 0.02 0.84 0.17 0.83 0.31 C0.82 0.4 0.78 0.45 0.74 0.49 C0.9 0.53 0.99 0.62 1 0.76 L1 1 L0 1 L0 0.76 C0.01 0.62 0.1 0.53 0.26 0.49 C0.22 0.45 0.18 0.4 0.17 0.31 C0.16 0.17 0.26 0.02 0.5 0.02 Z" />
+        </clipPath>
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          clipPath: alpha ? undefined : `url(#${id}-arch)`,
+        }}
+      >
+        <Image
+          src={photo.url}
+          alt={alt}
+          fill
+          sizes={sizes}
+          priority={priority}
+          draggable={false}
+          onLoad={(ev) => setAlpha(detectAlpha(ev.currentTarget))}
+          style={{
+            objectFit: alpha ? "contain" : "cover",
+            objectPosition:
+              position ?? (alpha ? "50% 0%" : `${photo.focusX ?? 50}% ${photo.focusY ?? 25}%`),
+          }}
+        />
+      </div>
     </div>
   );
 }
