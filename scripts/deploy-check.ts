@@ -92,8 +92,8 @@ async function main() {
   if (!slug) {
     console.log("\n– --slug tidak diisi: TTFB halaman undangan dilewati");
   } else {
-    console.log(`\nHalaman undangan /u/${slug} (${runs}×)`);
-    const url = `${base}/u/${slug}?to=Uji%20Deploy`;
+    console.log(`\nHalaman undangan /${slug} (${runs}×)`);
+    const url = `${base}/${slug}?to=Uji%20Deploy`;
     const first = await ttfb(url);
     ok(first.res.status === 200, `status ${first.res.status}`);
     const times: number[] = [];

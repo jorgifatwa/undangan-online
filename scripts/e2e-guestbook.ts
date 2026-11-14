@@ -144,8 +144,8 @@ async function main() {
     });
 
   console.log("Tamu mengirim lewat halaman undangan (Renda Rimba)");
-  await openToGuestbook(tamuB, `${base}/u/${inv.slug}`);
-  await openToGuestbook(tamuA, `${base}/u/${inv.slug}?to=Bu%20Siti`);
+  await openToGuestbook(tamuB, `${base}/${inv.slug}`);
+  await openToGuestbook(tamuA, `${base}/${inv.slug}?to=Bu%20Siti`);
   await sleep(2500); // > 3 dtk sejak form tampil
   await tamuA.click("#rr-msg");
   await tamuA.type("#rr-msg", "Selamat menempuh hidup baru, semoga sakinah mawaddah warahmah.");
@@ -427,7 +427,7 @@ async function main() {
     hasTouch: true,
     deviceScaleFactor: 2,
   });
-  await kid.goto(`${base}/u/${bday.slug}`, { waitUntil: "networkidle0" });
+  await kid.goto(`${base}/${bday.slug}`, { waitUntil: "networkidle0" });
   await kid.waitForSelector("[data-inv-ready]");
   await kid.evaluate(
     `[...document.querySelectorAll("button")].find((b) => /Buka Undangan/i.test(b.textContent))?.click()`,

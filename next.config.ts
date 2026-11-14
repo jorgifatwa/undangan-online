@@ -7,7 +7,15 @@ const nextConfig: NextConfig = {
   // Biner ffmpeg dibaca dari node_modules apa adanya (bukan dibundel).
   serverExternalPackages: ["ffmpeg-static"],
   // Font TTF gambar pratinjau link dibaca lewat fs → sertakan di bundel fungsi.
-  outputFileTracingIncludes: { "/u/[slug]/og": ["./src/lib/og/fonts/*.ttf"] },
+  outputFileTracingIncludes: { "/[slug]/og": ["./src/lib/og/fonts/*.ttf"] },
+  // Undangan pindah dari /u/{slug} ke /{slug}: tautan lama yang sudah terlanjur
+  // dibagikan dialihkan PERMANEN (301); query (?to=Nama) ikut otomatis.
+  async redirects() {
+    return [
+      { source: "/u/:slug", destination: "/:slug", statusCode: 301 },
+      { source: "/u/:slug/og", destination: "/:slug/og", statusCode: 301 },
+    ];
+  },
   // Badge dev Next.js menutupi tombol di pojok undangan saat preview/screenshot.
   devIndicators: false,
   images: {

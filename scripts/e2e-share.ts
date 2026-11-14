@@ -1,5 +1,5 @@
 /**
- * Uji end-to-end Bagikan (4c) — development.
+ * Uji end-to-end Bagikan (4c) & URL undangan di root — development.
  *
  *   pnpm dev
  *   pnpm e2e:share [base-url] [--shots=.reference/report/4c]
@@ -7,7 +7,7 @@
  *  - metadata pratinjau link (og:title/description/image, ?to=) + noindex
  *  - gambar /og: JPEG 1200×630 < 300 KB, versi berubah saat undangan diubah,
  *    kedaluwarsa → tanpa data pribadi, draf → 404
- *  - subdomain {slug}.ROOT_DOMAIN (bila NEXT_PUBLIC_ROOT_DOMAIN diisi)
+ *  - URL undangan di root /{slug}; tautan lama /u/{slug} → 301; rute website aman
  *  - dialog Bagikan: link ?to=, nomor WA, template tersimpan (updatedAt tetap)
  */
 import fs from "node:fs/promises";
@@ -26,7 +26,6 @@ import { assertSafeDatabase } from "./lib/guard";
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const shots = args.find((a) => a.startsWith("--shots="))?.split("=")[1];
-const root = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "").trim();
 const db = new PrismaClient();
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const DAY = 86400_000;
@@ -106,7 +105,7 @@ async function main() {
   });
 
   console.log("Metadata pratinjau link");
-  const page1 = await get(`/u/${slug}?to=Bu%20Siti`);
+  const page1 = await get(`/${slug}?to=Bu%20Siti`);
   const html = page1.body.toString();
   const title = meta(html, "og:title");
   const ogImage = meta(html, "og:image") ?? "";
@@ -129,7 +128,7 @@ async function main() {
   );
 
   console.log("Gambar pratinjau (/og)");
-  const ogPath = `/u/${slug}/og${new URL(ogImage).search}`;
+  const ogPath = `/${slug}/og${new URL(ogImage).search}`;
   const og = await get(ogPath);
   const info = await sharp(og.body).metadata();
   check(og.status === 200 && og.headers["content-type"] === "image/jpeg", "200 image/jpeg");
@@ -151,26 +150,26 @@ async function main() {
       } as Prisma.InputJsonValue,
     },
   });
-  const ogImage2 = meta((await get(`/u/${slug}`)).body.toString(), "og:image");
+  const ogImage2 = meta((await get(`/${slug}`)).body.toString(), "og:image");
   check(!!ogImage2 && ogImage2 !== ogImage, "undangan diubah → URL gambar (versi) berubah");
 
   await db.invitation.update({
     where: { id: inv.id },
     data: { expiresAt: new Date(Date.now() - 60_000) },
   });
-  const exp = (await get(`/u/${slug}`)).body.toString();
+  const exp = (await get(`/${slug}`)).body.toString();
   check(
     !exp.includes("Kirana") && !exp.includes("Galih") && !exp.includes("Semarang"),
     "kedaluwarsa: metadata tanpa nama/kota",
   );
-  const expOg = await get(`/u/${slug}/og`);
+  const expOg = await get(`/${slug}/og`);
   check(expOg.status === 200, "kedaluwarsa: /og memberi gambar umum");
   if (shots) await sharp(expOg.body).toFile(`${shots}/2-og-kedaluwarsa.jpg`);
   await db.invitation.update({
     where: { id: inv.id },
     data: { status: "DRAFT", expiresAt: new Date(Date.now() + 3 * DAY) },
   });
-  check((await get(`/u/${slug}/og`)).status === 404, "draf: /og 404");
+  check((await get(`/${slug}/og`)).status === 404, "draf: /og 404");
   await db.invitation.update({ where: { id: inv.id }, data: { status: "PUBLISHED" } });
 
   console.log("Foto cover di gambar pratinjau");
@@ -245,8 +244,8 @@ async function main() {
       ["confetti-party", "BIRTHDAY"],
     ] as const) {
       const pi = await photoInv(themeId, eventType);
-      const r = await get(`/u/${pi.slug}/og`);
-      const text = await get(`/u/perf-${themeId}/og`);
+      const r = await get(`/${pi.slug}/og`);
+      const text = await get(`/perf-${themeId}/og`);
       const m = await sharp(r.body).metadata();
       check(
         r.status === 200 && m.width === 1200 && m.height === 630 && r.body.length < 150 * 1024,
@@ -271,7 +270,7 @@ async function main() {
           where: { id: pi.id },
           data: { expiresAt: new Date(Date.now() - 60_000) },
         });
-        const ex = await get(`/u/${pi.slug}/og`);
+        const ex = await get(`/${pi.slug}/og`);
         check(
           ex.body.equals(expOg.body),
           "kedaluwarsa + foto → gambar umum yang sama persis (tanpa foto & nama)",
@@ -280,68 +279,66 @@ async function main() {
     }
   }
 
-  console.log("Subdomain");
+  console.log("URL di root & tautan lama /u/");
   const browser = await launchBrowser();
-  if (!root) {
-    console.log("  – NEXT_PUBLIC_ROOT_DOMAIN kosong: subdomain nonaktif (dilewati)");
-  } else {
-    const host = `${slug}.${root}`;
-    const sub = await get(`/?to=Pak%20Budi`, host);
-    const sh = sub.body.toString();
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? base).replace(/\/+$/, "");
+  const root = await get(`/${slug}?to=Pak%20Budi`);
+  const rh = root.body.toString();
+  check(
+    root.status === 200 && rh.includes("Pak Budi") && rh.includes("Kirana"),
+    `/${slug}?to= → undangan`,
+  );
+  check(
+    rh.includes(`<link rel="canonical" href="${appUrl}/${slug}"/>`),
+    `canonical & og:url = ${appUrl}/${slug}`,
+  );
+  check(
+    meta(rh, "og:image")?.startsWith(`${appUrl}/${slug}/og?v=`) ?? false,
+    `og:image ${meta(rh, "og:image")}`,
+  );
+  const old = await get(`/u/${slug}?to=Pak%20Budi`);
+  check(
+    old.status === 301 && old.headers.location === `/${slug}?to=Pak%20Budi`,
+    `/u/${slug}?to=… → ${old.status} ${old.headers.location}`,
+  );
+  const oldOg = await get(`/u/${slug}/og?v=abc`);
+  check(
+    oldOg.status === 301 && oldOg.headers.location === `/${slug}/og?v=abc`,
+    `/u/${slug}/og → ${oldOg.status} ${oldOg.headers.location}`,
+  );
+  for (const r of ["/harga", "/tema", "/masuk"]) {
+    const w = await get(r);
     check(
-      sub.status === 200 && sh.includes("Pak Budi") && sh.includes("Kirana"),
-      `${host}/?to= → undangan`,
+      w.status === 200 && !w.body.toString().includes("Kirana &amp; Galih"),
+      `${r} tetap halaman website (${w.status})`,
     );
-    check(/noindex/.test(String(sub.headers["x-robots-tag"])), "subdomain: X-Robots-Tag");
+  }
+  check((await get("/bantuan")).status === 404, "slug terlarang tanpa halaman (/bantuan) → 404");
+  check((await get("/Wp-Login")).status === 404, "format bukan slug (/Wp-Login) → 404");
+  check(
+    !/udk_dev=/.test(String((await get("/harga")).headers["set-cookie"] ?? "")),
+    "halaman website tidak diberi cookie perangkat tamu",
+  );
+  {
+    const ctx = await browser.createBrowserContext();
+    const g = await ctx.newPage();
+    await g.setViewport({
+      width: 390,
+      height: 844,
+      isMobile: true,
+      hasTouch: true,
+      deviceScaleFactor: 2,
+    });
+    await g.goto(`${base}/u/${slug}?to=Pak%20Budi`, { waitUntil: "networkidle0", timeout: 90000 });
+    await g.waitForSelector("[data-inv-ready]");
+    await sleep(1200);
     check(
-      meta(sh, "og:image")?.startsWith(`http://${host}/og?v=`) ?? false,
-      `og:image di subdomain: ${meta(sh, "og:image")}`,
-    );
-    const subOg = await get("/og", host);
-    check(
-      subOg.status === 200 && subOg.headers["content-type"] === "image/jpeg",
-      `${host}/og → gambar`,
-    );
-    const subDash = await get("/dashboard", host);
-    check(
-      subDash.status === 307 &&
-        /^(\/|http:\/\/[^/]+\/)(\?|$)/.test(String(subDash.headers.location)),
-      `${host}/dashboard → dialihkan ke halaman undangan (${subDash.headers.location})`,
-    );
-    const www = await get("/", `www.${root}`);
-    check(!www.body.toString().includes("Kirana"), "www (dicadangkan) bukan undangan");
-    check((await get("/", `tidak-ada-xyz.${root}`)).status === 404, "subdomain tak dikenal → 404");
-    // Chrome mengarahkan *.localhost ke mesin sendiri → bisa dibuka seperti tamu.
-    if (root.startsWith("localhost")) {
-      const ctx = await browser.createBrowserContext();
-      const g = await ctx.newPage();
-      await g.setViewport({
-        width: 390,
-        height: 844,
-        isMobile: true,
-        hasTouch: true,
-        deviceScaleFactor: 2,
-      });
-      await g.goto(`http://${host}/?to=Pak%20Budi`, { waitUntil: "networkidle0", timeout: 90000 });
-      await g.waitForSelector("[data-inv-ready]");
-      await sleep(1200);
-      check(
+      g.url() === `${base}/${slug}?to=Pak%20Budi` &&
         ((await g.evaluate("document.body.innerText")) as string).includes("Pak Budi"),
-        "browser: subdomain menampilkan nama tamu di sampul",
-      );
-      const r = await g
-        .goto(`http://${host}/dashboard`, { waitUntil: "networkidle0" })
-        .catch(() => null);
-      check(
-        r?.status() === 200 && g.url() === `http://${host}/`,
-        `browser: ${host}/dashboard → ${g.url()} (tanpa putaran)`,
-      );
-      await g.goto(`http://${host}/?to=Pak%20Budi`, { waitUntil: "networkidle0" });
-      await g.waitForSelector("[data-inv-ready]");
-      await sleep(1200);
-      if (shots) await g.screenshot({ path: `${shots}/3-subdomain-cover.png` });
-      await ctx.close();
-    }
+      `browser: tautan lama berakhir di ${g.url().replace(base, "")} dengan nama tamu di sampul`,
+    );
+    if (shots) await g.screenshot({ path: `${shots}/3-url-root-cover.png` });
+    await ctx.close();
   }
 
   console.log("Dialog Bagikan (editor)");
@@ -379,7 +376,7 @@ async function main() {
   await page.type("#share-guest", "Bapak Hadi & Keluarga");
   await sleep(300);
   const link = await page.$eval("[data-share-link]", (e) => e.textContent ?? "");
-  check(link.endsWith("?to=Bapak%20Hadi%20%26%20Keluarga"), `link personal: ${link}`);
+  check(link === `${appUrl}/${slug}?to=Bapak%20Hadi%20%26%20Keluarga`, `link personal: ${link}`);
   const preview = await pv();
   check(
     preview.includes("Bapak Hadi & Keluarga") &&
@@ -458,7 +455,7 @@ async function main() {
     hasTouch: true,
     deviceScaleFactor: 2,
   });
-  await g.goto(`${base}/u/${slug}?to=Bapak%20Hadi%20%26%20Keluarga`, { waitUntil: "networkidle0" });
+  await g.goto(`${base}/${slug}?to=Bapak%20Hadi%20%26%20Keluarga`, { waitUntil: "networkidle0" });
   await g.waitForSelector("[data-inv-ready]");
   await sleep(1200);
   check(

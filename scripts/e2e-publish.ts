@@ -5,7 +5,7 @@
  *   pnpm e2e:publish [base-url] [--shots=.reference/report/4a]
  *
  *  - dialog Terbitkan: menyimpan dulu, checklist, aturan masa uji FREE
- *  - terbit → /u/slug tampil (watermark FREE); perubahan langsung tampil
+ *  - terbit → /slug tampil (watermark FREE); perubahan langsung tampil
  *  - batal terbit → 404; terbit ulang → masa uji TIDAK di-reset
  *  - kedaluwarsa → halaman "tidak aktif" tanpa data pribadi; tombol upgrade
  *    hanya untuk pemilik; terbit ulang FREE ditolak
@@ -113,7 +113,7 @@ async function main() {
   const editUrl = `${base}/dashboard/undangan/${inv.id}/edit`;
 
   console.log("Sebelum terbit");
-  check((await status(`/u/${inv.slug}`)) === 404, "draf → /u/slug 404");
+  check((await status(`/${inv.slug}`)) === 404, "draf → /slug 404");
 
   console.log("Dialog Terbitkan");
   await page.goto(editUrl, { waitUntil: "networkidle0", timeout: 90000 });
@@ -141,8 +141,8 @@ async function main() {
   );
 
   console.log("Halaman publik");
-  const pub = await html(`/u/${inv.slug}`);
-  check(pub.includes("Kirana") && pub.includes("Galih"), "/u/slug menampilkan undangan");
+  const pub = await html(`/${inv.slug}`);
+  check(pub.includes("Kirana") && pub.includes("Galih"), "/slug menampilkan undangan");
   check(/noindex/.test(pub), "meta robots noindex");
   // konteks terpisah (tanpa cookie login pemilik) = tamu sungguhan
   const guestCtx = await browser.createBrowserContext();
@@ -154,7 +154,7 @@ async function main() {
     hasTouch: true,
     deviceScaleFactor: 2,
   });
-  await pv.goto(`${base}/u/${inv.slug}?to=Bapak%20Hadi`, { waitUntil: "networkidle0" });
+  await pv.goto(`${base}/${inv.slug}?to=Bapak%20Hadi`, { waitUntil: "networkidle0" });
   await pv.waitForSelector("[data-inv-ready]");
   await sleep(1200);
   await shot(pv, "3-publik-cover");
@@ -185,9 +185,9 @@ async function main() {
     .catch(() => undefined);
   await sleep(800);
   check(
-    (await html(`/u/${inv.slug}`)).includes("Kiran &amp;") ||
-      (await html(`/u/${inv.slug}`)).includes("Kiran"),
-    "perubahan langsung tampil di /u/slug",
+    (await html(`/${inv.slug}`)).includes("Kiran &amp;") ||
+      (await html(`/${inv.slug}`)).includes("Kiran"),
+    "perubahan langsung tampil di /slug",
   );
 
   console.log("Batal terbit & terbit ulang");
@@ -195,7 +195,7 @@ async function main() {
   await waitText(page, "Batalkan terbit");
   await clickText(page, "Batalkan terbit");
   await sleep(1500);
-  check((await status(`/u/${inv.slug}`)) === 404, "batal terbit → 404");
+  check((await status(`/${inv.slug}`)) === 404, "batal terbit → 404");
   check(
     (await db.invitation.findUnique({ where: { id: inv.id } }))?.status === "DRAFT",
     "status kembali DRAFT",
@@ -216,7 +216,7 @@ async function main() {
     where: { id: inv.id },
     data: { expiresAt: new Date(Date.now() - 60_000) },
   });
-  const guest = await html(`/u/${inv.slug}`);
+  const guest = await html(`/${inv.slug}`);
   check(guest.includes("Undangan sudah tidak aktif"), 'tamu: "Undangan sudah tidak aktif"');
   check(
     !guest.includes("Kiran") && !guest.includes("Galih") && !guest.includes("Semarang"),
@@ -224,14 +224,14 @@ async function main() {
   );
   check(!guest.includes("Lihat paket"), "tamu tidak melihat tombol upgrade");
   check(
-    !(await html(`/u/${inv.slug}`, cookieB)).includes("Lihat paket"),
+    !(await html(`/${inv.slug}`, cookieB)).includes("Lihat paket"),
     "user lain tidak melihat tombol upgrade",
   );
   check(
-    (await html(`/u/${inv.slug}`, cookieA)).includes("Lihat paket"),
+    (await html(`/${inv.slug}`, cookieA)).includes("Lihat paket"),
     "pemilik melihat tombol upgrade",
   );
-  await pv.goto(`${base}/u/${inv.slug}`, { waitUntil: "networkidle0" });
+  await pv.goto(`${base}/${inv.slug}`, { waitUntil: "networkidle0" });
   await shot(pv, "5-kedaluwarsa-tamu");
   await pv.setCookie({
     name: "authjs.session-token",

@@ -82,7 +82,7 @@ async function measure(base: string, themeId: string, lite: boolean) {
     }).observe({ type: "largest-contentful-paint", buffered: true });
   });
 
-  // "renda-rimba" → /preview/renda-rimba (data contoh); "/u/slug" → halaman publik dari DB
+  // "renda-rimba" → /preview/renda-rimba (data contoh); "/slug" → halaman publik dari DB
   const path = themeId.startsWith("/") ? themeId : `/preview/${themeId}`;
   const url = `${base}${path}?to=Bapak%20Budi${lite ? "&lite=1" : ""}`;
   await page.goto(url, { waitUntil: "load", timeout: 120000 });

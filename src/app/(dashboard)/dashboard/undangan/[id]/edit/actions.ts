@@ -96,7 +96,7 @@ export async function saveInvitation(
   return { ok: true, updatedAt: fresh!.updatedAt.toISOString() };
 }
 
-/** Ubah alamat undangan (slug). Unik, format aman untuk subdomain, bukan kata cadangan. */
+/** Ubah alamat undangan (slug → domain/{slug}). Unik, format aman, bukan nama rute website. */
 export async function updateSlug(
   id: string,
   raw: string,

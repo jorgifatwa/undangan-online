@@ -105,7 +105,7 @@ export function ThemePicker({
   );
 }
 
-/** Alamat undangan (/u/{slug}, nanti {slug}.domain). */
+/** Alamat undangan: domain/{slug}. */
 export function SlugField({
   id,
   slug,
@@ -127,7 +127,7 @@ export function SlugField({
       <div className="flex gap-2">
         <div className="flex min-w-0 flex-1 items-center rounded-md border pl-3 text-sm">
           <span className="text-muted-foreground shrink-0">
-            {siteConfig.appUrl.replace(/^https?:\/\//, "")}/u/
+            {siteConfig.appUrl.replace(/^https?:\/\//, "")}/
           </span>
           <input
             id="f-slug"

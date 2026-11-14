@@ -21,7 +21,9 @@ export function assertSafeDatabase(script: string) {
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean);
   if (host && protectedHosts.some((h) => host.toLowerCase().includes(h))) {
-    console.error(`✗ ${script} DIBATALKAN: "${host}" terdaftar di PROTECTED_DB_HOSTS (production).`);
+    console.error(
+      `✗ ${script} DIBATALKAN: "${host}" terdaftar di PROTECTED_DB_HOSTS (production).`,
+    );
     process.exit(2);
   }
   if (process.env.NODE_ENV === "production" || (!local && !allowed)) {

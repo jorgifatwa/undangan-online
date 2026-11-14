@@ -74,7 +74,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export const dynamic = "force-dynamic";
 
 /**
- * Halaman undangan publik (fallback /u/{slug}; subdomain akan di-rewrite ke sini).
+ * Halaman undangan publik: domain/{slug} (tautan lama /u/{slug} → 301 ke sini).
+ * Rute website statis (harga, tema, …) selalu didahulukan Next.js; slug
+ * dicadangkan & format tidak valid langsung 404 tanpa query database.
  * Draf → 404. Masa aktif habis → halaman "tidak aktif" tanpa data pribadi.
  * Pembatasan fitur paket diterapkan DI SERVER lewat `features`.
  */

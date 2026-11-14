@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Pratinjau Undangan", robots: { index
 
 /**
  * Pratinjau undangan milik user (termasuk draf) dengan komponen tema yang SAMA
- * dengan halaman publik /u/[slug] dan batasan paket undangan itu.
+ * dengan halaman publik /[slug] dan batasan paket undangan itu.
  * Hanya pemilik — undangan orang lain → 404.
  */
 export default async function PratinjauPage({

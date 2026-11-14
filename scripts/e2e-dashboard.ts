@@ -196,8 +196,8 @@ async function main() {
   check(!(await bodyText(pb)).includes("Laras & Bima"), "dashboard B tidak menampilkan undangan A");
   await pb.browser().close();
 
-  const pub = await fetch(`${base}/u/${inv1?.slug}`);
-  check(pub.status === 404, "draf belum bisa dibuka publik di /u/[slug]");
+  const pub = await fetch(`${base}/${inv1?.slug}`);
+  check(pub.status === 404, "draf belum bisa dibuka publik di /[slug]");
 
   console.log(failed ? `\n✗ ${failed} pemeriksaan gagal` : "\n✓ Semua pemeriksaan lolos");
   await db.$disconnect();

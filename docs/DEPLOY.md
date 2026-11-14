@@ -3,8 +3,8 @@
 Panduan ini menyiapkan **staging** di `https://<nama-proyek>.vercel.app` tanpa
 domain sendiri. **Vercel hanya untuk staging/percobaan; production berjalan
 di VPS** (Docker + Caddy) — lihat `docs/DEPLOY-VPS.md` (tahap 4e). Kode tidak
-bergantung pada Vercel. Link undangan memakai `/u/{slug}`; subdomain bisa diaktifkan
-nanti (lihat [Mengaktifkan subdomain](#mengaktifkan-subdomain-nanti)).
+bergantung pada Vercel. Link undangan memakai path di root: `domain/{slug}`
+(lihat [URL undangan](#8-url-undangan-domainslug)).
 
 Penanda di setiap langkah:
 
@@ -100,23 +100,22 @@ Di production VPS tidak ada batas waktu Vercel (`maxDuration` diabaikan).
 Isi di **Vercel → Project → Settings → Environment Variables**, centang
 **Production** saja (lihat [preview](#preview-deployment) di bawah).
 
-| Variabel                  | Nilai                                          | Catatan                               |
-| ------------------------- | ---------------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_BRAND_NAME`  | `Undangku`                                     |                                       |
-| `NEXT_PUBLIC_APP_URL`     | `https://<nama-proyek>.vercel.app`             | tanpa `/` di akhir                    |
-| `NEXT_PUBLIC_ROOT_DOMAIN` | _(kosongkan / jangan dibuat)_                  | kosong = link `/u/{slug}`             |
-| `DATABASE_URL`            | string Neon **pooled** + `&connect_timeout=15` | host berisi `-pooler`                 |
-| `DATABASE_URL_UNPOOLED`   | string Neon **langsung**                       | host tanpa `-pooler`; dipakai migrasi |
-| `AUTH_SECRET`             | baru: `openssl rand -base64 32`                | **jangan** pakai nilai lokal          |
-| `AUTH_GOOGLE_ID`          | dari Google Cloud                              |                                       |
-| `AUTH_GOOGLE_SECRET`      | dari Google Cloud                              |                                       |
-| `STORAGE_DRIVER`          | `r2`                                           |                                       |
-| `R2_ACCOUNT_ID`           | dari Cloudflare                                |                                       |
-| `R2_ACCESS_KEY_ID`        | dari token R2                                  |                                       |
-| `R2_SECRET_ACCESS_KEY`    | dari token R2                                  |                                       |
-| `R2_BUCKET`               | mis. `undangku-staging`                        |                                       |
-| `R2_PUBLIC_URL`           | `https://pub-xxxx.r2.dev`                      | tanpa `/` di akhir                    |
-| `CRON_SECRET`             | `openssl rand -hex 24`                         | huruf & angka saja                    |
+| Variabel                 | Nilai                                          | Catatan                               |
+| ------------------------ | ---------------------------------------------- | ------------------------------------- |
+| `NEXT_PUBLIC_BRAND_NAME` | `Undangku`                                     |                                       |
+| `NEXT_PUBLIC_APP_URL`    | `https://<nama-proyek>.vercel.app`             | tanpa `/` di akhir                    |
+| `DATABASE_URL`           | string Neon **pooled** + `&connect_timeout=15` | host berisi `-pooler`                 |
+| `DATABASE_URL_UNPOOLED`  | string Neon **langsung**                       | host tanpa `-pooler`; dipakai migrasi |
+| `AUTH_SECRET`            | baru: `openssl rand -base64 32`                | **jangan** pakai nilai lokal          |
+| `AUTH_GOOGLE_ID`         | dari Google Cloud                              |                                       |
+| `AUTH_GOOGLE_SECRET`     | dari Google Cloud                              |                                       |
+| `STORAGE_DRIVER`         | `r2`                                           |                                       |
+| `R2_ACCOUNT_ID`          | dari Cloudflare                                |                                       |
+| `R2_ACCESS_KEY_ID`       | dari token R2                                  |                                       |
+| `R2_SECRET_ACCESS_KEY`   | dari token R2                                  |                                       |
+| `R2_BUCKET`              | mis. `undangku-staging`                        |                                       |
+| `R2_PUBLIC_URL`          | `https://pub-xxxx.r2.dev`                      | tanpa `/` di akhir                    |
+| `CRON_SECRET`            | `openssl rand -hex 24`                         | huruf & angka saja                    |
 
 **Jangan** isi di Vercel: `AUTH_TRUST_HOST` (Vercel sudah dipercaya otomatis),
 `ALLOW_SEED_PERF`, `PROTECTED_DB_HOSTS`, `NODE_ENV`.
@@ -213,7 +212,7 @@ media undangan Gratis 30 hari setelah kedaluwarsa. Vercel mengirim
 ### 4.6 Data uji performa di staging (opsional) — [ANDA]
 
 Untuk mengukur TTFB perlu undangan terbit. Paling sederhana: buat undangan
-lewat aplikasi lalu terbitkan. Atau isi undangan contoh `/u/perf-*`:
+lewat aplikasi lalu terbitkan. Atau isi undangan contoh `/perf-*`:
 
 ```bash
 DATABASE_URL="<DATABASE_URL_UNPOOLED staging>" ALLOW_SEED_PERF=1 pnpm seed:perf
@@ -252,7 +251,7 @@ Yang dicek:
 - [ ] Vercel → **Settings → Functions → sin1**.
 - [ ] Login Google berhasil.
 - [ ] Buat undangan, unggah foto (cek CORS R2) dan musik (status “Siap”).
-- [ ] Terbitkan, buka `/u/{slug}?to=Nama` di HP, kirim RSVP & ucapan.
+- [ ] Terbitkan, buka `/{slug}?to=Nama` di HP, kirim RSVP & ucapan.
 - [ ] Bagikan ke WhatsApp → pratinjau link menampilkan gambar & judul.
 - [ ] Vercel → **Schedules → Cron Jobs**: `/api/cron/media-cleanup` terdaftar;
       setelah 02:00–03:00 WIB, **View Logs** menunjukkan status 200.
@@ -322,26 +321,23 @@ Aturan:
 
 ---
 
-## 8. Mengaktifkan subdomain nanti
+## 8. URL undangan: `domain/{slug}`
 
-Kode subdomain sudah ada (`src/middleware.ts`), aktif bila
-`NEXT_PUBLIC_ROOT_DOMAIN` diisi.
+Undangan tampil langsung di root, mis. `https://<nama-proyek>.vercel.app/laras-bima`
+(nanti `https://undangku.id/laras-bima`). **[OTOMATIS]**:
 
-1. **[ANDA]** Beli domain (mis. `undangku.id`).
-2. **[ANDA]** Vercel → **Settings → Domains**: tambahkan `undangku.id`,
-   `www.undangku.id`, dan **`*.undangku.id`**. Domain wildcard di Vercel
-   **wajib memakai nameserver Vercel** — ubah nameserver di registrar sesuai
-   petunjuk Vercel.
-3. **[ANDA]** Ubah env lalu **Redeploy**:
-   - `NEXT_PUBLIC_APP_URL=https://undangku.id`
-   - `NEXT_PUBLIC_ROOT_DOMAIN=undangku.id`
-4. **[ANDA]** Google OAuth: ganti origin & redirect URI ke `https://undangku.id`.
-5. **[ANDA]** R2 CORS: tambahkan `https://undangku.id` ke `AllowedOrigins`.
-6. **[OTOMATIS]** Link baru menjadi `https://{slug}.undangku.id/?to=Nama`; link
-   lama `/u/{slug}` tetap berfungsi. `www`, `app`, `api`, dll. tidak pernah
-   dianggap undangan (`src/lib/invitations/reserved.ts`).
-7. Uji lokal: isi `NEXT_PUBLIC_ROOT_DOMAIN="localhost:3000"` di `.env`, buka
-   `http://slug.localhost:3000` di Chrome.
+- Tautan lama `/u/{slug}` (termasuk `?to=Nama`) dialihkan **permanen (301)**
+  ke `/{slug}` — `next.config.ts`.
+- Slug tidak boleh sama dengan rute website. Daftar terlarang ada di
+  `src/lib/invitations/reserved.ts` (rute yang ada & yang direncanakan, nama
+  file metadata, isi `public/`).
+- `pnpm check:slugs` berjalan otomatis sebelum setiap build (`prebuild`):
+  **build GAGAL** bila ada folder rute top-level di `src/app` atau isi
+  `public/` yang belum masuk daftar. Saat itu terjadi: tambahkan namanya ke
+  daftar, lalu periksa apakah sudah ada undangan dengan slug yang sama di
+  database (ganti slug undangan itu sebelum merilis rute baru).
+- Saat memakai domain sendiri nanti: cukup ganti `NEXT_PUBLIC_APP_URL`,
+  origin Google OAuth, dan `AllowedOrigins` CORS R2, lalu redeploy.
 
 ---
 

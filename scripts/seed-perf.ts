@@ -1,6 +1,6 @@
 /**
  * Undangan TERBIT berisi data contoh untuk uji performa halaman publik
- * (/u/perf-{tema}). Development/staging saja: pnpm seed:perf
+ * (/perf-{tema}). Development/staging saja: pnpm seed:perf
  */
 import { PrismaClient, type Prisma } from "@prisma/client";
 
@@ -40,7 +40,7 @@ async function main() {
         data: inv.data as unknown as Prisma.InputJsonValue,
       },
     });
-    console.log(`  /u/${slug}`);
+    console.log(`  /${slug}`);
   }
   await db.$disconnect();
 }
