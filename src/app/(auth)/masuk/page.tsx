@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { auth, signIn } from "@/auth";
+import { auth } from "@/auth";
 import { GoogleIcon } from "@/components/layout/google-icon";
 import { Button } from "@/components/ui/button";
+import { safeCallback } from "@/lib/auth/callback";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Masuk" };
@@ -17,24 +18,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   CredentialsSignin: "Email atau kata sandi salah.",
 };
 
-/**
- * Hanya izinkan redirect ke origin aplikasi sendiri (cegah open redirect).
- * Middleware Auth.js mengirim callbackUrl absolut, jadi URL absolut
- * dengan origin yang sama juga diterima lalu diubah menjadi path.
- */
-function safeCallback(url: string | undefined): string {
-  const fallback = "/dashboard";
-  if (!url) return fallback;
-  if (url.startsWith("/") && !url.startsWith("//")) return url;
-  try {
-    const parsed = new URL(url);
-    const appOrigin = new URL(siteConfig.appUrl).origin;
-    return parsed.origin === appOrigin ? `${parsed.pathname}${parsed.search}` : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export default async function MasukPage({
   searchParams,
 }: {
@@ -45,11 +28,6 @@ export default async function MasukPage({
 
   const session = await auth();
   if (session?.user) redirect(redirectTo);
-
-  async function loginGoogle() {
-    "use server";
-    await signIn("google", { redirectTo });
-  }
 
   const errorMessage = error ? (ERROR_MESSAGES[error] ?? "Gagal masuk. Silakan coba lagi.") : null;
 
@@ -76,7 +54,9 @@ export default async function MasukPage({
           </p>
         )}
 
-        <form action={loginGoogle} className="mt-8">
+        {/* Form POST biasa ke route handler (bukan server action) — lihat masuk/google/route.ts */}
+        <form method="post" action="/masuk/google" className="mt-8">
+          <input type="hidden" name="callbackUrl" value={redirectTo} />
           <Button type="submit" variant="outline" size="lg" className="w-full gap-3">
             <GoogleIcon className="size-5" />
             Masuk dengan Google
