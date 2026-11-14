@@ -1,7 +1,9 @@
 # Deploy Undangku — Staging (Vercel + Neon + Cloudflare R2)
 
 Panduan ini menyiapkan **staging** di `https://<nama-proyek>.vercel.app` tanpa
-domain sendiri. Link undangan memakai `/u/{slug}`; subdomain bisa diaktifkan
+domain sendiri. **Vercel hanya untuk staging/percobaan; production berjalan
+di VPS** (Docker + Caddy) — lihat `docs/DEPLOY-VPS.md` (tahap 4e). Kode tidak
+bergantung pada Vercel. Link undangan memakai `/u/{slug}`; subdomain bisa diaktifkan
 nanti (lihat [Mengaktifkan subdomain](#mengaktifkan-subdomain-nanti)).
 
 Penanda di setiap langkah:
@@ -50,28 +52,29 @@ R2 — makanya R2 juga perlu dekat.
 
 ---
 
-## 2. Paket Vercel: Hobby (gratis) vs Pro
+## 2. Staging di Vercel Hobby (gratis) — production di VPS
 
-| Hal                             | Hobby                                                                           | Pro                                     |
-| ------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------- |
-| **Penggunaan komersial**        | **Tidak boleh** — hanya personal/non-komersial                                  | Boleh                                   |
-| Durasi maksimum fungsi          | 300 dtk                                                                         | 800 dtk (beta hingga 30 menit)          |
-| Cron job                        | 1× per hari, waktu meleset hingga ±59 menit                                     | per menit, tepat waktu                  |
-| Region fungsi                   | 1 region                                                                        | hingga 5 region                         |
-| Kuota bulanan (perkiraan wajar) | 1 juta invocation, 4 jam Active CPU, 100 GB transfer, 5.000 transformasi gambar | berbasis pemakaian (bayar sesuai pakai) |
-| Rollback                        | hanya ke deploy sebelumnya                                                      | ke deploy mana saja                     |
+Staging memakai paket **Hobby**. Batas yang relevan:
+
+| Hal                             | Hobby                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------- |
+| **Penggunaan komersial**        | **Tidak boleh** — hanya personal/non-komersial                                  |
+| Durasi maksimum fungsi          | 300 dtk                                                                         |
+| Cron job                        | 1× per hari, waktu meleset hingga ±59 menit                                     |
+| Region fungsi                   | 1 region (kita: `sin1`)                                                         |
+| Kuota bulanan (perkiraan wajar) | 1 juta invocation, 4 jam Active CPU, 100 GB transfer, 5.000 transformasi gambar |
+| Rollback                        | hanya ke deploy sebelumnya                                                      |
 
 **Aturan untuk Undangku:**
 
-- **Staging boleh di Hobby** selama belum menerima pembayaran sungguhan dan
-  belum dipasarkan ke publik.
-- **Wajib pindah ke Pro SEBELUM menerima pembayaran nyata** (tahap Midtrans) atau
-  mempromosikan layanan berbayar. Vercel mendefinisikan komersial sebagai
-  deploy yang dipakai untuk keuntungan finansial siapa pun, termasuk
-  _"any method of requesting or processing payment from visitors of the site"_
-  dan _"advertising the sale of a product or service"_.
-- Kuota 5.000 transformasi gambar/bulan (next/image) di Hobby cukup untuk
-  staging, tapi bisa habis begitu ada banyak undangan berfoto.
+- **Staging (Vercel) hanya untuk uji coba internal**: tidak menerima pembayaran
+  sungguhan dan tidak dipromosikan ke publik. Vercel mendefinisikan komersial
+  sebagai deploy untuk keuntungan finansial siapa pun, termasuk _"any method
+  of requesting or processing payment from visitors of the site"_ dan
+  _"advertising the sale of a product or service"_.
+- **Production pindah ke VPS** (milik rekan), bukan ke Vercel Pro. Pembayaran
+  nyata (Midtrans) dan promosi hanya dilakukan di production VPS.
+- Kuota 5.000 transformasi gambar/bulan (next/image) cukup untuk staging.
 
 ### Kompresi musik vs batas 300 detik Hobby
 
@@ -86,9 +89,9 @@ dipotong ke 15 menit, dikodekan ulang AAC 96 kbps.
 
 Jika suatu saat tetap melewati batas (mis. CPU Vercel sedang padat): status
 musik menjadi **"Gagal"**, file mentah dibersihkan cron, dan pengguna melihat
-pesan untuk mencoba lagi — tidak ada data rusak. Solusinya, urut dari termudah:
-naikkan ke Pro (`maxDuration` hingga 800), turunkan `MAX_AUDIO_SECONDS` di
-`src/lib/media/limits.ts`, atau pindahkan kompresi ke worker terpisah.
+pesan untuk mencoba lagi — tidak ada data rusak. Di staging cukup coba lagi;
+bila sering terjadi, turunkan `MAX_AUDIO_SECONDS` di `src/lib/media/limits.ts`.
+Di production VPS tidak ada batas waktu Vercel (`maxDuration` diabaikan).
 
 ---
 
@@ -293,8 +296,8 @@ digabung bisa mengubah database staging. Karena itu: env hanya untuk
 
 Paket gratis Neon menidurkan database setelah beberapa menit tanpa aktivitas;
 permintaan pertama sesudahnya lebih lambat beberapa ratus ms–detik. Wajar
-untuk staging. Untuk production: matikan _scale to zero_ (paket berbayar) agar
-tamu pertama di pagi hari H tidak menunggu.
+untuk staging. Production di VPS memakai database sendiri yang selalu menyala
+(lihat `docs/DEPLOY-VPS.md`).
 
 ---
 
@@ -313,9 +316,9 @@ Aturan:
 
 1. `ALLOW_SEED_PERF=1` hanya ditulis **di terminal saat menjalankan**, untuk
    staging. Jangan simpan di `.env`, jangan di Vercel.
-2. Setelah database production ada, tambahkan host-nya (mis. `ep-xxxx-12345`)
-   ke `PROTECTED_DB_HOSTS` di `.env` lokal.
-3. Database staging dan production **harus proyek Neon terpisah**.
+2. Setelah database production (VPS) ada, tambahkan host/IP-nya ke
+   `PROTECTED_DB_HOSTS` di `.env` lokal.
+3. Database staging (Neon) dan production (VPS) **selalu terpisah**.
 
 ---
 
