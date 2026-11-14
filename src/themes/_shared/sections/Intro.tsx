@@ -255,3 +255,27 @@ export function DefaultLoveStory() {
     </SectionShell>
   );
 }
+
+/** Cerita ulang tahun (birthday.story) — paragraf teks polos, tidak pernah jadi link. */
+export function DefaultCerita() {
+  const { inv } = useInvitation();
+  if (inv.eventType !== "BIRTHDAY" || !inv.data.story?.text.trim()) return null;
+  const story = inv.data.story;
+  return (
+    <SectionShell id="cerita" className={SECTION_PAD}>
+      <SectionTitle kicker="Sedikit Cerita" title={story.title || "Cerita Ulang Tahun"} />
+      <Reveal variant="rise">
+        <div className="space-y-4 text-center text-sm leading-relaxed opacity-90">
+          {story.text
+            .split(/\n\s*\n/)
+            .filter((p) => p.trim())
+            .map((p, i) => (
+              <p key={i} className="whitespace-pre-line">
+                {p.trim()}
+              </p>
+            ))}
+        </div>
+      </Reveal>
+    </SectionShell>
+  );
+}

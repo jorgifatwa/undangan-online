@@ -60,8 +60,15 @@ function ThemeRootInner({
 
   const variant = manifest.variants.find((v) => v.id === variantId) ?? manifest.variants[0];
   const sections = useMemo(
-    () => resolveSections(invitation, manifest.sections, features, manifest.lockedSections),
-    [invitation, manifest.sections, features, manifest.lockedSections],
+    () =>
+      resolveSections(
+        invitation,
+        manifest.sections,
+        features,
+        manifest.lockedSections,
+        manifest.sectionOrder,
+      ),
+    [invitation, manifest.sections, features, manifest.lockedSections, manifest.sectionOrder],
   );
   const hasCover = sections.includes("cover");
   const [opened, setOpened] = useState(startOpened || !hasCover);

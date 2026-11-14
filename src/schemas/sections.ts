@@ -22,6 +22,8 @@ export const SECTION_IDS = [
   "rsvp",
   "ucapan",
   "amplop",
+  /** Cerita ulang tahun (birthday.story) — hanya tema yang mendukung. */
+  "cerita",
   "penutup",
 ] as const;
 
@@ -42,6 +44,7 @@ export const SECTION_LABELS: Record<SectionId, string> = {
   rsvp: "RSVP",
   ucapan: "Ucapan & Doa",
   amplop: "Amplop Digital & Hadiah",
+  cerita: "Cerita Ulang Tahun",
   penutup: "Penutup",
 };
 
@@ -75,10 +78,24 @@ export const DEFAULT_SECTION_ORDER: Record<"WEDDING" | "BIRTHDAY", SectionId[]> 
     "galeri",
     "rsvp",
     "ucapan",
+    "cerita",
     "amplop",
     "penutup",
   ],
 };
+
+/**
+ * Urutan bawaan untuk jenis acara; bila tema punya `sectionOrder`, urutan tema
+ * dipakai lalu section lain dari urutan umum ditambahkan di belakangnya.
+ */
+export function defaultOrderFor(
+  eventType: "WEDDING" | "BIRTHDAY",
+  themeOrder?: readonly SectionId[],
+): SectionId[] {
+  const base = DEFAULT_SECTION_ORDER[eventType];
+  if (!themeOrder?.length) return [...base];
+  return [...themeOrder, ...base.filter((id) => !themeOrder.includes(id))];
+}
 
 export type AnyInvitationData =
   { eventType: "WEDDING"; data: WeddingData } | { eventType: "BIRTHDAY"; data: BirthdayData };
@@ -95,6 +112,8 @@ export function isSectionEmpty(id: SectionId, inv: AnyInvitationData): boolean {
       return !d.quote?.arabic && !d.quote?.translation;
     case "loveStory":
       return inv.eventType !== "WEDDING" || inv.data.loveStory.length === 0;
+    case "cerita":
+      return inv.eventType !== "BIRTHDAY" || !inv.data.story?.text.trim();
     case "maps":
       return !d.events.some((e) => e.mapsUrl || e.address);
     case "dressCode":
@@ -136,14 +155,19 @@ export const SECTION_FEATURE: Partial<Record<SectionId, keyof Entitlements>> = {
  * setelah cover dengan urutan manifest, TIDAK bisa disembunyikan user dan
  * tidak disembunyikan walau datanya kosong (tema yang menangani data kosong),
  * mis. kartu ayat Tirai Beludru yang menjadi tujuan transisi amplop.
+ *
+ * `themeOrder` (manifest.sectionOrder, opsional): urutan bawaan khusus tema,
+ * dipakai menggantikan DEFAULT_SECTION_ORDER saat undangan belum punya urutan
+ * sendiri. Tema tanpa sectionOrder berperilaku persis seperti sebelumnya.
  */
 export function resolveSections(
   inv: AnyInvitationData,
   supported: readonly SectionId[],
   features: Entitlements | null,
   locked: readonly SectionId[] = [],
+  themeOrder?: readonly SectionId[],
 ): SectionId[] {
-  const defaults = DEFAULT_SECTION_ORDER[inv.eventType];
+  const defaults = defaultOrderFor(inv.eventType, themeOrder);
   const configured = inv.data.sections.filter((s): s is { id: SectionId; visible: boolean } =>
     (SECTION_IDS as readonly string[]).includes(s.id),
   );

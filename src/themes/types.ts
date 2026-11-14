@@ -57,6 +57,17 @@ export interface ThemeManifest {
    * kosong. Contoh: kartu ayat Tirai Beludru (tujuan transisi amplop).
    */
   lockedSections?: readonly SectionId[];
+  /**
+   * Urutan bawaan khusus tema (opsional) — dipakai bila undangan belum punya
+   * urutan sendiri. Tanpa ini: DEFAULT_SECTION_ORDER per jenis acara.
+   */
+  sectionOrder?: readonly SectionId[];
+  /**
+   * Isian editor khusus yang hanya tampil untuk tema ini:
+   *  - "childPhoto": foto masa kecil (celebrant.childPhoto, efek stiker PNG)
+   *  - "decorLanguage": pilihan bahasa teks dekoratif (decorLang en/id)
+   */
+  editorFields?: readonly ("childPhoto" | "decorLanguage")[];
   /** Thumbnail galeri tema: path gambar, atau gradien CSS sementara. */
   thumbnail: { image?: string; background: string; foreground: string };
   /** Musik bawaan tema bila user belum memilih lagu. */

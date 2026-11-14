@@ -107,6 +107,19 @@ async function makeFiles() {
   });
   fs.writeFileSync(f("palsu.jpg"), "ini bukan foto, hanya teks yang diganti namanya".repeat(20));
   fs.writeFileSync(f("palsu.mp3"), "ini juga bukan musik".repeat(50));
+  // Foto "tanpa latar" (efek stiker): lingkaran opak di atas latar transparan
+  await sharp({
+    create: { width: 1200, height: 1500, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .composite([
+      {
+        input: Buffer.from(
+          `<svg width="1200" height="1500"><circle cx="600" cy="750" r="420" fill="#c0392b"/></svg>`,
+        ),
+      },
+    ])
+    .png()
+    .toFile(f("stiker.png"));
   await sharp({ create: { width: 9000, height: 20, channels: 3, background: "#888" } })
     .png()
     .toFile(f("raksasa.png"));
@@ -259,6 +272,47 @@ async function main() {
     !!d.groom.photo?.url.endsWith(".webp") && fs.existsSync(fileOf(d.groom.photo!.url)),
     "HEIC → WebP di server",
   );
+
+  console.log("PNG tanpa latar (efek stiker) tetap transparan");
+  const groomBefore = d.groom.photo?.url;
+  await (await fileInput(page, "Pilih Foto", 1)).uploadFile(f("stiker.png"));
+  check(await waitText(page, "Simpan potongan", 15000), "PNG transparan → dialog potong");
+  await sleep(800);
+  await clickText(page, "Simpan potongan");
+  check(
+    await waitDb(async () => (await dataOf(free.id)).groom.photo?.url !== groomBefore, 45000),
+    "foto stiker tersimpan",
+  );
+  d = await dataOf(free.id);
+  {
+    const file = fs.readFileSync(fileOf(d.groom.photo!.url));
+    const m = await sharp(file).metadata();
+    const { data: corner } = await sharp(file)
+      .extract({ left: 2, top: 2, width: 1, height: 1 })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const { data: mid } = await sharp(file)
+      .extract({
+        left: Math.floor(m.width! / 2),
+        top: Math.floor(m.height! / 2),
+        width: 1,
+        height: 1,
+      })
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    check(m.format === "webp" && !!m.hasAlpha, `hasil WebP beralpha (hasAlpha=${m.hasAlpha})`);
+    check(
+      corner[3] < 10 && mid[3] > 245,
+      `sudut transparan (α=${corner[3]}), tengah opak (α=${mid[3]})`,
+    );
+  }
+  {
+    // foto biasa (JPEG) tetap tanpa alpha → ukuran tidak membengkak
+    const m = await sharp(fs.readFileSync(fileOf(brideUrl))).metadata();
+    check(!m.hasAlpha, "foto biasa tetap tanpa kanal alpha");
+  }
 
   console.log("Ganti foto → file lama dihapus");
   await (await fileInput(page, "Pilih Foto", 0)).uploadFile(f("foto-2.jpg"));

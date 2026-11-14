@@ -109,7 +109,33 @@ export interface Area {
   height: number;
 }
 
-/** Potong (hasil react-easy-crop, piksel) → JPEG, sisi terpanjang ≤ maxSide. */
+/** true bila kanvas punya piksel (semi)transparan — dicek pada salinan kecil 64 px. */
+export function hasTransparency(c: HTMLCanvasElement): boolean {
+  const s = document.createElement("canvas");
+  s.width = Math.min(64, c.width);
+  s.height = Math.min(64, c.height);
+  const ctx = s.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(c, 0, 0, s.width, s.height);
+  const d = ctx.getImageData(0, 0, s.width, s.height).data;
+  for (let i = 3; i < d.length; i += 4) if (d[i] < 250) return true;
+  return false;
+}
+
+/**
+ * Kanvas beralpha → WebP (Safari yang belum bisa meng-encode WebP otomatis
+ * memberi PNG); keduanya mempertahankan transparansi, lalu server mengompres
+ * ke WebP beralpha. Foto biasa tetap JPEG (lebih kecil).
+ */
+function canvasToAlphaBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("canvas kosong"))), "image/webp", 0.92),
+  );
+}
+
+/**
+ * Potong (hasil react-easy-crop, piksel), sisi terpanjang ≤ maxSide.
+ * Foto tanpa latar (PNG/WebP transparan, untuk efek stiker) tetap transparan.
+ */
 export async function cropToBlob(src: string, area: Area, maxSide = 2400): Promise<Blob> {
   const img = await loadImage(src);
   const scale = Math.min(1, maxSide / Math.max(area.width, area.height));
@@ -119,7 +145,7 @@ export async function cropToBlob(src: string, area: Area, maxSide = 2400): Promi
   const ctx = c.getContext("2d")!;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, c.width, c.height);
-  return canvasToJpeg(c);
+  return hasTransparency(c) ? canvasToAlphaBlob(c) : canvasToJpeg(c);
 }
 
 function put(

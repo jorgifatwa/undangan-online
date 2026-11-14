@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { Entitlements } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import {
-  DEFAULT_SECTION_ORDER,
+  defaultOrderFor,
   SECTION_FEATURE,
   SECTION_IDS,
   SECTION_LABELS,
@@ -38,8 +38,11 @@ export function effectiveOrder(
   eventType: "WEDDING" | "BIRTHDAY",
   config: Config,
   locked: readonly SectionId[],
+  themeOrder?: readonly SectionId[],
 ): { id: SectionId; visible: boolean }[] {
-  const defaults: SectionId[] = DEFAULT_SECTION_ORDER[eventType].filter((id) => id !== "cover");
+  const defaults: SectionId[] = defaultOrderFor(eventType, themeOrder).filter(
+    (id) => id !== "cover",
+  );
   const known = config.filter(
     (s): s is { id: SectionId; visible: boolean } =>
       (SECTION_IDS as readonly string[]).includes(s.id) && s.id !== "cover",
@@ -155,7 +158,7 @@ export function SectionManager({
   onChange: (next: Config) => void;
 }) {
   const locked = manifest.lockedSections ?? [];
-  const rows = effectiveOrder(eventType, config, locked);
+  const rows = effectiveOrder(eventType, config, locked, manifest.sectionOrder);
   const sensors = useSensors(
     // jari: tahan sebentar sebelum menyeret agar tetap bisa menggulir daftar
     useSensor(PointerSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),

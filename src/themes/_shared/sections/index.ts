@@ -13,7 +13,7 @@ import {
 import { DefaultGaleri } from "./Gallery";
 import { DefaultAmplop } from "./Gift";
 import { DefaultRsvp, DefaultUcapan } from "./Interactive";
-import { DefaultAyat, DefaultLoveStory, DefaultProfil, DefaultSalam } from "./Intro";
+import { DefaultAyat, DefaultCerita, DefaultLoveStory, DefaultProfil, DefaultSalam } from "./Intro";
 
 export { DefaultCover, GuestGreeting, useInvitationTitle } from "./Cover";
 export { CalendarButton, CountdownBoxes } from "./Event";
@@ -35,5 +35,6 @@ export const DEFAULT_SECTIONS: Record<Exclude<SectionId, "cover">, ComponentType
   rsvp: DefaultRsvp,
   ucapan: DefaultUcapan,
   amplop: DefaultAmplop,
+  cerita: DefaultCerita,
   penutup: DefaultPenutup,
 };

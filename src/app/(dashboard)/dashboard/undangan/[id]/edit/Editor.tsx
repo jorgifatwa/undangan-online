@@ -30,7 +30,14 @@ import { EventsForm } from "./forms/EventsForm";
 import { GiftForm, LoveStoryForm, WishlistForm } from "./forms/ListForms";
 import { CelebrantForm, CoupleForm } from "./forms/PersonForms";
 import { QuoteForm } from "./forms/QuoteForm";
-import { ClosingForm, DressCodeForm, LiveStreamForm, SalamForm } from "./forms/SimpleForms";
+import {
+  CeritaForm,
+  ClosingForm,
+  DecorLangField,
+  DressCodeForm,
+  LiveStreamForm,
+  SalamForm,
+} from "./forms/SimpleForms";
 import { PreviewFrame } from "./PreviewFrame";
 import { SectionManager } from "./SectionManager";
 import { GuestbookPanel } from "./GuestbookPanel";
@@ -475,6 +482,7 @@ export function Editor(p: EditorProps) {
             onTheme={changeTheme}
             onVariant={changeVariant}
           />
+          {!wedding && manifest.editorFields?.includes("decorLanguage") && <DecorLangField />}
         </div>
       ),
     },
@@ -538,6 +546,15 @@ export function Editor(p: EditorProps) {
             label="Foto yang berulang tahun"
             aspect={4 / 5}
           />
+          {manifest.editorFields?.includes("childPhoto") && (
+            <PhotoField
+              name="celebrant.childPhoto"
+              slot="child"
+              label="Foto masa kecil (cover & pembuka)"
+              aspect={4 / 5}
+              hint="Unggah foto tanpa latar (PNG) untuk efek stiker."
+            />
+          )}
           <PhotoField name="closingPhoto" slot="closing" label="Foto penutup" aspect={1} />
         </div>
       ),
@@ -562,6 +579,16 @@ export function Editor(p: EditorProps) {
       title: "Acara",
       body: <EventsForm defaultName={wedding ? "Resepsi" : "Pesta Ulang Tahun"} />,
     },
+    ...(!wedding
+      ? [
+          {
+            key: "cerita",
+            section: "cerita" as const,
+            title: "Cerita ulang tahun",
+            body: <CeritaForm />,
+          },
+        ]
+      : []),
     ...(wedding
       ? [
           {
