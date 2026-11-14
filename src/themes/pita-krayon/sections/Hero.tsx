@@ -2,7 +2,8 @@
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { CrayonNumber } from "../CrayonNumber";
-import { box, Orn, Section, Sticker, txt, Typewriter, u, useDecor, useNick } from "../canvas";
+import { box, Orn, Section, txt, Typewriter, u, useDecor, useNick } from "../canvas";
+import { HeroPhoto, usePhotoDecor } from "../PhotoDecor";
 import { Cake, PartyHat, Ribbon, Sparkle } from "../ornaments";
 
 /**
@@ -15,6 +16,7 @@ export function Hero() {
   const { inv } = useInvitation();
   const nick = useNick();
   const { lang } = useDecor();
+  const { cake } = usePhotoDecor();
   if (inv.eventType !== "BIRTHDAY") return null;
   const c = inv.data.celebrant;
   const age = c.age;
@@ -68,41 +70,38 @@ export function Hero() {
         </div>
       )}
 
-      {/* foto stiker (potongan siluet bergaris merah, di depan angka) */}
-      {photo && (
-        <div
-          data-a="pop"
-          style={{ ...box(104, 222, 222, 380), zIndex: 2, ["--d" as string]: "0.6s" }}
-        >
-          <Sticker photo={photo} sizes="(max-width: 440px) 46vw, 200px" alt={photo.alt ?? c.name} />
-        </div>
+      {/* foto: bingkai stiker (foto biasa) atau siluet (tanpa latar) + topi pesta */}
+      {photo && <HeroPhoto photo={photo} alt={photo.alt ?? c.name} />}
+      {!photo && (
+        <Orn
+          slot="party-hat-glitter"
+          l={250}
+          t={120}
+          w={64}
+          ratio={1.36}
+          rotate={12}
+          a="drop"
+          d={0.9}
+          z={3}
+          fallback={<PartyHat glitter />}
+        />
       )}
-      <Orn
-        slot="party-hat-glitter"
-        l={photo ? 200 : 250}
-        t={photo ? 150 : 120}
-        w={64}
-        ratio={1.36}
-        rotate={12}
-        a="drop"
-        d={0.9}
-        z={3}
-        fallback={<PartyHat glitter />}
-      />
 
-      {/* kue di depan foto */}
-      <Orn
-        slot="cake"
-        l={photo ? 120 : 95}
-        t={photo ? 312 : 300}
-        w={photo ? 190 : 240}
-        ratio={1.53}
-        tint
-        a="up"
-        d={0.8}
-        z={4}
-        fallback={<Cake />}
-      />
+      {/* ilustrasi kue di depan foto (sakelar editor "Tampilkan ilustrasi kue") */}
+      {(cake || !photo) && (
+        <Orn
+          slot="cake"
+          l={photo ? 120 : 95}
+          t={photo ? (photo.alpha ? 312 : 356) : 300}
+          w={photo ? 190 : 240}
+          ratio={1.53}
+          tint
+          a="up"
+          d={0.8}
+          z={4}
+          fallback={<Cake />}
+        />
+      )}
 
       <Orn
         slot="ribbon-c"

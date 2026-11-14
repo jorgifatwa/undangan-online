@@ -259,7 +259,13 @@ export async function finalizePhoto(userId: string, mediaId: string) {
         height: out.height,
       },
     });
-    return { mediaId: m.id, url: storage().publicUrl(key), width: out.width, height: out.height };
+    return {
+      mediaId: m.id,
+      url: storage().publicUrl(key),
+      width: out.width,
+      height: out.height,
+      alpha: out.alpha,
+    };
   } catch (e) {
     const msg = e instanceof MediaError ? e.message : "Foto gagal diproses.";
     await fail(m, msg);

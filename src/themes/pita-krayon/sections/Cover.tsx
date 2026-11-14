@@ -5,9 +5,9 @@ import { useRef, useState } from "react";
 
 import { useInvitation } from "../../_shared/runtime/context";
 import type { CoverProps } from "../../types";
-import { FillPhoto } from "../../_shared/sections";
 import { ordinal, Orn, Typewriter, useDecor, useNick } from "../canvas";
-import { Cake, PartyHat, Ribbon, ScallopFrame, Sparkle } from "../ornaments";
+import { Cake, Ribbon, ScallopFrame, Sparkle } from "../ornaments";
+import { CoverPhoto } from "../PhotoDecor";
 
 /**
  * Cover (halaman 1 desain): "{NAMA} IS TURNING 19TH" + foto masa kecil dalam
@@ -96,39 +96,31 @@ function Face() {
           ["--d" as string]: "0.1s",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: `${c(15)} ${c(15)} ${c(16)}`,
-            overflow: "hidden",
-            background: "#e6e1dc",
-          }}
-        >
-          {photo ? (
-            // foto cover = elemen LCP: tanpa filter, priority
-            <FillPhoto photo={photo} sizes="(max-width: 440px) 46vw, 200px" priority />
-          ) : (
+        {photo ? (
+          // isi bingkai: koordinat relatif pembungkus (u() = satuan kanvas cover)
+          <CoverPhoto
+            photo={photo}
+            box={{ l: 15, t: 15, w: 179, h: 239 }}
+            origin={{ l: 128, t: 401 }}
+          />
+        ) : (
+          <div
+            style={{
+              position: "absolute",
+              inset: `${c(15)} ${c(15)} ${c(16)}`,
+              background: "#e6e1dc",
+            }}
+          >
             <div style={{ position: "absolute", inset: "8%" }}>
               <Cake />
             </div>
-          )}
-        </div>
+          </div>
+        )}
         <div style={{ position: "absolute", inset: 0, filter: "var(--inv-filter-tint)" }}>
           <OrnFill slot="scallop-frame" fallback={<ScallopFrame />} />
         </div>
       </div>
 
-      {/* topi pesta di sudut bingkai */}
-      <CoverOrn
-        slot="party-hat"
-        l={207}
-        t={352}
-        w={56}
-        ratio={1.43}
-        rotate={8}
-        d={0.3}
-        fallback={<PartyHat />}
-      />
       <CoverOrn
         slot="ribbon-c"
         l={60}

@@ -31,7 +31,22 @@ export const toPreviewSchema = z.discriminatedUnion("type", [
 ]);
 export type ToPreview = z.infer<typeof toPreviewSchema>;
 
-export const fromPreviewSchema = z.object({ ns, type: z.literal("ready") });
+export const fromPreviewSchema = z.discriminatedUnion("type", [
+  z.object({ ns, type: z.literal("ready") }),
+  /** Topi pesta digeser di pratinjau (persen relatif foto; lihat schemas/birthday hatSchema). */
+  z.object({
+    ns,
+    type: z.literal("hat"),
+    section: z.enum(["cover", "hero"]),
+    pos: z.object({
+      x: z.number().min(-60).max(160),
+      y: z.number().min(-60).max(160),
+      w: z.number().min(2).max(150),
+      r: z.number().min(-180).max(180),
+      for: z.string().max(600),
+    }),
+  }),
+]);
 export type FromPreview = z.infer<typeof fromPreviewSchema>;
 
 /** Batas ukuran pesan (JSON) — data undangan wajar jauh di bawah ini. */

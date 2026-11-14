@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/tentang", label: "Tentang kami" },
   { href: "/syarat", label: "Syarat & Ketentuan" },
   { href: "/privasi", label: "Kebijakan Privasi" },
+  { href: "/lisensi", label: "Lisensi" },
 ];
 
 /** Footer semua halaman website. Kontak yang belum diisi (null) tidak tampil. */

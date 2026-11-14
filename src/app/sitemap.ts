@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/tentang", priority: 0.5, freq: "yearly" },
     { path: "/syarat", priority: 0.3, freq: "yearly" },
     { path: "/privasi", priority: 0.3, freq: "yearly" },
+    { path: "/lisensi", priority: 0.2, freq: "yearly" },
   ];
   return pages.map((p) => ({
     url: `${siteConfig.appUrl}${p.path}`,

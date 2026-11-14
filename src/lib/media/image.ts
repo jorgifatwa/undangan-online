@@ -33,7 +33,9 @@ export async function processPhoto(input: Buffer, maxSide: number) {
       .resize({ width: maxSide, height: maxSide, fit: "inside", withoutEnlargement: true })
       .webp({ quality: 80, effort: 4 })
       .toBuffer({ resolveWithObject: true });
-    return { data, width: info.width, height: info.height };
+    // Ada piksel transparan? (PNG/WebP tanpa latar → tema bisa memakai efek stiker siluet)
+    const alpha = info.channels === 4 && !(await sharp(data).stats()).isOpaque;
+    return { data, width: info.width, height: info.height, alpha };
   } catch {
     throw new MediaError("Foto gagal diproses. Coba simpan ulang foto sebagai JPG.");
   }

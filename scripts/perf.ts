@@ -65,6 +65,14 @@ async function measure(base: string, themeId: string, lite: boolean) {
   await page.emulateNetworkConditions(FAST_4G);
   await page.emulateCPUThrottling(4);
 
+  // Halaman tamu TIDAK boleh memuat model/runtime ML editor (deteksi wajah, hapus latar)
+  const mlRequests: string[] = [];
+  page.on("request", (r) => {
+    if (/\/ml\/|ort-wasm|vision_wasm|\.tflite|\.onnx/i.test(r.url())) mlRequests.push(r.url());
+  });
+  let workers = 0;
+  page.on("workercreated", () => workers++);
+
   // tsx/esbuild menyisipkan helper __name ke fungsi yang dikirim ke browser.
   await page.evaluateOnNewDocument("window.__name = (fn) => fn;");
   await page.evaluateOnNewDocument(() => {
@@ -136,6 +144,11 @@ async function measure(base: string, themeId: string, lite: boolean) {
   });
 
   await browser.close();
+  if (mlRequests.length || workers)
+    console.error(
+      `  ✗ ${themeId}: halaman tamu memuat ML (${mlRequests.length} request, ${workers} worker)`,
+    );
+  else console.log(`  ✓ ${themeId}${lite ? " (ringan)" : ""}: 0 request model ML, 0 Web Worker`);
   return { themeId, mode: lite ? "ringan" : "normal", ...vitals, idle, open, scroll, prepared };
 }
 

@@ -39,6 +39,8 @@ export const photoSchema = z.object({
   alt: optionalText(200),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
+  /** true = gambar punya latar transparan (PNG tanpa latar / hasil hapus latar). */
+  alpha: z.boolean().optional(),
   /** Titik fokus (0–100%) untuk object-position saat foto dipotong bingkai. */
   focusX: z.number().min(0).max(100).optional(),
   focusY: z.number().min(0).max(100).optional(),

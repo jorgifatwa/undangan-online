@@ -52,7 +52,7 @@ export const manifest = {
   // Pembuka (angka krayon) & kartu pemutar musik selalu tampil tepat setelah
   // cover — pemutar tetap ada walau kutipan kosong.
   lockedSections: ["salam", "ayat"],
-  editorFields: ["childPhoto", "decorLanguage"],
+  editorFields: ["childPhoto", "decorLanguage", "photoDecor"],
   thumbnail: {
     background: "linear-gradient(160deg, #f5f2f0 0%, #ead9d4 100%)",
     foreground: "#9e0e00",

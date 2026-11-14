@@ -133,9 +133,21 @@ const birthdayInput: BirthdayInput = {
     name: "Kirana Putri Maharani",
     nickname: "Kirana",
     age: 17,
-    photo: { url: `${P}/birthday-celebrant.webp`, alt: "Kirana", focusY: 35 },
+    photo: {
+      url: `${P}/birthday-celebrant.webp`,
+      alt: "Kirana",
+      focusY: 35,
+      width: 801,
+      height: 1200,
+    },
     // foto tanpa latar (efek stiker) untuk tema yang mendukung, mis. Pita Krayon
-    childPhoto: { url: `${P}/birthday-child-cutout.webp`, alt: "Kirana" },
+    childPhoto: {
+      url: `${P}/birthday-child-cutout.webp`,
+      alt: "Kirana",
+      width: 735,
+      height: 1100,
+      alpha: true,
+    },
     father: { name: "Dimas Prakoso" },
     mother: { name: "Lestari Ayuningtyas" },
   },

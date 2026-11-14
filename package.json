@@ -22,8 +22,8 @@
     "theme:new": "tsx scripts/theme-new.ts",
     "perf": "tsx scripts/perf.ts",
     "perf:landing": "tsx scripts/perf-landing.ts",
-    "predev": "tsx scripts/themes-sync.ts",
-    "prebuild": "tsx scripts/themes-sync.ts && tsx scripts/check-reserved-slugs.ts && tsx scripts/check-dev-assets.ts",
+    "predev": "tsx scripts/themes-sync.ts && tsx scripts/ml-assets.ts && tsx scripts/licenses-build.ts",
+    "prebuild": "tsx scripts/themes-sync.ts && tsx scripts/check-reserved-slugs.ts && tsx scripts/check-dev-assets.ts && tsx scripts/ml-assets.ts && tsx scripts/licenses-build.ts",
     "check:slugs": "tsx scripts/check-reserved-slugs.ts",
     "check:assets": "tsx scripts/check-dev-assets.ts",
     "landing:record": "tsx scripts/landing-record.ts",
@@ -50,7 +50,10 @@
     "e2e:safety": "tsx --env-file=.env --conditions=react-server scripts/e2e-safety.ts",
     "admin:grant-theme": "tsx --env-file=.env --conditions=react-server scripts/admin-grant-theme.ts",
     "admin:suspend": "tsx --env-file=.env scripts/admin-suspend.ts suspend",
-    "admin:unsuspend": "tsx --env-file=.env scripts/admin-suspend.ts unsuspend"
+    "admin:unsuspend": "tsx --env-file=.env scripts/admin-suspend.ts unsuspend",
+    "ml:assets": "tsx scripts/ml-assets.ts",
+    "e2e:pita-topi": "tsx --env-file=.env scripts/e2e-pita-topi.ts",
+    "licenses:build": "tsx scripts/licenses-build.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
@@ -60,6 +63,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.9.2",
+    "@mediapipe/tasks-vision": "1.2.3",
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -72,6 +76,7 @@
     "next": "15.5.29",
     "next-auth": "5.0.0-beta.32",
     "next-themes": "^0.4.6",
+    "onnxruntime-web": "1.31.1",
     "radix-ui": "^1.8.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",

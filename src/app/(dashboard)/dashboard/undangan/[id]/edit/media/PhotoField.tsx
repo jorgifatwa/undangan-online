@@ -45,7 +45,16 @@ export function PhotoField({
     try {
       const res = await uploadPhoto(media.invitationId, slot, blob, setProgress);
       const old = value?.url;
-      setValue(name, { url: res.url, width: res.width, height: res.height }, { shouldDirty: true });
+      setValue(
+        name,
+        {
+          url: res.url,
+          width: res.width,
+          height: res.height,
+          ...(res.alpha ? { alpha: true } : {}),
+        },
+        { shouldDirty: true },
+      );
       if (old && old !== res.url) media.releaseUrl(old);
       media.saveSoon();
     } catch (e) {

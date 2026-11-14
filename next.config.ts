@@ -16,6 +16,16 @@ const nextConfig: NextConfig = {
       { source: "/u/:slug/og", destination: "/:slug/og", statusCode: 301 },
     ];
   },
+  // Model & runtime ML editor (public/ml, ±9 MB terkompresi): jangan diunduh ulang.
+  // Nama file tetap — bila model diganti, ganti juga namanya (dan checksum ml:assets).
+  async headers() {
+    return [
+      {
+        source: "/ml/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }],
+      },
+    ];
+  },
   // Badge dev Next.js menutupi tombol di pojok undangan saat preview/screenshot.
   devIndicators: false,
   images: {

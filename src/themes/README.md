@@ -350,6 +350,21 @@ http://localhost:3300 {tema} --runs=3`. Kondisinya CPU 4× lebih lambat, Fast
 - [ ] Teks dari data panjang (nama 40+ huruf, alamat 3 baris) tidak meluap.
 - [ ] Screenshot 390 px semua varian disimpan di `.reference/report/{tahap}/`.
 
+## 14b. Foto & topi pesta (Pita Krayon — `editorFields: "photoDecor"`)
+
+- **Foto biasa** (tanpa langkah tambahan) → bingkai stiker potongan organik,
+  dibingkai otomatis ke wajah. **PNG tanpa latar** (`photo.alpha`, dicatat
+  pipeline media) dan hasil **Hapus latar otomatis** → garis mengikuti siluet.
+- **Topi pesta**: posisi manual per section (persen relatif foto) → posisi dari
+  deteksi wajah (`photoDecor.face`) → pojok kanan atas bingkai. Foto diganti →
+  posisi manual direset. Halaman tamu hanya MEMBACA data ini.
+- **ML hanya di editor**, di Web Worker (`src/lib/ml/`): BlazeFace (deteksi
+  wajah, otomatis setelah foto berganti), MODNet + onnxruntime-web (hapus latar,
+  ±9 MB sekali, Cache Storage), Selfie Segmenter (cadangan mode ringan).
+  Semua di-host sendiri di `public/ml/` (`pnpm ml:assets` memverifikasi checksum
+  model & menyalin runtime). Lisensi: `/lisensi`, `pnpm licenses:build`.
+- `pnpm perf` gagal bila halaman tamu memuat file `/ml/` atau membuat Web Worker.
+
 ## 15. Ringkasan perintah
 
 | Perintah                        | Fungsi                                                           |

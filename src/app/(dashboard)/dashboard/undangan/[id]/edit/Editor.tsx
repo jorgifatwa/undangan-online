@@ -25,6 +25,7 @@ import { deleteMediaAction } from "./media-actions";
 import { GalleryField } from "./media/GalleryField";
 import { MediaContext, type MediaCtx } from "./media/MediaContext";
 import { MusicPicker, type LibraryTrack, type UploadedAudio } from "./media/MusicPicker";
+import { PhotoDecorPanel } from "./media/PhotoDecorPanel";
 import { PhotoField } from "./media/PhotoField";
 import { EventsForm } from "./forms/EventsForm";
 import { GiftForm, LoveStoryForm, WishlistForm } from "./forms/ListForms";
@@ -371,10 +372,22 @@ export function Editor(p: EditorProps) {
     const onMessage = (e: MessageEvent) => {
       const msg = parseMessage(fromPreviewSchema, e, iframeRef.current?.contentWindow ?? null);
       if (msg?.type === "ready") pushPreview();
+      // topi pesta digeser di pratinjau → simpan sebagai posisi manual (persen relatif foto)
+      if (msg?.type === "hat") {
+        const key = msg.section === "cover" ? "photoDecor.coverHat" : "photoDecor.heroHat";
+        const cur = (form.getValues(key as never) ?? {}) as { show?: boolean };
+        form.setValue(
+          key as never,
+          { show: cur.show ?? true, ...msg.pos, src: "manual" } as never,
+          {
+            shouldDirty: true,
+          },
+        );
+      }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [pushPreview]);
+  }, [pushPreview, form]);
 
   // Peringatan meninggalkan halaman bila ada perubahan belum tersimpan.
   useEffect(() => {
@@ -555,6 +568,7 @@ export function Editor(p: EditorProps) {
               hint="Unggah foto tanpa latar (PNG) untuk efek stiker."
             />
           )}
+          {manifest.editorFields?.includes("photoDecor") && <PhotoDecorPanel invitationId={p.id} />}
           <PhotoField name="closingPhoto" slot="closing" label="Foto penutup" aspect={1} />
         </div>
       ),

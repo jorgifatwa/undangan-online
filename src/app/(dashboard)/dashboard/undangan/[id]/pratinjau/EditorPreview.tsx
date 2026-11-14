@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { EditorBridgeProvider, type EditorBridge } from "@/lib/editor/bridge";
 import { parseMessage, toPreviewSchema, type FromPreview } from "@/lib/editor/protocol";
 import type { Entitlements } from "@/lib/pricing";
 import { parseInvitationData, type AnyInvitationData } from "@/schemas";
@@ -67,16 +68,32 @@ export function EditorPreview({
   const Theme = THEME_COMPONENTS[themeId];
   if (!Theme) return null;
   return (
-    <Theme
-      // ganti tema / tampilkan cover → pasang ulang; pembaruan data tidak memasang ulang
-      key={`${themeId}-${coverKey}`}
-      invitation={invitation}
-      variantId={variantId ?? undefined}
-      features={features}
-      guestName={null}
-      startOpened={!showCover}
-      wishes={[]}
-      preview
-    />
+    <EditorBridgeProvider value={bridge}>
+      <Theme
+        // ganti tema / tampilkan cover → pasang ulang; pembaruan data tidak memasang ulang
+        key={`${themeId}-${coverKey}`}
+        invitation={invitation}
+        variantId={variantId ?? undefined}
+        features={features}
+        guestName={null}
+        startOpened={!showCover}
+        wishes={[]}
+        preview
+      />
+    </EditorBridgeProvider>
   );
 }
+
+/** Interaksi khusus editor di dalam tema (mis. menggeser topi pesta) → editor. */
+const bridge: EditorBridge = {
+  moveHat: (section, pos) => {
+    if (window.parent === window) return;
+    const msg: FromPreview = {
+      ns: "undangku",
+      type: "hat",
+      section,
+      pos: { x: pos.x ?? 0, y: pos.y ?? 0, w: pos.w ?? 20, r: pos.r ?? 0, for: pos.for ?? "" },
+    };
+    window.parent.postMessage(msg, window.location.origin);
+  },
+};

@@ -50,3 +50,7 @@ next-env.d.ts
 
 # file upload driver STORAGE_DRIVER=local (development)
 /.uploads/
+
+# runtime ML (disalin dari node_modules oleh pnpm ml:assets)
+/public/ml/runtime/
+/public/licenses/
