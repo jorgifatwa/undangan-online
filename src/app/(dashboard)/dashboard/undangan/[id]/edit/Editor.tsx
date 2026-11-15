@@ -623,7 +623,8 @@ export function Editor(p: EditorProps) {
               <div className="space-y-3">
                 <p className="text-muted-foreground text-xs">
                   Tiga foto di strip photobooth miring di samping hitung mundur. Terpisah dari
-                  Galeri foto — kosongkan bila tidak ingin ada strip.
+                  Galeri foto. Kosongkan bila tidak ingin ada strip (di pratinjau tampil penanda
+                  &ldquo;Belum ada foto&rdquo;, tamu tidak melihatnya).
                 </p>
                 <div className="grid grid-cols-3 gap-3">
                   {[0, 1, 2].map((i) => (

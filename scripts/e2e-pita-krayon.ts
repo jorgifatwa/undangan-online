@@ -97,6 +97,12 @@ async function main() {
   const p = await browser.newPage();
   await p.setViewport(MOBILE);
 
+  console.log("Halaman tamu tanpa penanda foto kosong (undangan ini tanpa foto)");
+  check(
+    !(await (await fetch(`${base}/${slug}`)).text()).includes("foto-kosong.svg"),
+    'penanda "Belum ada foto" hanya di pratinjau pemilik, tidak di halaman tamu',
+  );
+
   console.log("Kosong & nama dari ?to=");
   await openCard(p, `${base}/${slug}?to=Bu%20Rina%20Wulandari`);
   let t = await text(p);

@@ -9,6 +9,7 @@ import { getEntitlements } from "@/lib/pricing";
 import { parseInvitationData } from "@/schemas";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
+import { withPhotoPlaceholders } from "@/lib/editor/placeholders";
 
 import { EditorPreview } from "./EditorPreview";
 
@@ -64,7 +65,8 @@ export default async function PratinjauPage({
   return (
     <>
       <Theme
-        invitation={parsed.value}
+        // slot foto kosong → penanda "Belum ada foto" (hanya pratinjau pemilik)
+        invitation={withPhotoPlaceholders(parsed.value)}
         variantId={invitation.colorVariant ?? undefined}
         features={features}
         guestName={sanitizeGuestName(to)}

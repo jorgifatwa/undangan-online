@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { EditorBridgeProvider, type EditorBridge } from "@/lib/editor/bridge";
+import { withPhotoPlaceholders } from "@/lib/editor/placeholders";
 import { parseMessage, toPreviewSchema, type FromPreview } from "@/lib/editor/protocol";
 import type { Entitlements } from "@/lib/pricing";
 import { parseInvitationData, type AnyInvitationData } from "@/schemas";
@@ -72,7 +73,8 @@ export function EditorPreview({
       <Theme
         // ganti tema / tampilkan cover → pasang ulang; pembaruan data tidak memasang ulang
         key={`${themeId}-${coverKey}`}
-        invitation={invitation}
+        // slot foto kosong → penanda "Belum ada foto" (hanya pratinjau pemilik)
+        invitation={withPhotoPlaceholders(invitation)}
         variantId={variantId ?? undefined}
         features={features}
         guestName={null}

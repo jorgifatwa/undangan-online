@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <!-- Penanda slot foto kosong — HANYA di pratinjau editor pemilik, tidak pernah di halaman tamu -->
+  <defs>
+    <pattern id="p" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="28" height="28" fill="#e9e4de"/>
+      <rect width="14" height="28" fill="#e2dcd5"/>
+    </pattern>
+  </defs>
+  <rect width="600" height="800" fill="url(#p)"/>
+  <g transform="translate(300 372)" fill="none" stroke="#9a8f86" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="-70" y="-46" width="140" height="100" rx="18"/>
+    <path d="M-30 -46 l12 -22 h36 l12 22"/>
+    <circle cx="0" cy="4" r="28"/>
+  </g>
+  <text x="300" y="472" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="34" font-weight="600" fill="#8a7f76">Belum ada foto</text>
+</svg>

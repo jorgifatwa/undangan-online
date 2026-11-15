@@ -182,6 +182,10 @@ async function main() {
     !(await g.content()).includes("1234567890"),
     "nomor rekening tidak ada di HTML (termasuk data RSC)",
   );
+  check(
+    !(await g.content()).includes("foto-kosong.svg"),
+    "link pratinjau tanpa penanda foto kosong",
+  );
   await g.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)");
   await sleep(1200);
   check(await watermarkOk(g), "watermark tetap tampil di akhir halaman");
