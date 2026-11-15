@@ -180,6 +180,8 @@ const birthdayInput: BirthdayInput = {
     accounts: [{ bank: "BCA", number: "5550001112", holder: "Lestari Ayuningtyas" }],
     confirmContacts: [],
   },
+  // strip foto hitung mundur — hanya tema yang mendukung (mis. Pita Krayon)
+  stripPhotos: [1, 3, 4].map((n) => ({ url: `${P}/birthday-g${n}.webp`, alt: `Strip ${n}` })),
   // section "cerita" — hanya tema yang mendukung (tema lain tidak menampilkannya)
   story: {
     text: "Tujuh belas rasanya masih nggak nyata. Tumbuh besar itu kayak naik roller coaster — seru, deg-degan, kadang bikin capek juga. Ada saat-saat aku bingung dan nggak yakin sama apa pun, tapi selalu ada orang-orang yang menemani.\n\nSalah satu hal paling berharga di masa remajaku adalah punya teman-teman yang bikin hidup terasa lebih ringan. Makasih sudah jadi bagian dari kenangan terbaikku, sudah mendengarkan cerita random-ku, dan tetap ada di hari-hari burukku.\n\nMakasih sudah tumbuh bareng aku. Makasih sudah jadi bagian dari ceritaku. 🤍",

@@ -129,17 +129,12 @@ export function useSectionShown(id: SectionId) {
 }
 
 /**
- * Strip foto di section hitung mundur (seperti desain "SEE YOU ON") memakai
- * 3 foto galeri pertama bila galeri & hitung mundur sama-sama tampil; section
- * galeri lalu melanjutkan dari foto ke-4 (tanpa foto ganda).
+ * Strip foto di section hitung mundur (seperti desain "SEE YOU ON") — isian
+ * tersendiri `stripPhotos` (maks. 3), TERPISAH dari galeri Photo Booth.
  */
-export const COUNTDOWN_STRIP = 3;
 export function useCountdownStrip() {
   const { inv } = useInvitation();
-  const countdown = useSectionShown("hitungMundur");
-  const gallery = useSectionShown("galeri");
-  const on = countdown && gallery;
-  return on ? inv.data.gallery.slice(0, COUNTDOWN_STRIP) : [];
+  return inv.eventType === "BIRTHDAY" ? inv.data.stripPhotos.slice(0, 3) : [];
 }
 
 /* ------------------------------ Animasi masuk ------------------------------ */

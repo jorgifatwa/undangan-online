@@ -66,10 +66,11 @@ export interface ThemeManifest {
    * Isian editor khusus yang hanya tampil untuk tema ini:
    *  - "childPhoto": foto masa kecil (celebrant.childPhoto, efek stiker PNG)
    *  - "decorLanguage": pilihan bahasa teks dekoratif (decorLang en/id)
+   *  - "countdownStrip": strip 3 foto di hitung mundur (stripPhotos), terpisah dari galeri
    *  - "photoDecor": hitam-putih, ilustrasi kue, topi pesta (posisi otomatis
    *    dari deteksi wajah di editor + atur manual), hapus latar otomatis
    */
-  editorFields?: readonly ("childPhoto" | "decorLanguage" | "photoDecor")[];
+  editorFields?: readonly ("childPhoto" | "decorLanguage" | "photoDecor" | "countdownStrip")[];
   /** Thumbnail galeri tema: path gambar, atau gradien CSS sementara. */
   thumbnail: { image?: string; background: string; foreground: string };
   /** Musik bawaan tema bila user belum memilih lagu. */

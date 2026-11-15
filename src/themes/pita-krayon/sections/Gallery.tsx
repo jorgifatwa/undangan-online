@@ -7,7 +7,7 @@ import type { Photo } from "@/schemas/common";
 
 import { Lightbox } from "../../_shared/sections";
 import { useInvitation } from "../../_shared/runtime/context";
-import { Orn, Section, txt, Typewriter, u, useCountdownStrip, useDecor } from "../canvas";
+import { Orn, Section, txt, Typewriter, u, useDecor } from "../canvas";
 import { Ribbon, Sparkle } from "../ornaments";
 
 /**
@@ -35,14 +35,11 @@ export function PhotoStrips() {
   const { inv } = useInvitation();
   const { t } = useDecor();
   const [open, setOpen] = useState<number | null>(null);
-  // 3 foto pertama sudah tampil di strip hitung mundur (bila section itu tampil)
-  const skip = useCountdownStrip().length;
   const photos = inv.data.gallery;
-  const rest = photos.slice(skip);
-  if (!rest.length) return null;
-  const strips = split(rest);
+  if (!photos.length) return null;
+  const strips = split(photos);
   const w = STRIP_W[strips.length as 1 | 2 | 3];
-  let index = skip; // indeks lightbox = posisi di galeri penuh
+  let index = 0;
 
   return (
     <Section id="galeri" style={{ padding: `${u(26)} ${u(14)} ${u(64)}` }}>

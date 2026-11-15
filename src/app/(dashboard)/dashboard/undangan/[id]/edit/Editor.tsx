@@ -613,10 +613,40 @@ export function Editor(p: EditorProps) {
           },
         ]
       : []),
+    ...(manifest.editorFields?.includes("countdownStrip")
+      ? [
+          {
+            key: "stripFoto",
+            section: "hitungMundur" as const,
+            title: "Strip foto “See you on” (3 foto)",
+            body: (
+              <div className="space-y-3">
+                <p className="text-muted-foreground text-xs">
+                  Tiga foto di strip photobooth miring di samping hitung mundur. Terpisah dari
+                  Galeri foto — kosongkan bila tidak ingin ada strip.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {[0, 1, 2].map((i) => (
+                    <PhotoField
+                      key={i}
+                      name={`stripPhotos.${i}`}
+                      slot="strip"
+                      label={`Foto ${i + 1}`}
+                      aspect={3 / 4}
+                    />
+                  ))}
+                </div>
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       key: "galeri",
       section: "galeri",
-      title: "Galeri foto",
+      title: manifest.editorFields?.includes("countdownStrip")
+        ? "Galeri foto (Photo Booth)"
+        : "Galeri foto",
       body: <GalleryField />,
     },
     {

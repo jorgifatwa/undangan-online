@@ -45,6 +45,11 @@ export const birthdayDataSchema = z.object({
   partyTheme: optionalText(80),
   wishlist: z.array(wishlistItemSchema).max(20).default([]),
   closingPhoto: photoSchema.optional(),
+  /**
+   * Strip foto khusus tema (mis. Pita Krayon di bagian hitung mundur "See you
+   * on"), TERPISAH dari galeri — maks. 3. Tema lain tidak membacanya.
+   */
+  stripPhotos: z.array(photoSchema).max(3).default([]),
   /** Cerita ulang tahun (section "cerita"); teks polos, tidak pernah dijadikan link. */
   story: z
     .object({
