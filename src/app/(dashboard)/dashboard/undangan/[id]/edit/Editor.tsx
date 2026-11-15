@@ -516,6 +516,42 @@ export function Editor(p: EditorProps) {
   };
 
   const wedding = p.eventType === "WEDDING";
+  // Foto pernikahan umum: tampilkan isian yang dipakai tema, plus isian yang
+  // terlanjur berisi foto (agar bisa dihapus) dengan keterangan "tidak tampil".
+  const photosVal = useWatch({ control: form.control, name: "photos" }) as
+    | {
+        cover?: { url?: string };
+        strip?: ({ url?: string } | undefined)[];
+        closing?: { url?: string };
+      }
+    | undefined;
+  const usedPhotos: readonly ("cover" | "strip" | "closing")[] = manifest.weddingPhotos ?? [
+    "cover",
+    "strip",
+    "closing",
+  ];
+  const photoShown = {
+    cover: usedPhotos.includes("cover") || !!photosVal?.cover?.url,
+    strip: usedPhotos.includes("strip") || !!photosVal?.strip?.some((x) => x?.url),
+    closing: usedPhotos.includes("closing") || !!photosVal?.closing?.url,
+  };
+  const photoUnused = (k: "cover" | "strip" | "closing") =>
+    !usedPhotos.includes(k) && (
+      <p className="text-muted-foreground rounded-md bg-neutral-100 px-2 py-1 text-xs">
+        Tidak tampil di tema ini. Foto tetap tersimpan bila pindah tema — atau hapus bila tidak
+        dipakai.
+      </p>
+    );
+  const photoTitle = (() => {
+    const parts = [
+      photoShown.cover && "Foto sampul",
+      photoShown.strip && "photo strip",
+      photoShown.closing && "penutup",
+    ].filter(Boolean) as string[];
+    const t =
+      parts.length > 1 ? `${parts.slice(0, -1).join(", ")} & ${parts.at(-1)}` : (parts[0] ?? "");
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  })();
   /**
    * Tujuan gulir pratinjau tiap grup: tujuan khusus tema (manifest.editorFocus)
    * → focus/section grup → bawaan per grup; yang tidak didukung tema dilewati.
@@ -578,6 +614,10 @@ export function Editor(p: EditorProps) {
     section?: SectionId;
     /** Tujuan gulir pratinjau bila berbeda dari section. */
     focus?: SectionId;
+    /** Grup tidak relevan untuk tema ini → tidak ditampilkan. */
+    hidden?: boolean;
+    /** Label tambahan di judul grup. */
+    extraChips?: { text: string; tone: "amber" | "neutral" }[];
     body: React.ReactNode;
   }[] = [
     {
@@ -631,35 +671,55 @@ export function Editor(p: EditorProps) {
     {
       key: "foto",
       focus: "profil",
-      title: wedding ? "Foto sampul, photo strip & penutup" : "Foto",
+      hidden: wedding && !photoShown.cover && !photoShown.strip && !photoShown.closing,
+      extraChips:
+        wedding && usedPhotos.length === 0
+          ? [{ text: "tidak tampil di tema ini", tone: "neutral" as const }]
+          : [],
+      title: wedding ? photoTitle : "Foto",
       body: wedding ? (
         <div className="space-y-5">
-          <PhotoField
-            name="photos.cover"
-            slot="cover"
-            label="Foto sampul (cover)"
-            aspect={4 / 5}
-            hint="Tampil di cover."
-          />
-          <div className="grid grid-cols-3 gap-3">
-            {[0, 1, 2].map((i) => (
+          {photoShown.cover && (
+            <div className="space-y-1.5">
               <PhotoField
-                key={i}
-                name={`photos.strip.${i}`}
-                slot="strip"
-                label={`Photo strip ${i + 1}`}
-                aspect={4 / 3}
-                stacked
+                name="photos.cover"
+                slot="cover"
+                label="Foto sampul (cover)"
+                aspect={4 / 5}
+                hint="Tampil di cover."
               />
-            ))}
-          </div>
-          <PhotoField
-            name="photos.closing"
-            slot="closing"
-            label="Foto penutup"
-            aspect={1}
-            hint="Polaroid di bagian penutup."
-          />
+              {photoUnused("cover")}
+            </div>
+          )}
+          {photoShown.strip && (
+            <div className="space-y-1.5">
+              <div className="grid grid-cols-3 gap-3">
+                {[0, 1, 2].map((i) => (
+                  <PhotoField
+                    key={i}
+                    name={`photos.strip.${i}`}
+                    slot="strip"
+                    label={`Photo strip ${i + 1}`}
+                    aspect={4 / 3}
+                    stacked
+                  />
+                ))}
+              </div>
+              {photoUnused("strip")}
+            </div>
+          )}
+          {photoShown.closing && (
+            <div className="space-y-1.5">
+              <PhotoField
+                name="photos.closing"
+                slot="closing"
+                label="Foto penutup"
+                aspect={1}
+                hint="Polaroid di bagian penutup."
+              />
+              {photoUnused("closing")}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-5">
@@ -1028,23 +1088,26 @@ export function Editor(p: EditorProps) {
               )}
             >
               <div className="mx-auto max-w-xl space-y-3 pb-24">
-                {groups.map((g) => (
-                  <Group
-                    key={g.key}
-                    title={g.title}
-                    open={openGroup === g.key}
-                    onToggle={() => toggleGroup(g.key, focusOf(g))}
-                    chips={[
-                      ...chips(g.section),
-                      ...(visibilityOf(g)?.visible === false
-                        ? [{ text: "disembunyikan", tone: "neutral" as const }]
-                        : []),
-                    ]}
-                    visibility={visibilityOf(g)}
-                  >
-                    {g.body}
-                  </Group>
-                ))}
+                {groups
+                  .filter((g) => !g.hidden)
+                  .map((g) => (
+                    <Group
+                      key={g.key}
+                      title={g.title}
+                      open={openGroup === g.key}
+                      onToggle={() => toggleGroup(g.key, focusOf(g))}
+                      chips={[
+                        ...(g.extraChips ?? []),
+                        ...chips(g.section),
+                        ...(visibilityOf(g)?.visible === false
+                          ? [{ text: "disembunyikan", tone: "neutral" as const }]
+                          : []),
+                      ]}
+                      visibility={visibilityOf(g)}
+                    >
+                      {g.body}
+                    </Group>
+                  ))}
               </div>
             </form>
             <section

@@ -258,6 +258,25 @@ async function main() {
       );
     }
 
+    // 2c. grup foto pernikahan umum hanya berisi foto yang dipakai tema
+    if (!bday) {
+      const titles = (await p.$$eval("button[aria-expanded]", (bs) =>
+        bs.map((b) => b.textContent!.trim()),
+      )) as string[];
+      const fotoGroup = titles.find((t) => /^(Foto sampul|Photo strip|Penutup foto)/.test(t));
+      if (theme === "tirai-beludru") {
+        check(
+          !fotoGroup,
+          "Tirai: grup foto sampul/strip/penutup disembunyikan (tidak dipakai tema)",
+        );
+      } else {
+        check(
+          fotoGroup?.startsWith("Foto sampul, photo strip & penutup") === true,
+          "Renda: grup “Foto sampul, photo strip & penutup” lengkap",
+        );
+      }
+    }
+
     // 3. penanda teks cerita / love story (pratinjau pemilik saja)
     const textKey = bday ? "Tulis cerita ulang tahunmu" : "Isi kisah kalian";
     const sec = bday ? "cerita" : "loveStory";
@@ -274,6 +293,43 @@ async function main() {
       "halaman tamu tanpa penanda",
     );
     await p.close();
+
+    // 2d. Tirai + photo strip yang terlanjur diunggah: grup tetap tampil (bisa
+    // dihapus) dengan keterangan "tidak tampil di tema ini". Halaman editor baru
+    // agar tidak bentrok dengan simpan otomatis halaman sebelumnya.
+    if (theme === "tirai-beludru") {
+      await sleep(3000); // simpan otomatis terakhir selesai
+      const d = (await db.invitation.findUniqueOrThrow({ where: { id: inv.id } })).data as Record<
+        string,
+        Record<string, unknown>
+      >;
+      await db.invitation.update({
+        where: { id: inv.id },
+        data: {
+          data: {
+            ...d,
+            photos: { ...d.photos, strip: [{ url: "/placeholders/foto-kosong.svg" }] },
+          } as Prisma.InputJsonValue,
+        },
+      });
+      const q = await browser.newPage();
+      await q.setViewport({ width: 1280, height: 900 });
+      await q.goto(`${base}/dashboard/undangan/${inv.id}/edit`, {
+        waitUntil: "networkidle0",
+        timeout: 120000,
+      });
+      await sleep(2000);
+      const title = (await q.$$eval("button[aria-expanded]", (bs) =>
+        bs.map((b) => b.textContent!.trim()).find((t) => t.startsWith("Photo strip")),
+      )) as string | undefined;
+      await openGroup(q, "Photo strip");
+      const txt = (await q.evaluate("document.body.innerText")) as string;
+      check(
+        !!title?.includes("tidak tampil di tema ini") && txt.includes("Tidak tampil di tema ini."),
+        "Tirai + photo strip lama: grup tampil dengan keterangan “tidak tampil di tema ini”",
+      );
+      await q.close();
+    }
   }
 
   await browser.close();
