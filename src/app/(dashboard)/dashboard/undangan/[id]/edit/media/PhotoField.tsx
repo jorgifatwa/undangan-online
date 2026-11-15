@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 import { useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 
@@ -22,6 +24,7 @@ export function PhotoField({
   aspect,
   hint,
   crop = true,
+  stacked = false,
 }: {
   name: string;
   slot: string;
@@ -30,6 +33,8 @@ export function PhotoField({
   aspect: number;
   hint?: string;
   crop?: boolean;
+  /** Pratinjau di atas & tombol di bawah selebar kolom — untuk grid sempit (mis. 3 kolom). */
+  stacked?: boolean;
 }) {
   const media = useMedia();
   const { control, setValue } = useFormContext();
@@ -89,9 +94,12 @@ export function PhotoField({
   return (
     <div className="space-y-1.5">
       <p className="text-sm font-medium">{label}</p>
-      <div className="flex items-start gap-3">
+      <div className={cn("flex gap-3", stacked ? "flex-col gap-2" : "items-start")}>
         <div
-          className="relative w-24 shrink-0 overflow-hidden rounded-lg border bg-neutral-100"
+          className={cn(
+            "relative shrink-0 overflow-hidden rounded-lg border bg-neutral-100",
+            stacked ? "w-full" : "w-24",
+          )}
           style={{ aspectRatio: String(aspect) }}
         >
           {value?.url ? (
@@ -111,7 +119,12 @@ export function PhotoField({
             </div>
           )}
         </div>
-        <div className="flex flex-col items-start gap-1.5 text-sm">
+        <div
+          className={cn(
+            "flex min-w-0 flex-col gap-1.5 text-sm",
+            stacked ? "items-stretch" : "items-start",
+          )}
+        >
           <input
             ref={input}
             type="file"
@@ -127,7 +140,10 @@ export function PhotoField({
             type="button"
             disabled={busy}
             onClick={() => input.current?.click()}
-            className="hover:bg-muted rounded-md border px-3 py-1.5 disabled:opacity-50"
+            className={cn(
+              "hover:bg-muted rounded-md border px-3 py-1.5 disabled:opacity-50",
+              stacked && "w-full px-2 text-center",
+            )}
           >
             {busy
               ? `Mengunggah… ${Math.round(progress! * 100)}%`
@@ -136,7 +152,9 @@ export function PhotoField({
                 : "Unggah foto"}
           </button>
           {value?.url && !busy && (
-            <div className="flex gap-3">
+            <div
+              className={cn("flex gap-3", stacked && "flex-wrap justify-center gap-x-3 gap-y-1")}
+            >
               {crop && (
                 <button
                   type="button"

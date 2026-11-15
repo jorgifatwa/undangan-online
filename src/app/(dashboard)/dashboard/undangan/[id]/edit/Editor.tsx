@@ -641,7 +641,7 @@ export function Editor(p: EditorProps) {
             aspect={4 / 5}
             hint="Tampil di cover."
           />
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-3">
             {[0, 1, 2].map((i) => (
               <PhotoField
                 key={i}
@@ -649,6 +649,7 @@ export function Editor(p: EditorProps) {
                 slot="strip"
                 label={`Photo strip ${i + 1}`}
                 aspect={4 / 3}
+                stacked
               />
             ))}
           </div>
@@ -781,6 +782,7 @@ export function Editor(p: EditorProps) {
                       slot="strip"
                       label={`Foto ${i + 1}`}
                       aspect={3 / 4}
+                      stacked
                     />
                   ))}
                 </div>
