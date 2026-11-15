@@ -73,12 +73,33 @@ export function Story() {
 }
 
 /** Strip foto photobooth miring (3 foto pertama galeri) seperti desain. */
+/**
+ * Strip foto (kanvas 430): seperti desain — miring ±8°, dari kanan atas judul
+ * menurun ke kanan. Di desain strip terpotong karena halaman berakhir; di
+ * undangan masih ada section sesudahnya, jadi section dibuat setinggi strip
+ * UTUH (3 foto) dan sudut kanan bawahnya tetap di dalam layar.
+ *  tinggi strip = 3 × (w − 16) × 4/3 + 4 × 8; kanan bawah = l + w/2 + w/2·cos + tinggi·sin
+ */
+const STRIP = (() => {
+  const w = 120;
+  const rot = -8;
+  const t = 92;
+  const h = 3 * (w - 16) * (4 / 3) + 4 * 8;
+  const rad = (Math.abs(rot) * Math.PI) / 180;
+  const l = 426 - (w / 2 + (w / 2) * Math.cos(rad) + h * Math.sin(rad));
+  const bottom = t + h * Math.cos(rad) + (w / 2) * Math.sin(rad);
+  return { w, rot, t, l: Math.round(l), sectionH: Math.ceil(bottom + 28) };
+})();
+
 function CountdownStrip({ photos }: { photos: Photo[] }) {
   return (
-    <div data-a="strip" style={{ ...box(262, 92, 128), zIndex: 2, ["--d" as string]: "0.5s" }}>
+    <div
+      data-a="strip"
+      style={{ ...box(STRIP.l, STRIP.t, STRIP.w), zIndex: 2, ["--d" as string]: "0.5s" }}
+    >
       <div
         style={{
-          transform: "rotate(-11deg)",
+          transform: `rotate(${STRIP.rot}deg)`,
           transformOrigin: "50% 0",
           background: "var(--inv-deep)",
           padding: u(8),
@@ -130,7 +151,7 @@ export function Countdown() {
   const short = `${Number(d)}.${Number(m)}.${y.slice(2)}`;
   const vals = [cd.days, cd.hours, cd.minutes, cd.seconds];
   return (
-    <Section id="hitungMundur" minHeight={strip.length ? 470 : 380}>
+    <Section id="hitungMundur" minHeight={strip.length ? STRIP.sectionH : 380}>
       <div
         style={{
           position: "relative",
@@ -169,7 +190,7 @@ export function Countdown() {
                   <p
                     style={{
                       fontFamily: F.count,
-                      fontSize: u(33),
+                      fontSize: u(29),
                       lineHeight: 1,
                       color: i === 3 ? "var(--inv-ink)" : "var(--inv-red)",
                       fontVariantNumeric: "tabular-nums",
@@ -196,7 +217,7 @@ export function Countdown() {
                     aria-hidden
                     style={{
                       fontFamily: F.count,
-                      fontSize: u(31),
+                      fontSize: u(27),
                       lineHeight: 1,
                       color: "var(--inv-red)",
                       padding: `0 ${u(4)}`,
@@ -214,7 +235,7 @@ export function Countdown() {
       <Orn
         slot="cake"
         l={-8}
-        t={strip.length ? 330 : 250}
+        t={strip.length ? STRIP.sectionH - 232 : 250}
         w={142}
         ratio={1.53}
         a="up"
