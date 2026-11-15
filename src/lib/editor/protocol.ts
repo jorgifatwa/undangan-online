@@ -19,7 +19,17 @@ export const toPreviewSchema = z.discriminatedUnion("type", [
     variantId: z.string().max(60).nullable(),
     data: z.unknown(),
   }),
-  z.object({ ns, type: z.literal("focus"), section: z.enum(SECTION_IDS) }),
+  /**
+   * Gulir pratinjau ke section. `order` = urutan section tema: bila section
+   * belum dirender (datanya kosong), gulir ke section terdekat sebelumnya/
+   * sesudahnya. "cover" = puncak halaman.
+   */
+  z.object({
+    ns,
+    type: z.literal("focus"),
+    section: z.enum(SECTION_IDS),
+    order: z.array(z.enum(SECTION_IDS)).max(40).optional(),
+  }),
   z.object({ ns, type: z.literal("cover"), show: z.boolean() }),
   /** Demo landing page: ganti nama di data contoh (lihat preview/[themeId]/DemoPreview). */
   z.object({

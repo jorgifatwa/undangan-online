@@ -17,6 +17,8 @@ export const manifest = {
   eventTypes: ["WEDDING"],
   price: 99_000,
   variants: RENDA_VARIANTS,
+  // pemutar musik ada di kartu ayat
+  editorFocus: { musik: "ayat" },
   sections: [
     "cover",
     "ayat",

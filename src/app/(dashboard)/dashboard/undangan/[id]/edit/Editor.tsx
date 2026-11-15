@@ -10,6 +10,7 @@ import { shareInfo } from "@/lib/invitations/share";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
 import type { Entitlements } from "@/lib/pricing";
 import { SuspendedNotice } from "@/components/dashboard/SuspendedNotice";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
   birthdayDataSchema,
@@ -19,6 +20,7 @@ import {
   type SectionId,
 } from "@/schemas";
 import type { ThemeManifest } from "@/themes/types";
+import { defaultOrderFor } from "@/schemas/sections";
 
 import { saveInvitation } from "./actions";
 import { deleteMediaAction } from "./media-actions";
@@ -40,7 +42,7 @@ import {
   SalamForm,
 } from "./forms/SimpleForms";
 import { PreviewFrame } from "./PreviewFrame";
-import { SectionManager } from "./SectionManager";
+import { effectiveOrder, SectionManager } from "./SectionManager";
 import { GuestbookPanel } from "./GuestbookPanel";
 import { PreviewLinkDialog } from "./PreviewLinkDialog";
 import { PublishDialog } from "./PublishDialog";
@@ -146,16 +148,19 @@ function Group({
   open,
   onToggle,
   chips,
+  visibility,
   children,
 }: {
   title: string;
   open: boolean;
   onToggle: () => void;
   chips: { text: string; tone: "amber" | "neutral" }[];
+  /** Sakelar tampil/sembunyi section (sama dengan grup "Urutan & tampilan section"). */
+  visibility?: { visible: boolean; onChange: (v: boolean) => void };
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-card rounded-2xl border">
+    <section className="bg-card rounded-2xl border" data-group-open={open || undefined}>
       <button
         type="button"
         onClick={onToggle}
@@ -182,7 +187,30 @@ function Group({
           </span>
         </span>
       </button>
-      {open && <div className="border-t px-4 py-4">{children}</div>}
+      {open && (
+        <div className="border-t px-4 py-4">
+          {visibility && (
+            <label
+              className="bg-muted/60 mb-4 flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm"
+              data-testid="section-visibility"
+            >
+              <span>
+                Tampilkan bagian ini di undangan
+                {!visibility.visible && (
+                  <span className="text-muted-foreground block text-xs">
+                    Disembunyikan — tamu tidak melihat bagian ini.
+                  </span>
+                )}
+              </span>
+              <Switch
+                checked={visibility.visible}
+                onChange={(e) => visibility.onChange(e.target.checked)}
+              />
+            </label>
+          )}
+          {children}
+        </div>
+      )}
     </section>
   );
 }
@@ -446,10 +474,35 @@ export function Editor(p: EditorProps) {
     onChange();
   };
 
+  // Grup yang baru dibuka digulir halus ke atas panel isian (panel ini saja,
+  // bukan halaman) — sejalan dengan gulir pratinjau. Tidak saat halaman dimuat.
+  const formRef = useRef<HTMLFormElement>(null);
+  const groupScrollArmed = useRef(false);
+  useEffect(() => {
+    if (!groupScrollArmed.current || !openGroup) return;
+    const box = formRef.current;
+    const el = box?.querySelector<HTMLElement>("[data-group-open]");
+    if (!box || !el) return;
+    const top =
+      box.scrollTop + el.getBoundingClientRect().top - box.getBoundingClientRect().top - 12;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    box.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+  }, [openGroup]);
+
   const toggleGroup = (key: string, section?: SectionId) => {
+    groupScrollArmed.current = true;
     const next = openGroup === key ? null : key;
     setOpenGroup(next);
-    if (next && section) post({ ns: "undangku", type: "focus", section });
+    if (next && section)
+      post({
+        ns: "undangku",
+        type: "focus",
+        section,
+        // urutan tema; section yang tidak ada di urutan bawaan → urutan manifest tema
+        order: ((o) => (o.includes(section) ? o : [...manifest.sections]))(
+          defaultOrderFor(p.eventType, manifest.sectionOrder),
+        ),
+      });
   };
 
   const chips = (section?: SectionId) => {
@@ -462,6 +515,61 @@ export function Editor(p: EditorProps) {
   };
 
   const wedding = p.eventType === "WEDDING";
+  /**
+   * Tujuan gulir pratinjau tiap grup: tujuan khusus tema (manifest.editorFocus)
+   * → focus/section grup → bawaan per grup; yang tidak didukung tema dilewati.
+   */
+  const FOCUS_DEFAULT: Record<string, SectionId[]> = {
+    tema: ["cover"],
+    urutan: ["cover"],
+    salam: ["salam", "profil"],
+    musik: ["salam", "ayat", "profil"],
+    bukutamu: ["rsvp", "ucapan"],
+  };
+  /**
+   * Sakelar "Tampilkan bagian ini" per grup — data yang SAMA dengan grup
+   * "Urutan & tampilan section" (data.sections). Urutan lengkap dibentuk dulu
+   * agar menyembunyikan satu section tidak mengubah urutan section lain.
+   * Section terkunci & yang tidak didukung tema tidak diberi sakelar.
+   */
+  const visibilityOf = (g: { key: string; section?: SectionId }) => {
+    const ids = (
+      g.key === "bukutamu" ? (["rsvp", "ucapan"] as SectionId[]) : g.section ? [g.section] : []
+    )
+      .filter((id) => manifest.sections.includes(id))
+      .filter((id) => !(manifest.lockedSections ?? []).includes(id));
+    if (!ids.length) return undefined;
+    const full = effectiveOrder(
+      p.eventType,
+      sectionsCfg,
+      manifest.lockedSections ?? [],
+      manifest.sectionOrder,
+    );
+    const visible = ids.every((id) => full.find((r) => r.id === id)?.visible !== false);
+    return {
+      visible,
+      onChange: (v: boolean) =>
+        form.setValue(
+          "sections",
+          full.map((r) => (ids.includes(r.id) ? { ...r, visible: v } : r)),
+          { shouldDirty: true },
+        ),
+    };
+  };
+  const focusOf = (g: {
+    key: string;
+    focus?: SectionId;
+    section?: SectionId;
+  }): SectionId | undefined => {
+    const own = manifest.editorFocus?.[g.key];
+    if (own) return own;
+    const list = [
+      ...(g.focus ? [g.focus] : []),
+      ...(g.section ? [g.section] : []),
+      ...(FOCUS_DEFAULT[g.key] ?? []),
+    ];
+    return list.find((id) => id === "cover" || manifest.sections.includes(id)) ?? list[0];
+  };
   const groups: {
     key: string;
     title: string;
@@ -903,6 +1011,7 @@ export function Editor(p: EditorProps) {
 
           <div className="flex min-h-0 flex-1">
             <form
+              ref={formRef}
               onSubmit={(e) => e.preventDefault()}
               noValidate
               className={cn(
@@ -916,8 +1025,14 @@ export function Editor(p: EditorProps) {
                     key={g.key}
                     title={g.title}
                     open={openGroup === g.key}
-                    onToggle={() => toggleGroup(g.key, g.focus ?? g.section)}
-                    chips={chips(g.section)}
+                    onToggle={() => toggleGroup(g.key, focusOf(g))}
+                    chips={[
+                      ...chips(g.section),
+                      ...(visibilityOf(g)?.visible === false
+                        ? [{ text: "disembunyikan", tone: "neutral" as const }]
+                        : []),
+                    ]}
+                    visibility={visibilityOf(g)}
                   >
                     {g.body}
                   </Group>

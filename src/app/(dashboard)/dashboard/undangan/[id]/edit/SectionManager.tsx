@@ -19,6 +19,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import type { Entitlements } from "@/lib/pricing";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
   defaultOrderFor,
@@ -127,9 +128,8 @@ function Row({
         className={cn("flex items-center gap-1.5 text-xs", locked && "cursor-not-allowed")}
         title={locked ? "Section terkunci tidak bisa disembunyikan" : undefined}
       >
-        <input
-          type="checkbox"
-          className="size-4"
+        <Switch
+          size="sm"
           checked={visible}
           disabled={locked}
           onChange={onToggle}

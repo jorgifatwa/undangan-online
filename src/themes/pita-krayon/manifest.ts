@@ -52,6 +52,8 @@ export const manifest = {
   // Pembuka (angka krayon) & kartu pemutar musik selalu tampil tepat setelah
   // cover — pemutar tetap ada walau kutipan kosong.
   lockedSections: ["salam", "ayat"],
+  // teks salam di bagian profil; foto cover & pembuka → bagian pembuka; pemutar di kartu kutipan
+  editorFocus: { salam: "profil", foto: "salam", musik: "ayat" },
   editorFields: ["childPhoto", "decorLanguage", "photoDecor", "countdownStrip", "musicPhoto"],
   thumbnail: {
     background: "linear-gradient(160deg, #f5f2f0 0%, #ead9d4 100%)",

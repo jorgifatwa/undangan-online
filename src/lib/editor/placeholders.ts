@@ -2,8 +2,9 @@ import type { AnyInvitationData } from "@/schemas/sections";
 
 /**
  * Pratinjau PEMILIK (editor & "Pratinjau penuh"): setiap slot foto yang masih
- * kosong diisi gambar penanda "Belum ada foto" agar bentuk bingkai tiap tema
- * terlihat sebelum foto diunggah. Data asli tidak diubah (hanya untuk render),
+ * kosong diisi gambar penanda "Belum ada foto", dan cerita ulang tahun / love
+ * story yang kosong diisi teks penanda, agar bentuk tiap bagian terlihat
+ * sebelum diisi. Data asli tidak diubah (hanya untuk render),
  * dan TIDAK pernah dipakai di halaman tamu maupun link pratinjau keluarga.
  */
 export const EMPTY_PHOTO_URL = "/placeholders/foto-kosong.svg";
@@ -34,6 +35,15 @@ export function withPhotoPlaceholders(inv: AnyInvitationData): AnyInvitationData
         bride: { ...d.bride, photo: d.bride.photo ?? ph("Foto mempelai") },
         groom: { ...d.groom, photo: d.groom.photo ?? ph("Foto mempelai") },
         gallery: d.gallery.length ? d.gallery : Array.from({ length: 4 }, () => ph("Foto galeri")),
+        loveStory: d.loveStory.length
+          ? d.loveStory
+          : [
+              {
+                date: "Tahun",
+                title: "Judul momen",
+                text: "Isi kisah kalian di grup “Love story” — contoh penanda, tamu tidak melihatnya.",
+              },
+            ],
       },
     };
   }
@@ -52,6 +62,12 @@ export function withPhotoPlaceholders(inv: AnyInvitationData): AnyInvitationData
       musicPhoto: d.musicPhoto ?? ph("Foto pemutar musik"),
       stripPhotos: padTo(d.stripPhotos, () => ph("Strip foto")),
       gallery: d.gallery.length ? d.gallery : Array.from({ length: 4 }, () => ph("Foto galeri")),
+      story: d.story?.text.trim()
+        ? d.story
+        : {
+            title: d.story?.title,
+            text: "Tulis cerita ulang tahunmu di grup “Cerita ulang tahun”. Pisahkan paragraf dengan baris kosong.\n\nIni hanya penanda di pratinjau — tamu tidak melihatnya sampai cerita diisi.",
+          },
     },
   };
 }

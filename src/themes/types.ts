@@ -63,6 +63,11 @@ export interface ThemeManifest {
    */
   sectionOrder?: readonly SectionId[];
   /**
+   * Tujuan gulir pratinjau editor per grup isian (bila berbeda dari bawaan),
+   * mis. { musik: "ayat" } untuk tema yang pemutar musiknya ada di kartu ayat.
+   */
+  editorFocus?: Partial<Record<string, SectionId>>;
+  /**
    * Isian editor khusus yang hanya tampil untuk tema ini:
    *  - "childPhoto": foto masa kecil (celebrant.childPhoto, efek stiker PNG)
    *  - "decorLanguage": pilihan bahasa teks dekoratif (decorLang en/id)

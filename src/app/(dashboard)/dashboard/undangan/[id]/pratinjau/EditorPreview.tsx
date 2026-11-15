@@ -47,7 +47,26 @@ export function EditorPreview({
         setVariantId(msg.variantId);
         setInvitation(parsed.value);
       } else if (msg.type === "focus") {
-        const el = document.getElementById(`inv-${msg.section}`);
+        if (msg.section === "cover") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        // section belum dirender (data kosong) → section terdekat menurut urutan tema
+        const order = msg.order ?? [];
+        const at = order.indexOf(msg.section);
+        const candidates = [
+          msg.section,
+          ...(at >= 0
+            ? order
+                .map((id, i) => ({ id, d: Math.abs(i - at) + (i > at ? 0.5 : 0) }))
+                .filter((x) => x.id !== msg.section)
+                .sort((a, b) => a.d - b.d)
+                .map((x) => x.id)
+            : []),
+        ];
+        const el = candidates
+          .map((id) => document.getElementById(`inv-${id}`))
+          .find((e): e is HTMLElement => !!e);
         if (el)
           window.scrollTo({
             top: el.getBoundingClientRect().top + window.scrollY,
