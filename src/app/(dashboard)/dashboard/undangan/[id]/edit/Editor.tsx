@@ -593,6 +593,28 @@ export function Editor(p: EditorProps) {
       body: <SalamForm eventType={p.eventType} />,
     },
     {
+      key: "musik",
+      title: "Musik",
+      body: (
+        <div className="space-y-5">
+          {!wedding && manifest.editorFields?.includes("musicPhoto") && (
+            <PhotoField
+              name="musicPhoto"
+              slot="musicCover"
+              label="Foto pemutar musik"
+              aspect={1}
+              hint="Tampil di kartu pemutar musik, terpisah dari foto lain."
+            />
+          )}
+          <MusicPicker
+            library={p.library}
+            themeDefault={manifest.defaultMusic}
+            uploaded={p.uploadedAudio}
+          />
+        </div>
+      ),
+    },
+    {
       key: "ayat",
       section: "ayat",
       title: "Ayat / kutipan",
@@ -698,28 +720,6 @@ export function Editor(p: EditorProps) {
       key: "bukutamu",
       title: "RSVP & ucapan tamu",
       body: <GuestbookPanel invitationId={p.id} />,
-    },
-    {
-      key: "musik",
-      title: "Musik",
-      body: (
-        <div className="space-y-5">
-          {!wedding && manifest.editorFields?.includes("musicPhoto") && (
-            <PhotoField
-              name="musicPhoto"
-              slot="musicCover"
-              label="Foto pemutar musik"
-              aspect={1}
-              hint="Tampil di kartu pemutar musik, terpisah dari foto lain."
-            />
-          )}
-          <MusicPicker
-            library={p.library}
-            themeDefault={manifest.defaultMusic}
-            uploaded={p.uploadedAudio}
-          />
-        </div>
-      ),
     },
   ];
 
