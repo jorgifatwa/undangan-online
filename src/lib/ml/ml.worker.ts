@@ -298,6 +298,82 @@ function largestComponent(alpha: Float32Array, W: number, H: number, t: number, 
   return k;
 }
 
+/** Erosi masker biner (r langkah, 4-tetangga). */
+function erode(k: Uint8Array, W: number, H: number, r: number) {
+  const inv = new Uint8Array(k.length);
+  for (let i = 0; i < k.length; i++) inv[i] = k[i] ? 0 : 1;
+  const d = dilate(inv, W, H, r);
+  for (let i = 0; i < k.length; i++) d[i] = d[i] ? 0 : 1;
+  return d;
+}
+
+/** Dilatasi masker biner (r langkah, 4-tetangga). */
+function dilate(k: Uint8Array, W: number, H: number, r: number): Uint8Array {
+  const N = W * H;
+  for (let t = 0; t < r; t++) {
+    const nk = new Uint8Array(k);
+    for (let i = 0; i < N; i++) {
+      if (k[i]) continue;
+      const x = i % W;
+      if (
+        (x > 0 && k[i - 1]) ||
+        (x < W - 1 && k[i + 1]) ||
+        (i >= W && k[i - W]) ||
+        (i < N - W && k[i + W])
+      )
+        nk[i] = 1;
+    }
+    k = nk;
+  }
+  return k;
+}
+
+/**
+ * Gabungkan MODNet (m, tepi halus) & Selfie Segmenter (s, badan padat):
+ *  - inti = s > 0,8 dikikis ±1 % → padat (lubang MODNet di pakaian gelap tertutup)
+ *  - MODNet dipakai di sekitar inti saja (±1,5 % sisi gambar) →
+ *    rambut/tepi halus tetap, noda jauh (mis. dekorasi di latar) dibuang
+ *  - lubang tertutup kecil (< 1,5 % gambar) di dalam subjek diisi
+ */
+function fuse(m: Float32Array, s: Float32Array, W: number, H: number): Float32Array {
+  const N = W * H;
+  const side = Math.min(W, H);
+  // inti yakin: s > 0,8, dikikis ±1 % sisi (tepi selfie kasar & sering membawa latar)
+  let core: Uint8Array = new Uint8Array(N);
+  for (let i = 0; i < N; i++) if (s[i] > 0.8) core[i] = 1;
+  core = erode(core, W, H, Math.max(2, Math.round(side * 0.01)));
+  // MODNet hanya di sekitar inti (±1,5 % sisi)
+  const near = dilate(core, W, H, Math.max(4, Math.round(side * 0.015)));
+  const out = new Float32Array(N);
+  for (let i = 0; i < N; i++) out[i] = core[i] ? 1 : near[i] ? m[i] : 0;
+  // isi lubang tertutup kecil: piksel transparan yang tidak terhubung ke tepi gambar
+  const seen = new Uint8Array(N);
+  const stack = new Int32Array(N);
+  const hole = (i: number) => out[i] < 0.5;
+  for (let s0 = 0; s0 < N; s0++) {
+    if (seen[s0] || !hole(s0)) continue;
+    let sp = 0;
+    const comp: number[] = [];
+    let touches = false;
+    stack[sp++] = s0;
+    seen[s0] = 1;
+    while (sp) {
+      const p = stack[--sp];
+      comp.push(p);
+      const x = p % W;
+      const y = (p / W) | 0;
+      if (x === 0 || y === 0 || x === W - 1 || y === H - 1) touches = true;
+      for (const q of [x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1, p - W, p + W])
+        if (q >= 0 && q < N && !seen[q] && hole(q)) {
+          seen[q] = 1;
+          stack[sp++] = q;
+        }
+    }
+    if (!touches && comp.length < N * 0.015) for (const p of comp) out[p] = 1;
+  }
+  return out;
+}
+
 /** Terapkan masker alpha → gambar beralpha (dipangkas ke subjek), WebP/PNG. */
 async function compose(
   bitmap: ImageBitmap,
@@ -374,9 +450,18 @@ ctx.onmessage = async (e: MessageEvent<MlRequest>) => {
       let blob: Awaited<ReturnType<typeof compose>>;
       if (mode === "modnet") {
         try {
-          const alpha = await cutoutModnet(req.bitmap, (p) =>
+          const m = await cutoutModnet(req.bitmap, (p) =>
             post({ id: req.id, type: "progress", progress: p }),
           );
+          // Gabungan: badan dari Selfie Segmenter (padat — MODNet bisa berlubang
+          // pada pakaian gelap di latar gelap), tepi halus (rambut) dari MODNet
+          // hanya di dekat tubuh. Selfie gagal → MODNet saja.
+          let alpha = m;
+          try {
+            alpha = fuse(m, await cutoutLite(req.bitmap), req.bitmap.width, req.bitmap.height);
+          } catch {
+            /* tetap MODNet */
+          }
           blob = await compose(req.bitmap, alpha, "modnet");
         } catch (err) {
           // gagal dimuat / gagal alokasi memori / gagal memproses / hasil kosong → mode ringan

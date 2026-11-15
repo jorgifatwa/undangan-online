@@ -459,15 +459,24 @@ async function main() {
     60000,
   );
 
-  console.log("MODNet gagal (foto grup lanskap) → otomatis mode ringan");
-  // model sudah tersimpan → dialog langsung memproses tanpa konfirmasi
+  console.log("MODNet gagal dimuat → otomatis mode ringan");
+  // simulasi unduhan model gagal: model dihapus dari cache & request-nya diblokir
+  await ed.evaluate(`caches.delete("pk-ml-v1")`);
+  const blockModnet = (r: import("puppeteer-core").HTTPRequest) =>
+    r.url().includes("modnet_quantized.onnx") ? r.abort() : r.continue();
+  await ed.setRequestInterception(true);
+  ed.on("request", blockModnet);
   await ed.click('[data-testid="bg-remove"]');
+  await sleep(800);
+  await ed.evaluate(
+    `[...document.querySelectorAll('[role="dialog"] button')].find((b) => b.textContent.trim() === "Lanjut")?.click()`,
+  );
   await ed
     .waitForSelector('[data-testid="cutout-preview"]', { timeout: 120000 })
     .catch(() => undefined);
   check(
     !!(await ed.$('[data-testid="cutout-lite"]')),
-    "hasil kosong dari MODNet → mode ringan otomatis + kalimat pemberitahuan",
+    "MODNet gagal dimuat → mode ringan otomatis + kalimat pemberitahuan",
   );
   if (shots)
     await (
@@ -477,6 +486,8 @@ async function main() {
     `[...document.querySelectorAll('[role="dialog"] button')].find((b) => b.textContent.includes("Kembali ke bingkai biasa"))?.click()`,
   );
   await sleep(600);
+  ed.off("request", blockModnet);
+  await ed.setRequestInterception(false);
   await ed.evaluate(`caches.delete("pk-ml-v1")`); // sesi bersih → dialog ukuran unduhan tampil
   await ed.click('[data-testid="bg-remove"]');
   await sleep(800);
