@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 
-import type { AnyInvitationData } from "@/schemas/sections";
+import type { AnyInvitationData, SectionId } from "@/schemas/sections";
 
 import type { ColorVariant, ThemeManifest } from "../../types";
 
@@ -29,6 +29,8 @@ export interface InvitationContextValue {
   /** Ucapan awal (dari DB atau data dummy preview). */
   wishes: WishItem[];
   showToast: (message: string) => void;
+  /** Section yang tampil, sesuai urutan (termasuk "cover"). Kosong/undefined di luar ThemeRoot. */
+  sections?: readonly SectionId[];
 }
 
 export const InvitationContext = createContext<InvitationContextValue | null>(null);

@@ -150,7 +150,7 @@ export function TiraiLoveStory() {
   const { inv } = useInvitation();
   if (inv.eventType !== "WEDDING" || inv.data.loveStory.length === 0) return null;
   return (
-    <Shell id="loveStory" bg="suede" title="Love Story">
+    <Shell id="loveStory" bg="velvet" title="Love Story">
       {inv.data.loveStory.map((item, i) => (
         <div key={i}>
           {i > 0 && <CreamRule />}

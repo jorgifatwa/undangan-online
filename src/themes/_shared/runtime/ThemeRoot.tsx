@@ -173,8 +173,9 @@ function ThemeRootInner({
       opened,
       wishes,
       showToast,
+      sections,
     }),
-    [invitation, manifest, variant, guestName, preview, lite, opened, wishes, showToast],
+    [invitation, manifest, variant, guestName, preview, lite, opened, wishes, showToast, sections],
   );
 
   const Cover = theme.Cover ?? DefaultCover;

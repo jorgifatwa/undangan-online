@@ -33,6 +33,25 @@ export const manifest = {
     "galeri",
     "penutup",
   ],
+  // Urutan bawaan tema: love story (latar beludru marun seperti foto mempelai)
+  // tepat sebelum ucapan; hitung mundur tepat setelah acara (menyatu).
+  sectionOrder: [
+    "cover",
+    "ayat",
+    "salam",
+    "profil",
+    "acara",
+    "hitungMundur",
+    "maps",
+    "dressCode",
+    "liveStream",
+    "amplop",
+    "rsvp",
+    "loveStory",
+    "ucapan",
+    "galeri",
+    "penutup",
+  ],
   // Kartu ayat = tujuan transisi amplop di cover → selalu section pertama.
   lockedSections: ["ayat"],
   thumbnail: {

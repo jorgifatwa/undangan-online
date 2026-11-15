@@ -97,7 +97,9 @@ export function buildInitialData(v: WizardValues): AnyInvitationData {
         bride: { fullName: v.brideName, nickname: v.brideNickname },
         groom: { fullName: v.groomName, nickname: v.groomNickname },
         order: "bride-first",
+        // Bawaan dua acara (akad lalu resepsi); salah satunya boleh dihapus di editor.
         events: [
+          { id: "akad", name: "Akad", date: v.date, timezone: v.timezone, city: v.city },
           { id: "resepsi", name: "Resepsi", date: v.date, timezone: v.timezone, city: v.city },
         ],
         greeting: { style: v.greeting },

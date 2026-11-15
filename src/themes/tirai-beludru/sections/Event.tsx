@@ -235,8 +235,20 @@ function CallaDivider() {
   );
 }
 
+/**
+ * Hitung mundur tepat setelah acara (urutan bawaan) = satu kesatuan desain:
+ * dirender di dalam section acara agar latar suede bersambung tanpa sambungan.
+ * Bila disembunyikan / dipindah lewat "Urutan & tampilan section", tetap
+ * tampil sebagai section sendiri.
+ */
+const countdownMerged = (secs?: readonly string[]) => {
+  const i = secs?.indexOf("acara") ?? -1;
+  return i >= 0 && secs![i + 1] === "hitungMundur";
+};
+
 export function TiraiEvent() {
-  const { inv } = useInvitation();
+  const { inv, sections } = useInvitation();
+  const merged = countdownMerged(sections);
   const events = inv.data.events;
   const first = firstEvent(events);
   const second = events.find((e) => e !== first);
@@ -336,6 +348,23 @@ export function TiraiEvent() {
             </p>
           </div>
         </Reveal>
+        {!second && (
+          <>
+            {/* Satu acara: sisi kanan diisi nama hari agar blok tanggal tetap seimbang */}
+            <Rule box={[278.74, 378.64, 125.92, 2]} />
+            <Rule box={[278.74, 460.21, 125.92, 2]} />
+            <CText
+              reveal="right"
+              style={canvasText([278.74, 401.5, 141.56], F.script, 38.265, 37.88, {
+                letterSpacing: -0.0765,
+                align: "left",
+                renderScale: DATE_BLOCK_SCALE,
+              })}
+            >
+              {p.weekday}
+            </CText>
+          </>
+        )}
         {second && (
           <>
             <Rule box={[278.74, 378.64, 125.92, 2]} />
@@ -446,7 +475,7 @@ export function TiraiEvent() {
             <MapsButton href={sharedMap} />
           </div>
         )}
-        <div style={{ height: u(67.84) }} />
+        {merged ? <CountdownBody /> : <div style={{ height: u(67.84) }} />}
       </div>
     </SectionShell>
   );
@@ -463,6 +492,28 @@ const UNITS = ["Hari", "Jam", "Menit", "Detik"] as const;
 
 /** Hitung mundur + "Simpan ke Kalender" (desain: di bawah tombol peta, latar suede yang sama). */
 export function TiraiCountdown() {
+  const { sections } = useInvitation();
+  if (countdownMerged(sections)) return null; // sudah dirender di section acara
+  return (
+    <SectionShell
+      id="hitungMundur"
+      className="tb-canvas"
+      style={{
+        position: "relative",
+        width: "100%",
+        overflow: "hidden",
+        containerType: "inline-size",
+        background: "#2c3e28",
+        contentVisibility: "visible",
+      }}
+    >
+      <div style={{ position: "absolute", inset: 0 }}>{SUEDE}</div>
+      <CountdownBody />
+    </SectionShell>
+  );
+}
+
+function CountdownBody() {
   const { inv } = useInvitation();
   const first = firstEvent(inv.data.events);
   const last = [...inv.data.events].sort(
@@ -490,20 +541,7 @@ export function TiraiCountdown() {
   };
 
   return (
-    <SectionShell
-      id="hitungMundur"
-      className="tb-canvas"
-      style={{
-        position: "relative",
-        width: "100%",
-        aspectRatio: `440 / ${COUNT_H}`,
-        overflow: "hidden",
-        containerType: "inline-size",
-        background: "#2c3e28",
-        contentVisibility: "visible",
-      }}
-    >
-      <div style={{ position: "absolute", inset: 0 }}>{SUEDE}</div>
+    <div style={{ position: "relative", height: u(COUNT_H) }} data-tb-countdown>
       <CText reveal="blur" style={canvasText([20, top, 400], F.script, 34, 48)}>
         Menuju Hari Bahagia
       </CText>
@@ -574,6 +612,6 @@ export function TiraiCountdown() {
         </a>
       </Reveal>
       <Sparkle at={[311.57, top + 150]} />
-    </SectionShell>
+    </div>
   );
 }
