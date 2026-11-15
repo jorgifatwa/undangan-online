@@ -258,22 +258,42 @@ async function main() {
       );
     }
 
-    // 2c. grup foto pernikahan umum hanya berisi foto yang dipakai tema
+    // 2c. foto pernikahan: hanya isian yang dipakai tema, di grup section tempat
+    // foto itu tampil (cover → grup Foto sampul sebelum Mempelai, strip → Mempelai,
+    // foto penutup → Penutup)
     if (!bday) {
       const titles = (await p.$$eval("button[aria-expanded]", (bs) =>
-        bs.map((b) => b.textContent!.trim()),
+        bs.map((b) => b.firstElementChild?.textContent?.trim() ?? ""),
       )) as string[];
-      const fotoGroup = titles.find((t) => /^(Foto sampul|Photo strip|Penutup foto)/.test(t));
+      const groupText = async (title: string) => {
+        await openGroup(p, title);
+        return (await p.evaluate(
+          `document.querySelector("[data-group-open]")?.innerText ?? ""`,
+        )) as string;
+      };
+      const mempelai = await groupText("Mempelai");
+      const penutup = await groupText("Penutup");
       if (theme === "tirai-beludru") {
         check(
-          !fotoGroup,
-          "Tirai: grup foto sampul/strip/penutup disembunyikan (tidak dipakai tema)",
+          !titles.includes("Foto sampul (cover)"),
+          "Tirai: tanpa grup Foto sampul (tidak dipakai)",
         );
-      } else {
         check(
-          fotoGroup?.startsWith("Foto sampul, photo strip & penutup") === true,
-          "Renda: grup “Foto sampul, photo strip & penutup” lengkap",
+          mempelai.includes("Foto") && !mempelai.includes("Photo strip"),
+          "Tirai: Mempelai berisi foto mempelai, tanpa photo strip",
         );
+        check(!penutup.includes("Foto penutup"), "Tirai: Penutup tanpa foto penutup");
+      } else {
+        const iFoto = titles.indexOf("Foto sampul (cover)");
+        check(
+          iFoto >= 0 && iFoto < titles.indexOf("Mempelai"),
+          "Renda: grup “Foto sampul (cover)” ada, sebelum Mempelai (urutan pratinjau)",
+        );
+        check(
+          mempelai.includes("Photo strip 1") && !/\nFoto\n/.test(mempelai),
+          "Renda: photo strip di grup Mempelai, tanpa foto mempelai perorangan",
+        );
+        check(penutup.includes("Foto penutup"), "Renda: foto penutup di grup Penutup");
       }
     }
 
@@ -294,8 +314,8 @@ async function main() {
     );
     await p.close();
 
-    // 2d. Tirai + photo strip yang terlanjur diunggah: grup tetap tampil (bisa
-    // dihapus) dengan keterangan "tidak tampil di tema ini". Halaman editor baru
+    // 2d. Tirai + photo strip yang terlanjur diunggah: isiannya tetap tampil di
+    // grup Mempelai (bisa dihapus) dengan keterangan "tidak tampil di tema ini". Halaman editor baru
     // agar tidak bentrok dengan simpan otomatis halaman sebelumnya.
     if (theme === "tirai-beludru") {
       await sleep(3000); // simpan otomatis terakhir selesai
@@ -320,13 +340,15 @@ async function main() {
       });
       await sleep(2000);
       const title = (await q.$$eval("button[aria-expanded]", (bs) =>
-        bs.map((b) => b.textContent!.trim()).find((t) => t.startsWith("Photo strip")),
+        bs.map((b) => b.textContent!.trim()).find((t) => t.startsWith("Mempelai")),
       )) as string | undefined;
-      await openGroup(q, "Photo strip");
-      const txt = (await q.evaluate("document.body.innerText")) as string;
+      await openGroup(q, "Mempelai");
+      const txt = (await q.evaluate(
+        `document.querySelector("[data-group-open]")?.innerText ?? ""`,
+      )) as string;
       check(
-        !!title?.includes("tidak tampil di tema ini") && txt.includes("Tidak tampil di tema ini."),
-        "Tirai + photo strip lama: grup tampil dengan keterangan “tidak tampil di tema ini”",
+        !!title && txt.includes("Photo strip 1") && txt.includes("Tidak tampil di tema ini."),
+        "Tirai + photo strip lama: tampil di Mempelai dengan keterangan “tidak tampil di tema ini”",
       );
       await q.close();
     }

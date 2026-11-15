@@ -33,7 +33,8 @@ export const manifest = {
     "ucapan",
     "penutup",
   ],
-  // foto sampul di cover, photo strip di mempelai, foto penutup
+  // foto sampul di cover, photo strip di mempelai, foto penutup; tanpa foto
+  // mempelai perorangan (kartu mempelai hanya nama + photo strip)
   weddingPhotos: ["cover", "strip", "closing"],
   thumbnail: {
     background: "radial-gradient(ellipse at 50% 35%, #3e6340 0%, #1d3a22 45%, #05170a 100%)",

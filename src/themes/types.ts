@@ -81,10 +81,11 @@ export interface ThemeManifest {
     "childPhoto" | "decorLanguage" | "photoDecor" | "countdownStrip" | "musicPhoto" | "venueArt"
   )[];
   /**
-   * Foto pernikahan umum yang benar-benar ditampilkan tema (grup "Foto" di
-   * editor hanya menampilkan isian ini). Tidak diisi = ketiganya dipakai.
+   * Foto pernikahan yang benar-benar ditampilkan tema; editor hanya menampilkan
+   * isian ini (cover = foto sampul, strip = photo strip, closing = foto penutup,
+   * couple = foto mempelai wanita & pria). Tidak diisi = semuanya dipakai.
    */
-  weddingPhotos?: readonly ("cover" | "strip" | "closing")[];
+  weddingPhotos?: readonly ("cover" | "strip" | "closing" | "couple")[];
   /** Thumbnail galeri tema: path gambar, atau gradien CSS sementara. */
   thumbnail: { image?: string; background: string; foreground: string };
   /** Musik bawaan tema bila user belum memilih lagu. */

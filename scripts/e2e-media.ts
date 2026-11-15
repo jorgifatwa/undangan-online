@@ -66,15 +66,15 @@ async function invitation(userId: string, slug: string, plan: "draft" | "paid") 
     city: "Yogyakarta",
     greeting: "islami",
     quoteId: "ar-rum-21",
-    themeId: "renda-rimba",
+    themeId: "tirai-beludru",
   }).data;
   return db.invitation.create({
     data: {
       userId,
       slug,
       eventType: "WEDDING",
-      themeId: "renda-rimba",
-      ...planFields(plan, "renda-rimba"),
+      themeId: "tirai-beludru",
+      ...planFields(plan, "tirai-beludru"),
       data: data as Prisma.InputJsonValue,
     },
   });
@@ -433,8 +433,9 @@ async function main() {
     });
   }
   await page.reload({ waitUntil: "networkidle0" });
-  await openGroup(page, "Foto sampul");
-  await (await fileInput(page, "Pilih Foto sampul (cover)")).uploadFile(f("raksasa.png"));
+  // tema Tirai menampilkan foto mempelai (bukan foto sampul) → uji gambar raksasa di sana
+  await openGroup(page, "Mempelai");
+  await (await fileInput(page, "Pilih Foto", 0)).uploadFile(f("raksasa.png"));
   if (await waitText(page, "Simpan potongan", 8000)) {
     await sleep(500);
     await clickText(page, "Simpan potongan");

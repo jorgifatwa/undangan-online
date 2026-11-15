@@ -57,7 +57,7 @@ export const manifest = {
   // Kartu ayat = tujuan transisi amplop di cover → selalu section pertama.
   lockedSections: ["ayat"],
   // cover amplop & penutup kartu marun tanpa foto; foto hanya mempelai & galeri
-  weddingPhotos: [],
+  weddingPhotos: ["couple"],
   thumbnail: {
     background: "radial-gradient(ellipse at 50% 40%, #2f6347 0%, #123524 45%, #05130c 100%)",
     foreground: "#faf3ed",

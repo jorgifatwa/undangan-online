@@ -4,12 +4,29 @@ import { PhotoField } from "../media/PhotoField";
 import { CheckField, SelectField, TextField, grid2 } from "./fields";
 
 /** Mempelai (bride / groom). Foto diunggah di tahap 3c. */
-function PersonFields({ prefix, who }: { prefix: "bride" | "groom"; who: string }) {
+function PersonFields({
+  prefix,
+  who,
+  photo = "show",
+}: {
+  prefix: "bride" | "groom";
+  who: string;
+  /** show = dipakai tema; unused = terlanjur diunggah tapi tema tidak memakainya; hide */
+  photo?: "show" | "unused" | "hide";
+}) {
   const lead = prefix === "bride" ? "Putri" : "Putra";
   return (
     <fieldset className="space-y-3">
       <legend className="font-heading text-lg">{who}</legend>
-      <PhotoField name={`${prefix}.photo`} slot={prefix} label="Foto" aspect={4 / 5} />
+      {photo !== "hide" && (
+        <PhotoField name={`${prefix}.photo`} slot={prefix} label="Foto" aspect={4 / 5} />
+      )}
+      {photo === "unused" && (
+        <p className="text-muted-foreground rounded-md bg-neutral-100 px-2 py-1 text-xs">
+          Tidak tampil di tema ini. Foto tetap tersimpan bila pindah tema — atau hapus bila tidak
+          dipakai.
+        </p>
+      )}
       <TextField name={`${prefix}.fullName`} label="Nama lengkap" maxLength={120} />
       <div className={grid2}>
         <TextField
@@ -57,7 +74,11 @@ function PersonFields({ prefix, who }: { prefix: "bride" | "groom"; who: string 
   );
 }
 
-export function CoupleForm() {
+export function CoupleForm({
+  photo,
+}: {
+  photo?: Record<"bride" | "groom", "show" | "unused" | "hide">;
+} = {}) {
   return (
     <div className="space-y-6">
       <SelectField
@@ -68,8 +89,8 @@ export function CoupleForm() {
           ["groom-first", "Mempelai pria dulu"],
         ]}
       />
-      <PersonFields prefix="bride" who="Mempelai wanita" />
-      <PersonFields prefix="groom" who="Mempelai pria" />
+      <PersonFields prefix="bride" who="Mempelai wanita" photo={photo?.bride} />
+      <PersonFields prefix="groom" who="Mempelai pria" photo={photo?.groom} />
     </div>
   );
 }

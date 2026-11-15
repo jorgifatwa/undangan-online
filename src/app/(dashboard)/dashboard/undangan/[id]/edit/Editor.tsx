@@ -525,16 +525,24 @@ export function Editor(p: EditorProps) {
         closing?: { url?: string };
       }
     | undefined;
-  const usedPhotos: readonly ("cover" | "strip" | "closing")[] = manifest.weddingPhotos ?? [
-    "cover",
-    "strip",
-    "closing",
-  ];
+  const usedPhotos: readonly ("cover" | "strip" | "closing" | "couple")[] =
+    manifest.weddingPhotos ?? ["cover", "strip", "closing", "couple"];
   const photoShown = {
     cover: usedPhotos.includes("cover") || !!photosVal?.cover?.url,
     strip: usedPhotos.includes("strip") || !!photosVal?.strip?.some((x) => x?.url),
     closing: usedPhotos.includes("closing") || !!photosVal?.closing?.url,
   };
+  const coupleVal = useWatch({ control: form.control, name: ["bride.photo", "groom.photo"] }) as (
+    { url?: string } | undefined
+  )[];
+  /** Foto mempelai: tampil, "unused" (terlanjur diunggah, tema tidak memakai), atau sembunyi. */
+  const couplePhoto = (["bride", "groom"] as const).reduce(
+    (acc, who, i) => ({
+      ...acc,
+      [who]: usedPhotos.includes("couple") ? "show" : coupleVal?.[i]?.url ? "unused" : "hide",
+    }),
+    {} as Record<"bride" | "groom", "show" | "unused" | "hide">,
+  );
   const photoUnused = (k: "cover" | "strip" | "closing") =>
     !usedPhotos.includes(k) && (
       <p className="text-muted-foreground rounded-md bg-neutral-100 px-2 py-1 text-xs">
@@ -542,16 +550,45 @@ export function Editor(p: EditorProps) {
         dipakai.
       </p>
     );
-  const photoTitle = (() => {
-    const parts = [
-      photoShown.cover && "Foto sampul",
-      photoShown.strip && "photo strip",
-      photoShown.closing && "penutup",
-    ].filter(Boolean) as string[];
-    const t =
-      parts.length > 1 ? `${parts.slice(0, -1).join(", ")} & ${parts.at(-1)}` : (parts[0] ?? "");
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  })();
+  // Photo strip (section mempelai) & foto penutup (section penutup) — isiannya
+  // di grup section tempat foto itu tampil, sesuai urutan pratinjau.
+  const weddingStrip = (
+    <>
+      {photoShown.strip && (
+        <div className="space-y-1.5">
+          <div className="grid grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => (
+              <PhotoField
+                key={i}
+                name={`photos.strip.${i}`}
+                slot="strip"
+                label={`Photo strip ${i + 1}`}
+                aspect={4 / 3}
+                stacked
+              />
+            ))}
+          </div>
+          {photoUnused("strip")}
+        </div>
+      )}
+    </>
+  );
+  const weddingClosing = (
+    <>
+      {photoShown.closing && (
+        <div className="space-y-1.5">
+          <PhotoField
+            name="photos.closing"
+            slot="closing"
+            label="Foto penutup"
+            aspect={1}
+            hint="Polaroid di bagian penutup."
+          />
+          {photoUnused("closing")}
+        </div>
+      )}
+    </>
+  );
   /**
    * Tujuan gulir pratinjau tiap grup: tujuan khusus tema (manifest.editorFocus)
    * → focus/section grup → bawaan per grup; yang tidak didukung tema dilewati.
@@ -666,17 +703,24 @@ export function Editor(p: EditorProps) {
       key: "profil",
       section: "profil",
       title: wedding ? "Mempelai" : "Yang berulang tahun",
-      body: wedding ? <CoupleForm /> : <CelebrantForm />,
+      body: wedding ? (
+        <div className="space-y-6">
+          <CoupleForm photo={couplePhoto} />
+          {photoShown.strip && weddingStrip}
+        </div>
+      ) : (
+        <CelebrantForm />
+      ),
     },
     {
       key: "foto",
-      focus: "profil",
-      hidden: wedding && !photoShown.cover && !photoShown.strip && !photoShown.closing,
+      focus: wedding ? "cover" : "profil",
+      hidden: wedding && !photoShown.cover,
       extraChips:
-        wedding && usedPhotos.length === 0
+        wedding && !usedPhotos.includes("cover")
           ? [{ text: "tidak tampil di tema ini", tone: "neutral" as const }]
           : [],
-      title: wedding ? photoTitle : "Foto",
+      title: wedding ? "Foto sampul (cover)" : "Foto",
       body: wedding ? (
         <div className="space-y-5">
           {photoShown.cover && (
@@ -689,35 +733,6 @@ export function Editor(p: EditorProps) {
                 hint="Tampil di cover."
               />
               {photoUnused("cover")}
-            </div>
-          )}
-          {photoShown.strip && (
-            <div className="space-y-1.5">
-              <div className="grid grid-cols-3 gap-3">
-                {[0, 1, 2].map((i) => (
-                  <PhotoField
-                    key={i}
-                    name={`photos.strip.${i}`}
-                    slot="strip"
-                    label={`Photo strip ${i + 1}`}
-                    aspect={4 / 3}
-                    stacked
-                  />
-                ))}
-              </div>
-              {photoUnused("strip")}
-            </div>
-          )}
-          {photoShown.closing && (
-            <div className="space-y-1.5">
-              <PhotoField
-                name="photos.closing"
-                slot="closing"
-                label="Foto penutup"
-                aspect={1}
-                hint="Polaroid di bagian penutup."
-              />
-              {photoUnused("closing")}
             </div>
           )}
         </div>
@@ -877,7 +892,10 @@ export function Editor(p: EditorProps) {
       section: "penutup",
       title: "Penutup",
       body: wedding ? (
-        <ClosingForm eventType={p.eventType} />
+        <div className="space-y-5">
+          <ClosingForm eventType={p.eventType} />
+          {photoShown.closing && weddingClosing}
+        </div>
       ) : (
         // foto penutup tampil di bagian penutup → isiannya di grup yang sama
         <div className="space-y-5">
@@ -898,6 +916,18 @@ export function Editor(p: EditorProps) {
       body: <GuestbookPanel invitationId={p.id} />,
     },
   ];
+  // Pernikahan: foto sampul tampil di cover (paling awal di pratinjau) → grupnya
+  // sebelum Mempelai. Grup yang tidak relevan untuk tema disembunyikan.
+  const shownGroups = (() => {
+    const list = groups.filter((g) => !g.hidden);
+    if (!wedding) return list;
+    const i = list.findIndex((g) => g.key === "foto");
+    const j = list.findIndex((g) => g.key === "profil");
+    if (i < 0 || j < 0 || i < j) return list;
+    const [foto] = list.splice(i, 1);
+    list.splice(j, 0, foto);
+    return list;
+  })();
 
   return (
     <FormProvider {...form}>
@@ -1088,26 +1118,24 @@ export function Editor(p: EditorProps) {
               )}
             >
               <div className="mx-auto max-w-xl space-y-3 pb-24">
-                {groups
-                  .filter((g) => !g.hidden)
-                  .map((g) => (
-                    <Group
-                      key={g.key}
-                      title={g.title}
-                      open={openGroup === g.key}
-                      onToggle={() => toggleGroup(g.key, focusOf(g))}
-                      chips={[
-                        ...(g.extraChips ?? []),
-                        ...chips(g.section),
-                        ...(visibilityOf(g)?.visible === false
-                          ? [{ text: "disembunyikan", tone: "neutral" as const }]
-                          : []),
-                      ]}
-                      visibility={visibilityOf(g)}
-                    >
-                      {g.body}
-                    </Group>
-                  ))}
+                {shownGroups.map((g) => (
+                  <Group
+                    key={g.key}
+                    title={g.title}
+                    open={openGroup === g.key}
+                    onToggle={() => toggleGroup(g.key, focusOf(g))}
+                    chips={[
+                      ...(g.extraChips ?? []),
+                      ...chips(g.section),
+                      ...(visibilityOf(g)?.visible === false
+                        ? [{ text: "disembunyikan", tone: "neutral" as const }]
+                        : []),
+                    ]}
+                    visibility={visibilityOf(g)}
+                  >
+                    {g.body}
+                  </Group>
+                ))}
               </div>
             </form>
             <section
