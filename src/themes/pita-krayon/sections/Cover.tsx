@@ -65,10 +65,7 @@ function Title() {
 
 function Face() {
   const { inv, guestName } = useInvitation();
-  const photo =
-    inv.eventType === "BIRTHDAY"
-      ? (inv.data.celebrant.childPhoto ?? inv.data.celebrant.photo)
-      : undefined;
+  const photo = inv.eventType === "BIRTHDAY" ? inv.data.celebrant.childPhoto : undefined;
   const btnTop = guestName ? 790 : 714;
   return (
     <div

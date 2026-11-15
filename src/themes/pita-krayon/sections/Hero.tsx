@@ -20,7 +20,8 @@ export function Hero() {
   if (inv.eventType !== "BIRTHDAY") return null;
   const c = inv.data.celebrant;
   const age = c.age;
-  const photo = c.childPhoto ?? c.photo;
+  // foto cover & pembuka: isian tersendiri (tidak mengambil foto profil)
+  const photo = c.childPhoto;
   const line1 = age !== undefined ? nick : lang === "id" ? nick : `${nick}'S`;
   const line2 =
     age !== undefined

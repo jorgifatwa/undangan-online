@@ -45,7 +45,8 @@ export function withPhotoPlaceholders(inv: AnyInvitationData): AnyInvitationData
       celebrant: {
         ...d.celebrant,
         photo: d.celebrant.photo ?? ph("Foto yang berulang tahun"),
-        // foto masa kecil: tema memakai foto utama bila kosong → tidak diisi penanda
+        // foto cover & pembuka (tema yang memakainya, mis. Pita Krayon)
+        childPhoto: d.celebrant.childPhoto ?? ph("Foto cover & pembuka"),
       },
       closingPhoto: d.closingPhoto ?? ph("Foto penutup"),
       musicPhoto: d.musicPhoto ?? ph("Foto pemutar musik"),

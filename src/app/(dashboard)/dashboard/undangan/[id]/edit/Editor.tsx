@@ -25,7 +25,7 @@ import { deleteMediaAction } from "./media-actions";
 import { GalleryField } from "./media/GalleryField";
 import { MediaContext, type MediaCtx } from "./media/MediaContext";
 import { MusicPicker, type LibraryTrack, type UploadedAudio } from "./media/MusicPicker";
-import { PhotoDecorPanel } from "./media/PhotoDecorPanel";
+import { PhotoDecorPanel, StickerTip } from "./media/PhotoDecorPanel";
 import { PhotoField } from "./media/PhotoField";
 import { EventsForm } from "./forms/EventsForm";
 import { GiftForm, LoveStoryForm, WishlistForm } from "./forms/ListForms";
@@ -553,22 +553,34 @@ export function Editor(p: EditorProps) {
         </div>
       ) : (
         <div className="space-y-5">
+          {manifest.editorFields?.includes("childPhoto") && (
+            <>
+              <PhotoField
+                name="celebrant.childPhoto"
+                slot="child"
+                label="Foto cover & pembuka"
+                aspect={4 / 5}
+                hint="Tampil di cover & bagian pembuka (dengan topi pesta)."
+              />
+              <StickerTip />
+            </>
+          )}
+          {manifest.editorFields?.includes("photoDecor") && <PhotoDecorPanel invitationId={p.id} />}
           <PhotoField
             name="celebrant.photo"
             slot="celebrant"
-            label="Foto yang berulang tahun"
+            label={
+              manifest.editorFields?.includes("childPhoto")
+                ? "Foto profil (bingkai berpita)"
+                : "Foto yang berulang tahun"
+            }
             aspect={4 / 5}
+            hint={
+              manifest.editorFields?.includes("childPhoto")
+                ? "Tampil di bagian profil, terpisah dari foto cover."
+                : undefined
+            }
           />
-          {manifest.editorFields?.includes("childPhoto") && (
-            <PhotoField
-              name="celebrant.childPhoto"
-              slot="child"
-              label="Foto masa kecil (cover & pembuka)"
-              aspect={4 / 5}
-              hint="Unggah foto tanpa latar (PNG) untuk efek stiker."
-            />
-          )}
-          {manifest.editorFields?.includes("photoDecor") && <PhotoDecorPanel invitationId={p.id} />}
         </div>
       ),
     },

@@ -25,11 +25,42 @@ const KEY: Record<Section, "photoDecor.coverHat" | "photoDecor.heroHat"> = {
 };
 const LABEL: Record<Section, string> = { cover: "cover", hero: "pembuka" };
 
+/**
+ * Petunjuk efek stiker — kotak berwarna yang langsung terbuka (dulu teks lipat
+ * kecil yang jarang diperhatikan), tepat di bawah isian foto cover & pembuka.
+ */
+export function StickerTip() {
+  return (
+    <div
+      className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+      role="note"
+      data-testid="sticker-tip"
+    >
+      <p className="font-semibold">✨ Tips: foto tanpa latar = efek stiker</p>
+      <p className="mt-1 text-xs">
+        Foto biasa tetap tampil rapi dalam bingkai stiker. Untuk potongan siluet seperti stiker,
+        tekan <strong>Hapus latar otomatis</strong> di bawah, atau buat sendiri di iPhone:
+      </p>
+      <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs">
+        <li>Buka foto di aplikasi Foto (iOS 16 ke atas).</li>
+        <li>
+          <strong>Tekan lama</strong> orangnya sampai muncul garis bercahaya, lalu pilih{" "}
+          <strong>Bagikan</strong>.
+        </li>
+        <li>
+          Pilih <strong>Simpan Gambar</strong>, lalu unggah hasilnya di &ldquo;Foto cover &amp;
+          pembuka&rdquo; di atas.
+        </li>
+      </ol>
+    </div>
+  );
+}
+
 export function PhotoDecorPanel({ invitationId }: { invitationId: string }) {
   const { control, setValue, getValues } = useFormContext();
   const child = useWatch({ control, name: "celebrant.childPhoto" }) as Photo | undefined;
-  const main = useWatch({ control, name: "celebrant.photo" }) as Photo | undefined;
-  const photo = child ?? main;
+  // topi, hapus latar & bingkai stiker hanya untuk foto cover & pembuka
+  const photo = child;
   const face = useWatch({ control, name: "photoDecor.face" }) as
     { x: number; y: number; w: number; r: number; for: string } | undefined;
   const checked = useWatch({ control, name: "photoDecor.faceChecked" }) as string | undefined;
@@ -110,27 +141,6 @@ export function PhotoDecorPanel({ invitationId }: { invitationId: string }) {
 
   return (
     <div className="space-y-4 rounded-xl border p-3" data-testid="photo-decor">
-      <div className="text-muted-foreground space-y-1.5 text-xs">
-        <p className="text-foreground font-medium">Foto tanpa latar (efek stiker)</p>
-        <p>
-          Foto biasa langsung tampil dalam bingkai stiker. Untuk efek potongan seperti stiker, tekan{" "}
-          <strong>Hapus latar otomatis</strong> atau unggah PNG tanpa latar.
-        </p>
-        <details>
-          <summary className="cursor-pointer">Cara membuat stiker tanpa latar di iPhone</summary>
-          <ol className="mt-1 list-decimal space-y-0.5 pl-4">
-            <li>Buka foto di aplikasi Foto (iOS 16 ke atas).</li>
-            <li>
-              Sentuh lama orangnya sampai muncul garis bercahaya, lalu pilih <em>Bagikan</em>.
-            </li>
-            <li>
-              Pilih <em>Simpan Gambar</em> — hasilnya PNG tanpa latar. Unggah file itu di
-              &ldquo;Foto masa kecil&rdquo;.
-            </li>
-          </ol>
-        </details>
-      </div>
-
       {photo && !photo.alpha && (
         <button
           type="button"
@@ -223,8 +233,7 @@ export function PhotoDecorPanel({ invitationId }: { invitationId: string }) {
             // hasil dipangkas ke subjek → koordinat (persen) dipetakan ke gambar baru
             const mx = (x: number) => ((x - crop.x) / crop.w) * 100;
             const my = (y: number) => ((y - crop.y) / crop.h) * 100;
-            const name = child ? "celebrant.childPhoto" : "celebrant.photo";
-            setValue(name, next, { shouldDirty: true });
+            setValue("celebrant.childPhoto", next, { shouldDirty: true });
             if (face?.for === photo.url)
               setValue(
                 "photoDecor.face",
