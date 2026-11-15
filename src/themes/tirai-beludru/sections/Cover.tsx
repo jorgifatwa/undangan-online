@@ -261,28 +261,31 @@ export function TiraiCover({ onOpen, startMusic, firstSection }: CoverProps) {
     >
       {/* Lapisan 1: tirai, bunga lantai, judul */}
       <div style={canvasStyle}>
-        {[BG[1] - BG[3], BG[1] + BG[3]].map((y) => (
-          <div
-            key={y}
-            style={{
-              position: "absolute",
-              left: u(BG[0]),
-              top: u(y),
-              width: u(BG[2]),
-              height: u(BG[3]),
-              transform: "scaleY(-1)",
-            }}
-          >
-            <Drapery />
-          </div>
-        ))}
+        {/* Cermin di bawah: hanya terlihat di layar yang sangat tinggi (karpet). */}
         <div
           style={{
             position: "absolute",
             left: u(BG[0]),
-            top: u(BG[1]),
+            top: u(BG[1] + BG[3]),
             width: u(BG[2]),
             height: u(BG[3]),
+            transform: "scaleY(-1)",
+          }}
+        >
+          <Drapery />
+        </div>
+        {/* Kepala tirai (lipatan atas) selalu menempel di tepi atas layar seperti
+            referensi: tepi atas tirai = tepi atas layar, tepi bawah (karpet) tetap
+            sejajar bunga lantai. Lipatan tirai vertikal, jadi sedikit
+            peregangan/pemampatan vertikal tidak terlihat — tanpa salinan cermin
+            di atas yang tampak "berulang". */}
+        <div
+          style={{
+            position: "absolute",
+            left: u(BG[0]),
+            top: `calc(${u(CANVAS_H / 2)} - 50cqh)`,
+            width: u(BG[2]),
+            bottom: u(CANVAS_H - (BG[1] + BG[3])),
           }}
         >
           <Drapery priority />
