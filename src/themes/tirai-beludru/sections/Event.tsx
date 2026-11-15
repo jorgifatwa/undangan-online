@@ -19,6 +19,7 @@ import { Reveal } from "../../_shared/motion/Reveal";
 import {
   Butterfly,
   CallaLily,
+  Mansion,
   Skyline,
   Sparkles,
   Street,
@@ -203,6 +204,104 @@ function EventBlock({ e }: { e: InvitationEvent }) {
         ))}
       </div>
     </div>
+  );
+}
+
+/** Ilustrasi gedung kota seperti buku pop-up: jalan → menara → sayap → pohon. */
+function CityArt() {
+  return (
+    <>
+      {/* Ilustrasi gedung seperti buku pop-up: jalan → menara → sayap → pohon */}
+      <Placed img={[40, 648, 360, 33]} reveal="popup-ground">
+        <Art
+          slot="city-street"
+          w={360}
+          fallback={<Street slot={false} className="absolute inset-0 h-full w-full" />}
+        />
+      </Placed>
+      <Placed img={[47, 552, 121, 104]} reveal="popup-left" delay={0.8}>
+        <Art
+          slot="city-skyline-left"
+          w={121}
+          fallback={<Skyline side="left" slot={false} className="absolute inset-0 h-full w-full" />}
+        />
+      </Placed>
+      <Placed img={[273, 550, 108, 105]} reveal="popup-right" delay={0.8}>
+        <Art
+          slot="city-skyline-right"
+          w={108}
+          fallback={
+            <Skyline side="right" slot={false} className="absolute inset-0 h-full w-full" />
+          }
+        />
+      </Placed>
+      <Placed img={[143, 491, 195, 163]} reveal="popup-up" delay={0.35}>
+        <Art
+          slot="city-tower"
+          w={195}
+          fallback={<Tower slot={false} className="absolute inset-0 h-full w-full" />}
+        />
+      </Placed>
+      <Placed img={[107, 613, 68, 47]} reveal="popup-up" delay={1.5}>
+        <Art
+          slot="city-tree-left"
+          w={68}
+          fallback={<StreetTree slot={false} className="absolute inset-0 h-full w-full" />}
+        />
+      </Placed>
+      <Placed img={[261, 613, 90, 47]} reveal="popup-up" delay={1.65}>
+        <Art
+          slot="city-tree-right"
+          w={90}
+          fallback={
+            <StreetTree lamp="right" slot={false} className="absolute inset-0 h-full w-full" />
+          }
+        />
+      </Placed>
+    </>
+  );
+}
+
+/**
+ * Ilustrasi rumah besar (gambar utuh 670×270) dengan animasi pop-up yang sama:
+ * halaman & air mancur → bangunan tengah + cemara → sayap kiri & kanan.
+ * Setiap bagian = potongan kotak dari gambar yang sama, jadi setelah semua
+ * muncul gambarnya menyatu tanpa sambungan.
+ */
+const MANSION: Box = [51, 532, 340, 137];
+const M_SCALE = MANSION[2] / 670;
+const mx = (x: number) => MANSION[0] + x * M_SCALE;
+const my = (y: number) => MANSION[1] + y * M_SCALE;
+const M_GROUND = my(208);
+const M_TOP = MANSION[1] - 4;
+function MansionArt() {
+  const art = (
+    <Art
+      slot="venue-mansion"
+      w={340}
+      fallback={<Mansion slot={false} className="absolute inset-0 h-full w-full" />}
+    />
+  );
+  const band = (x0: number, x1: number): Box => [mx(x0), M_TOP, mx(x1) - mx(x0), M_GROUND - M_TOP];
+  return (
+    <>
+      <Placed
+        img={MANSION}
+        clip={[MANSION[0] - 4, M_GROUND, MANSION[2] + 8, my(270) + 4 - M_GROUND]}
+        reveal="popup-ground"
+      >
+        {art}
+      </Placed>
+      <Placed img={MANSION} clip={band(200, 468)} reveal="popup-up" delay={0.35}>
+        {art}
+      </Placed>
+      <Placed img={MANSION} clip={band(-6, 200)} reveal="popup-left" delay={0.8}>
+        {art}
+      </Placed>
+      <Placed img={MANSION} clip={band(468, 676)} reveal="popup-right" delay={0.8}>
+        {art}
+      </Placed>
+    </>
   );
 }
 
@@ -402,55 +501,11 @@ export function TiraiEvent() {
           {p.year}
         </CText>
 
-        {/* Ilustrasi gedung seperti buku pop-up: jalan → menara → sayap → pohon */}
-        <Placed img={[40, 648, 360, 33]} reveal="popup-ground">
-          <Art
-            slot="city-street"
-            w={360}
-            fallback={<Street slot={false} className="absolute inset-0 h-full w-full" />}
-          />
-        </Placed>
-        <Placed img={[47, 552, 121, 104]} reveal="popup-left" delay={0.8}>
-          <Art
-            slot="city-skyline-left"
-            w={121}
-            fallback={
-              <Skyline side="left" slot={false} className="absolute inset-0 h-full w-full" />
-            }
-          />
-        </Placed>
-        <Placed img={[273, 550, 108, 105]} reveal="popup-right" delay={0.8}>
-          <Art
-            slot="city-skyline-right"
-            w={108}
-            fallback={
-              <Skyline side="right" slot={false} className="absolute inset-0 h-full w-full" />
-            }
-          />
-        </Placed>
-        <Placed img={[143, 491, 195, 163]} reveal="popup-up" delay={0.35}>
-          <Art
-            slot="city-tower"
-            w={195}
-            fallback={<Tower slot={false} className="absolute inset-0 h-full w-full" />}
-          />
-        </Placed>
-        <Placed img={[107, 613, 68, 47]} reveal="popup-up" delay={1.5}>
-          <Art
-            slot="city-tree-left"
-            w={68}
-            fallback={<StreetTree slot={false} className="absolute inset-0 h-full w-full" />}
-          />
-        </Placed>
-        <Placed img={[261, 613, 90, 47]} reveal="popup-up" delay={1.65}>
-          <Art
-            slot="city-tree-right"
-            w={90}
-            fallback={
-              <StreetTree lamp="right" slot={false} className="absolute inset-0 h-full w-full" />
-            }
-          />
-        </Placed>
+        {inv.eventType === "WEDDING" && inv.data.venueArt === "rumah" ? (
+          <MansionArt />
+        ) : (
+          <CityArt />
+        )}
 
         <Sparkle at={[332.36, 495.02]} />
         <Sparkle at={[54.17, 623.37]} />

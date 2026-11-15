@@ -25,6 +25,7 @@ import suedeBg from "./suede-bg.webp";
 import tassel from "./tassel.webp";
 import tasselAlt from "./tassel-alt.webp";
 import velvetBg from "./velvet-bg.webp";
+import venueMansion from "./venue-mansion.webp";
 import waxSeal from "./wax-seal.webp";
 
 export const THEME_ASSETS: ThemeAssets = {
@@ -53,6 +54,7 @@ export const THEME_ASSETS: ThemeAssets = {
   tassel: tassel,
   "tassel-alt": tasselAlt,
   "velvet-bg": velvetBg,
+  "venue-mansion": venueMansion,
   "wax-seal": waxSeal,
 };
 
@@ -82,8 +84,9 @@ export const GENERATED_FILES = [
   "src/themes/tirai-beludru/assets/tassel.webp",
   "src/themes/tirai-beludru/assets/tassel-alt.webp",
   "src/themes/tirai-beludru/assets/velvet-bg.webp",
+  "src/themes/tirai-beludru/assets/venue-mansion.webp",
   "src/themes/tirai-beludru/assets/wax-seal.webp",
 ];
 
 /** Slot berstatus "dev" (belum dicek pemilik) — build production menolaknya. */
-export const DEV_SLOTS = [];
+export const DEV_SLOTS = ["venue-mansion"];

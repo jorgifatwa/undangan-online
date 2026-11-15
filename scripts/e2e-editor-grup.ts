@@ -234,6 +234,30 @@ async function main() {
     })();
     check(saved, "tersimpan di data.sections (sama dengan grup Urutan)");
 
+    // 2b. pilihan ilustrasi bangunan (tema dengan editorFields "venueArt")
+    if (theme === "tirai-beludru") {
+      await openGroup(p, "Acara");
+      const pick = async (v: string) => {
+        await (await p.$(`[data-testid="venue-art"] input[value="${v}"]`))!.evaluate((x) =>
+          (x.closest("label") as HTMLElement).click(),
+        );
+        await sleep(2000);
+        return (await frame.evaluate(
+          `[...document.querySelectorAll('[data-inv-section="acara"] img')].map((i) => i.src).join(" ")`,
+        )) as string;
+      };
+      const rumah = await pick("rumah");
+      check(
+        rumah.includes("venue-mansion") && !rumah.includes("city-tower"),
+        "pilih “Rumah” → pratinjau menampilkan ilustrasi rumah",
+      );
+      const kota = await pick("kota");
+      check(
+        kota.includes("city-tower") && !kota.includes("venue-mansion"),
+        "pilih “Gedung kota” → kembali ke ilustrasi gedung kota",
+      );
+    }
+
     // 3. penanda teks cerita / love story (pratinjau pemilik saja)
     const textKey = bday ? "Tulis cerita ulang tahunmu" : "Isi kisah kalian";
     const sec = bday ? "cerita" : "loveStory";

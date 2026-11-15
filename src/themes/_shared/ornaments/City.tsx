@@ -183,3 +183,104 @@ export const StreetTree = withAsset<Parameters<typeof StreetTreeSvg>[0]>(
   StreetTreeSvg,
 );
 export const Street = withAsset("city-street", StreetSvg);
+
+/* ------------------------------------------------------------------------ */
+
+const M_FILL = "#eef0ea";
+const M_LINE = "#5f675d";
+const mLine = { stroke: M_LINE, strokeWidth: 1.6, strokeLinejoin: "round" as const };
+
+function MansionWindows({
+  x,
+  y,
+  cols,
+  rows,
+  w = 12,
+  h = 18,
+  gx = 8,
+  gy = 14,
+}: {
+  x: number;
+  y: number;
+  cols: number;
+  rows: number;
+  w?: number;
+  h?: number;
+  gx?: number;
+  gy?: number;
+}) {
+  const out: React.ReactNode[] = [];
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      out.push(
+        <rect
+          key={`${r}-${c}`}
+          x={x + c * (w + gx)}
+          y={y + r * (h + gy)}
+          width={w}
+          height={h}
+          style={{ fill: "#fff", ...mLine, strokeWidth: 1.2 }}
+        />,
+      );
+  return <>{out}</>;
+}
+
+/**
+ * Rumah besar bergaya sketsa (viewBox 670×270 = proporsi ilustrasi asli
+ * `venue-mansion`): dua sayap bergewel, bangunan tengah dengan cerobong,
+ * dua pohon cemara, halaman & air mancur. Cadangan bila aset tidak tersedia.
+ */
+function MansionSvg({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg
+      viewBox="0 0 670 270"
+      className={className}
+      style={{ overflow: "visible", ...style }}
+      aria-hidden
+    >
+      {/* halaman */}
+      <path
+        d="M40 212 H630 Q640 248 560 262 H110 Q30 248 40 212 Z"
+        style={{ fill: M_FILL, ...mLine }}
+      />
+      {/* sayap kiri & kanan */}
+      {[0, 465].map((dx) => (
+        <g key={dx} transform={`translate(${dx} 0)`}>
+          <path d="M6 82 L104 8 L202 82 Z" style={{ fill: M_FILL, ...mLine }} />
+          <path d="M84 50 a20 14 0 0 1 40 0 Z" style={{ fill: "#fff", ...mLine }} />
+          <path d="M12 82 H196 V212 H12 Z" style={{ fill: M_FILL, ...mLine }} />
+          <MansionWindows x={20} y={94} cols={8} rows={3} w={14} h={22} gx={8} gy={14} />
+        </g>
+      ))}
+      {/* bangunan tengah */}
+      <path d="M204 70 H466 V212 H204 Z" style={{ fill: M_FILL, ...mLine }} />
+      <path
+        d="M204 70 L246 26 L290 70 M380 70 L424 26 L466 70 M300 70 L335 34 L370 70"
+        style={{ fill: M_FILL, ...mLine }}
+      />
+      <rect x="226" y="14" width="26" height="22" style={{ fill: M_FILL, ...mLine }} />
+      <rect x="410" y="14" width="26" height="22" style={{ fill: M_FILL, ...mLine }} />
+      <MansionWindows x={222} y={86} cols={11} rows={2} w={12} h={20} gx={10} gy={16} />
+      {[262, 335, 408].map((cx) => (
+        <path
+          key={cx}
+          d={`M${cx - 16} 212 V170 a16 16 0 0 1 32 0 V212`}
+          style={{ fill: "#fff", ...mLine }}
+        />
+      ))}
+      {/* pohon cemara */}
+      {[214, 456].map((cx) => (
+        <path
+          key={cx}
+          d={`M${cx} 46 C${cx + 26} 100 ${cx + 24} 180 ${cx + 10} 212 H${cx - 10} C${cx - 24} 180 ${cx - 26} 100 ${cx} 46 Z`}
+          style={{ fill: "#e3e7dd", ...mLine }}
+        />
+      ))}
+      {/* air mancur */}
+      <path d="M296 248 Q300 210 335 196 Q370 210 374 248 Z" style={{ fill: "#fff", ...mLine }} />
+      <path d="M318 246 Q322 222 335 214 Q348 222 352 246" style={{ fill: "none", ...mLine }} />
+    </svg>
+  );
+}
+
+export const Mansion = withAsset("venue-mansion", MansionSvg);

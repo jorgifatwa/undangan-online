@@ -91,6 +91,15 @@ export const LOTTIE_EXT = /\.json$/i;
 export const SKIP_PATH = /(\/fonts\/|_unused-assets|node_modules)/;
 
 /**
+ * File tunggal di luar SCAN_DIRS yang tetap diaudit (relatif ke folder referensi),
+ * mis. ilustrasi yang ada di _unused-assets tetapi dipakai tema sebagai pilihan.
+ */
+export const EXTRA_FILES: Partial<Record<ReferenceSite["theme"], string[]>> = {
+  // Ilustrasi rumah/gedung venue (pilihan bangunan di section acara Tirai)
+  "tirai-beludru": ["_unused-assets/public/images/venue_plataran_hd.png"],
+};
+
+/**
  * Peran aset → slot ornamen di tema + komponen SVG penggantinya.
  * Kunci = nama file (tanpa ekstensi); id media Canva sama di kedua referensi
  * meski formatnya beda (mis. db0864fe… .webp vs .png).
@@ -198,6 +207,11 @@ export const SLOT_MAP: Record<string, Record<string, SlotInfo>> = {
       role: "Kaligrafi Basmalah (SVG asli bila milik/free, selain itu teks Amiri)",
     },
     tower: { slot: "city-tower", svg: "Tower", role: "Ilustrasi menara venue" },
+    venue_plataran_hd: {
+      slot: "venue-mansion",
+      svg: "Mansion",
+      role: "Ilustrasi rumah besar (pilihan bangunan acara)",
+    },
     "skyline-left": { slot: "city-skyline-left", svg: "Skyline left", role: "Gedung kiri" },
     "skyline-right": { slot: "city-skyline-right", svg: "Skyline right", role: "Gedung kanan" },
     street: { slot: "city-street", svg: "Street", role: "Jalan" },

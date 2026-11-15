@@ -17,6 +17,8 @@ export const manifest = {
   eventTypes: ["WEDDING"],
   price: 149_000,
   variants: TIRAI_VARIANTS,
+  // pilihan ilustrasi bangunan di section acara (gedung kota / rumah)
+  editorFields: ["venueArt"],
   // pemutar musik ada di kartu ayat
   editorFocus: { musik: "ayat" },
   sections: [

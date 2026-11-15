@@ -75,9 +75,10 @@ export interface ThemeManifest {
    *  - "countdownStrip": strip 3 foto di hitung mundur (stripPhotos), terpisah dari galeri
    *  - "photoDecor": hitam-putih, ilustrasi kue, topi pesta (posisi otomatis
    *    dari deteksi wajah di editor + atur manual), hapus latar otomatis
+   *  - "venueArt": pilihan ilustrasi bangunan di section acara (venueArt kota/rumah)
    */
   editorFields?: readonly (
-    "childPhoto" | "decorLanguage" | "photoDecor" | "countdownStrip" | "musicPhoto"
+    "childPhoto" | "decorLanguage" | "photoDecor" | "countdownStrip" | "musicPhoto" | "venueArt"
   )[];
   /** Thumbnail galeri tema: path gambar, atau gradien CSS sementara. */
   thumbnail: { image?: string; background: string; foreground: string };

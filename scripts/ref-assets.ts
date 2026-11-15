@@ -29,6 +29,7 @@ import {
   PUBLIC_REF_DIR,
   REFERENCES,
   SCAN_DIRS,
+  EXTRA_FILES,
   SKIP_PATH,
   SLOT_MAP,
   type ReferenceSite,
@@ -153,8 +154,21 @@ async function sourceFiles(ref: ReferenceSite): Promise<{ file: string; text: st
 async function scan(ref: ReferenceSite): Promise<RefAsset[]> {
   const src = await sourceFiles(ref);
   const assets: RefAsset[] = [];
-  for (const sub of ref.canva ? ["assets"] : SCAN_DIRS) {
-    for (const abs of await walk(path.join(ref.dir, sub))) {
+  const paths: string[] = [];
+  for (const sub of ref.canva ? ["assets"] : SCAN_DIRS)
+    paths.push(...(await walk(path.join(ref.dir, sub))));
+  for (const extra of EXTRA_FILES[ref.theme] ?? []) {
+    const abs = path.join(ref.dir, extra);
+    if (
+      await fs.stat(abs).then(
+        () => true,
+        () => false,
+      )
+    )
+      paths.push(abs);
+  }
+  {
+    for (const abs of paths) {
       const rel = path.relative(ref.dir, abs);
       const isImage = IMAGE_EXT.test(abs);
       const isLottie = LOTTIE_EXT.test(abs) && /(lottie|video)\//.test(rel);

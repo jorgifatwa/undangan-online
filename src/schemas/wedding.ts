@@ -46,6 +46,8 @@ export const weddingDataSchema = z.object({
   /** Siapa yang ditulis lebih dulu. Umumnya wanita dulu. */
   order: z.enum(["bride-first", "groom-first"]).default("bride-first"),
   loveStory: z.array(loveStoryItemSchema).max(12).default([]),
+  /** Ilustrasi bangunan di section acara (tema yang mendukung): gedung kota / rumah. */
+  venueArt: z.enum(["kota", "rumah"]).optional(),
   photos: z
     .object({
       cover: photoSchema.optional(),

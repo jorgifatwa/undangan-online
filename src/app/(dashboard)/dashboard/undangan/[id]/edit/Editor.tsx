@@ -40,6 +40,7 @@ import {
   DressCodeForm,
   LiveStreamForm,
   SalamForm,
+  VenueArtField,
 } from "./forms/SimpleForms";
 import { PreviewFrame } from "./PreviewFrame";
 import { effectiveOrder, SectionManager } from "./SectionManager";
@@ -732,7 +733,12 @@ export function Editor(p: EditorProps) {
       key: "acara",
       section: "acara",
       title: "Acara",
-      body: <EventsForm defaultName={wedding ? "Resepsi" : "Pesta Ulang Tahun"} />,
+      body: (
+        <div className="space-y-5">
+          {wedding && manifest.editorFields?.includes("venueArt") && <VenueArtField />}
+          <EventsForm defaultName={wedding ? "Resepsi" : "Pesta Ulang Tahun"} />
+        </div>
+      ),
     },
     ...(!wedding
       ? [

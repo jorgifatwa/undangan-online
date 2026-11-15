@@ -32,5 +32,5 @@ export {
   Vinyl,
 } from "./Objects";
 export { Anthurium, CallaLily, DriedBouquet, Lily, type BouquetVariant } from "./Flowers";
-export { Skyline, Street, StreetTree, Tower } from "./City";
+export { Mansion, Skyline, Street, StreetTree, Tower } from "./City";
 export { MonogramFill, initials } from "./Monogram";
