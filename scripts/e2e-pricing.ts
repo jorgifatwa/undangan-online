@@ -100,7 +100,10 @@ async function main() {
     et.galleryLimit === LIMITS.galleryPhotos && eb.galleryLimit === 12,
     "galeri 12 foto (sama untuk draf & dibeli)",
   );
-  check(et.customMusic && et.customMusicTracks === 3, "draf: unggah musik terbuka, maks. 3 lagu");
+  check(
+    et.customMusic && et.customMusicTracks === 1,
+    "draf: unggah musik terbuka, 1 lagu (bisa diganti)",
+  );
   check(
     et.storageQuotaMb === STORAGE_QUOTA_MB.draft &&
       et.storageQuotaMb === 50 &&

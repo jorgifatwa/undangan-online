@@ -18,7 +18,7 @@ import { THEME_MANIFESTS } from "@/themes/registry";
 export const INCLUDED: string[] = [
   "Tema lengkap dengan animasi & pilihan warna",
   `Galeri hingga ${LIMITS.galleryPhotos} foto (cover & foto mempelai tidak dihitung)`,
-  `Musik dari koleksi bawaan atau unggah hingga ${LIMITS.customMusicTracks} lagu sendiri`,
+  "Musik dari koleksi bawaan atau unggah lagu sendiri (bisa diganti kapan saja)",
   "RSVP & rekap kehadiran tamu",
   "Ucapan & doa yang tampil langsung",
   "Amplop digital & alamat kirim hadiah",
@@ -69,7 +69,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Bisakah memakai musik sendiri?",
-    a: `Bisa. Pilih dari koleksi bawaan, atau unggah hingga ${LIMITS.customMusicTracks} lagu sendiri per undangan (maksimal ${MAX_AUDIO_SECONDS / 60} menit per lagu, dikompres otomatis). Pastikan Anda berhak memakai musik yang diunggah.`,
+    a: `Bisa. Pilih dari koleksi bawaan, atau unggah satu lagu sendiri per undangan (maksimal ${MAX_AUDIO_SECONDS / 60} menit, dikompres otomatis). Lagu bisa diganti kapan saja — lagu lama otomatis dihapus. Pastikan Anda berhak memakai musik yang diunggah.`,
   },
   {
     q: "Bagaimana data tamu saya dijaga?",

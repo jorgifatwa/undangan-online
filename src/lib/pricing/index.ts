@@ -24,8 +24,12 @@ export const PAID_ACTIVE = {
 export const LIMITS = {
   /** Foto galeri per undangan (cover, profil, strip, penutup tidak dihitung). */
   galleryPhotos: 12,
-  /** Lagu yang diunggah sendiri per undangan (koleksi bawaan tidak dihitung). */
-  customMusicTracks: 3,
+  /**
+   * Lagu yang diunggah sendiri per undangan (koleksi bawaan tidak dihitung).
+   * Undangan hanya memutar satu lagu, jadi cukup satu — "Ganti musik"
+   * menggantinya dan lagu lama dihapus otomatis.
+   */
+  customMusicTracks: 1,
 } as const;
 
 /**

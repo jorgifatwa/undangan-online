@@ -93,6 +93,12 @@ export function MusicPicker({
         );
         if (r.media.status === "READY" && r.media.url) {
           choose({ url: r.media.url, title: u.title });
+          // Lagu lama diganti → file-nya dihapus setelah data baru tersimpan
+          // (hanya bila tidak lagi dirujuk data tersimpan).
+          const olds = uploaded.filter((x) => x.id !== u.id && x.status === "READY" && x.url);
+          olds.forEach((x) => media.releaseUrl(x.url!));
+          if (olds.length)
+            setUploaded((list) => list.filter((x) => !olds.some((o) => o.id === x.id)));
           media.saveSoon();
         }
       }
@@ -109,7 +115,8 @@ export function MusicPicker({
     setProgress(0);
     try {
       const title = file.name.replace(/\.[^.]+$/, "").slice(0, 80) || "Musik saya";
-      const id = await uploadMusic(media.invitationId, file, consent, setProgress);
+      const replace = uploaded.some((u) => u.status === "READY" && u.url);
+      const id = await uploadMusic(media.invitationId, file, consent, setProgress, replace);
       setUploaded((l) => [{ id, status: "PROCESSING", url: null, error: null, title }, ...l]);
     } catch (e) {
       setError(
@@ -122,9 +129,10 @@ export function MusicPicker({
     }
   };
 
-  // Lagu unggahan yang masih dihitung batas (selain yang gagal).
-  const activeUploads = uploaded.filter((u) => u.status !== "FAILED").length;
-  const musicFull = activeUploads >= media.musicLimit;
+  // Satu lagu unggahan per undangan: bila sudah ada, unggahan berikutnya MENGGANTI.
+  const ready = uploaded.filter((u) => u.status === "READY" && u.url);
+  const current = ready.length === 1 ? ready[0] : null;
+  const overLimit = ready.length > media.musicLimit;
 
   /** Hapus lagu unggahan: file dihapus dari penyimpanan setelah data tersimpan. */
   const removeUploaded = (u: UploadedAudio) => {
@@ -219,18 +227,30 @@ export function MusicPicker({
           )}
       </ul>
 
-      <fieldset className="space-y-2 rounded-xl border p-3">
-        <legend className="px-1 text-sm font-medium">Unggah musik sendiri</legend>
-        {musicFull ? (
+      <fieldset className="space-y-2 rounded-xl border p-3" data-testid="music-upload">
+        <legend className="px-1 text-sm font-medium">
+          {current ? "Ganti musik" : "Unggah musik sendiri"}
+        </legend>
+        {overLimit ? (
+          // data lama (sebelum batas 1 lagu): sisakan satu dulu
           <LimitNotice
-            message={`Sudah ${activeUploads} dari maksimal ${media.musicLimit} lagu unggahan.`}
-            hint="Hapus lagu unggahan yang tidak dipakai untuk mengunggah lagu lain."
+            message={`Ada ${ready.length} lagu unggahan, sekarang maksimal ${media.musicLimit} per undangan.`}
+            hint="Hapus lagu yang tidak dipakai hingga tersisa satu, lalu musik bisa diganti kapan saja."
           />
         ) : (
           <>
             <p className="text-muted-foreground text-xs">
-              MP3, M4A, WAV, OGG, atau FLAC, maks. 10 MB. Dikompres otomatis agar ringan diputar
-              tamu. {activeUploads} dari maks. {media.musicLimit} lagu.
+              {current ? (
+                <>
+                  Musik saya &ldquo;{current.title}&rdquo; akan diganti. Lagu lama otomatis dihapus
+                  begitu lagu baru siap (bila gagal diproses, lagu lama tetap dipakai).
+                </>
+              ) : (
+                <>
+                  Satu lagu per undangan, bisa diganti kapan saja. MP3, M4A, WAV, OGG, atau FLAC,
+                  maks. 10 MB — dikompres otomatis agar ringan diputar tamu.
+                </>
+              )}
             </p>
             <label className="flex items-start gap-2 text-sm">
               <input
@@ -254,13 +274,15 @@ export function MusicPicker({
             />
             <button
               type="button"
-              disabled={!consent || progress !== null}
+              disabled={!consent || progress !== null || processing.length > 0}
               onClick={() => input.current?.click()}
               className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
             >
               {progress !== null
                 ? `Mengunggah… ${Math.round(progress * 100)}%`
-                : "Pilih file musik"}
+                : current
+                  ? "Ganti musik"
+                  : "Pilih file musik"}
             </button>
           </>
         )}

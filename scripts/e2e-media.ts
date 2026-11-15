@@ -8,7 +8,7 @@
  * PNG 9000 px, MP3 (ffmpeg). Yang diuji: crop + kompres WebP + EXIF dibuang,
  * HEIC → JPEG di browser, ganti foto → file lama terhapus, galeri multi-pilih +
  * batas 12 foto (tanpa tawaran upgrade), urutan galeri (keyboard), potong ulang,
- * magic bytes, hanya foto & musik, batas dimensi, kuota, musik (maks. 3 lagu, persetujuan, proses asinkron →
+ * magic bytes, hanya foto & musik, batas dimensi, kuota, musik (1 lagu + ganti musik, persetujuan, proses asinkron →
  * AAC), akses undangan orang lain, pembersihan file mentah 24 jam.
  */
 import { execFileSync } from "node:child_process";
@@ -399,9 +399,9 @@ async function main() {
     });
     check(pdf instanceof UploadError, "PDF sebagai musik ditolak");
 
-    // Batas lagu unggahan: maks. 3 per undangan
-    for (let i = 0; i < 3; i++)
-      await db.media.create({
+    // Batas lagu unggahan: 1 per undangan; unggahan berikutnya hanya sebagai PENGGANTI
+    const laguUji = (i: number) =>
+      db.media.create({
         data: {
           userId: a.u.id,
           invitationId: basic.id,
@@ -412,21 +412,39 @@ async function main() {
           bytes: 1000,
         },
       });
-    const fourth = await requestUpload(a.u.id, basic.id, {
-      kind: "AUDIO",
-      slot: "music",
-      contentType: "audio/mpeg",
-      size: 1000,
-      rightsAccepted: true,
-    }).then(
-      () => null,
-      (e: unknown) => e as InstanceType<typeof UploadError>,
-    );
+    const musicReq = (replace?: boolean) =>
+      requestUpload(a.u.id, basic.id, {
+        kind: "AUDIO",
+        slot: "music",
+        contentType: "audio/mpeg",
+        size: 1000,
+        rightsAccepted: true,
+        replace,
+      }).then(
+        (r) => r,
+        (e: unknown) => e as InstanceType<typeof UploadError>,
+      );
+    await laguUji(0);
+    const second = await musicReq();
     check(
-      fourth instanceof UploadError &&
-        fourth.code === "MUSIC_LIMIT" &&
-        /Maksimal 3 lagu/.test(fourth.message),
-      "lagu unggahan ke-4 ditolak (maks. 3 per undangan)",
+      second instanceof UploadError &&
+        second.code === "MUSIC_LIMIT" &&
+        /Maksimal 1 lagu/.test(second.message),
+      "lagu unggahan ke-2 (bukan pengganti) ditolak — maks. 1 per undangan",
+    );
+    const swap = await musicReq(true);
+    check(!(swap instanceof UploadError), "unggahan pengganti (“Ganti musik”) diizinkan");
+    const swap2 = await musicReq(true);
+    check(
+      swap2 instanceof UploadError && /masih diproses/.test(swap2.message),
+      "pengganti kedua saat pengganti pertama belum selesai ditolak",
+    );
+    if (!(swap instanceof UploadError)) await db.media.delete({ where: { id: swap.mediaId } });
+    await laguUji(1); // data lama: 2 lagu siap
+    const legacy = await musicReq(true);
+    check(
+      legacy instanceof UploadError && legacy.code === "MUSIC_LIMIT",
+      "data lama 2 lagu: hapus dulu hingga tersisa satu sebelum mengganti",
     );
     await db.media.deleteMany({
       where: { invitationId: basic.id, key: { contains: "lagu-uji-" } },
@@ -521,9 +539,9 @@ async function main() {
   console.log("Musik");
   await openGroup(page, "Musik");
   check(
-    (await text(page)).includes("0 dari maks. 3 lagu") &&
+    (await text(page)).includes("Satu lagu per undangan") &&
       (await text(page)).includes("Pilih file musik"),
-    "draf: unggah musik sendiri tersedia (maks. 3 lagu)",
+    "draf: unggah musik sendiri tersedia (satu lagu, bisa diganti)",
   );
   await scrollToText(page, "Unggah musik sendiri");
   await sleep(300);
@@ -586,22 +604,54 @@ async function main() {
     "file mentah musik dihapus",
   );
   check(
-    (await text(page)).includes("1 dari maks. 3 lagu"),
-    "penghitung lagu unggahan: 1 dari maks. 3",
+    (await text(page)).includes("Ganti musik") && (await text(page)).includes("akan diganti"),
+    "sudah ada lagu unggahan → tombol “Ganti musik”",
   );
-  // Hapus lagu unggahan (agar bisa diganti saat batas 3 lagu tercapai)
-  const finalFile = path.join(UPLOADS, aud!.key!);
+  // Ganti musik: lagu baru diproses → otomatis dipilih → lagu lama terhapus
+  const oldFile = path.join(UPLOADS, aud!.key!);
+  await (await fileInput(page, "Pilih file musik")).uploadFile(f("lagu.mp3"));
+  check(await waitText(page, "sedang diproses", 15000), "ganti musik: lagu baru diproses");
+  await page
+    .waitForFunction(`!document.body.innerText.includes("sedang diproses")`, { timeout: 90000 })
+    .catch(() => undefined);
+  await waitStatus(page, "Tersimpan", 15000);
+  const aud2 = await db.media.findFirst({
+    where: { invitationId: basic.id, kind: "AUDIO", status: "READY" },
+    orderBy: { createdAt: "desc" },
+  });
+  check(
+    !!aud2 &&
+      aud2.id !== aud!.id &&
+      ((await dataOf(basic.id)).music?.tracks[0]?.url ?? "") === `/media/${aud2.key}`,
+    "ganti musik: lagu baru terpasang di data undangan",
+  );
+  check(
+    await waitDb(async () => !(await db.media.findUnique({ where: { id: aud!.id } })), 15000),
+    "ganti musik: baris Media lagu lama terhapus otomatis",
+  );
+  check(
+    await waitDb(async () => !fs.existsSync(oldFile), 10000),
+    "ganti musik: file lagu lama terhapus dari penyimpanan",
+  );
+  check(
+    (await db.media.count({
+      where: { invitationId: basic.id, kind: "AUDIO", status: { not: "FAILED" } },
+    })) === 1,
+    "tetap hanya 1 lagu unggahan",
+  );
+  // Hapus lagu unggahan (tombol Hapus tetap ada)
+  const finalFile = path.join(UPLOADS, aud2!.key!);
   await page.evaluate(
     `[...document.querySelectorAll("button")].find((b) => (b.getAttribute("aria-label") ?? "").startsWith("Hapus "))?.click()`,
   );
   await waitStatus(page, "Tersimpan", 20000);
   check(
-    await waitDb(async () => !(await db.media.findUnique({ where: { id: aud!.id } })), 15000),
+    await waitDb(async () => !(await db.media.findUnique({ where: { id: aud2!.id } })), 15000),
     "tombol Hapus: baris Media lagu terhapus",
   );
   check(!fs.existsSync(finalFile), "tombol Hapus: file lagu terhapus dari penyimpanan");
   check(
-    !((await dataOf(basic.id)).music?.tracks ?? []).some((t) => t.url === `/media/${aud?.key}`),
+    !((await dataOf(basic.id)).music?.tracks ?? []).some((t) => t.url === `/media/${aud2?.key}`),
     "lagu yang dihapus tidak lagi terpasang",
   );
 

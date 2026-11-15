@@ -209,6 +209,7 @@ async function upload(
   blob: Blob,
   onProgress?: (p: number) => void,
   rightsAccepted?: boolean,
+  replace?: boolean,
 ) {
   const contentType = guessContentType(kind, blob);
   const req = await requestUploadAction(invitationId, {
@@ -217,6 +218,7 @@ async function upload(
     contentType,
     size: blob.size,
     rightsAccepted,
+    replace,
   });
   if (!req.ok) throw new ClientUploadError(req.error, req.code);
   await put(req.target.url, req.target.headers, blob, onProgress);
@@ -243,10 +245,20 @@ export async function uploadMusic(
   file: File,
   rightsAccepted: boolean,
   onProgress?: (p: number) => void,
+  /** Mengganti lagu unggahan yang sudah ada (lihat UploadRequest.replace). */
+  replace = false,
 ) {
   if (file.size > MAX_AUDIO_BYTES)
     throw new ClientUploadError(`Musik maksimal ${mb(MAX_AUDIO_BYTES)}.`);
-  const mediaId = await upload(invitationId, "AUDIO", "music", file, onProgress, rightsAccepted);
+  const mediaId = await upload(
+    invitationId,
+    "AUDIO",
+    "music",
+    file,
+    onProgress,
+    rightsAccepted,
+    replace,
+  );
   const mark = await markAudioUploadedAction(mediaId);
   if (!mark.ok) throw new ClientUploadError(mark.error, mark.code);
   // Kompresi berjalan di route terpisah (maxDuration panjang); status dipantau lewat polling.

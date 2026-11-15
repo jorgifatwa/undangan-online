@@ -107,6 +107,12 @@ export interface UploadRequest {
   size: number;
   /** Musik sendiri: user mencentang pernyataan hak penggunaan lagu. */
   rightsAccepted?: boolean;
+  /**
+   * Musik: unggahan PENGGANTI lagu yang sudah ada ("Ganti musik"). Boleh
+   * melebihi batas satu lagu sementara; editor menghapus lagu lama begitu
+   * lagu baru siap (lagu lama tetap dipakai bila pemrosesan gagal).
+   */
+  replace?: boolean;
 }
 
 export async function requestUpload(userId: string, invitationId: string, req: UploadRequest) {
@@ -147,16 +153,22 @@ export async function requestUpload(userId: string, invitationId: string, req: U
     }
   } else {
     if (req.slot !== "music") throw new UploadError("Slot musik tidak dikenal.");
-    const tracks = await db.media.count({
-      where: {
-        invitationId,
-        kind: "AUDIO",
-        status: { in: ["UPLOADING", "PROCESSING", "READY"] },
-      },
-    });
-    if (tracks >= features.customMusicTracks)
+    const [ready, inFlight] = await Promise.all([
+      db.media.count({ where: { invitationId, kind: "AUDIO", status: "READY" } }),
+      db.media.count({
+        where: { invitationId, kind: "AUDIO", status: { in: ["UPLOADING", "PROCESSING"] } },
+      }),
+    ]);
+    // Biasa: total lagu < batas. Pengganti: tidak ada unggahan lain yang sedang
+    // berjalan dan lagu siap tidak melebihi batas (lagu lama dihapus setelahnya).
+    const allowed = req.replace
+      ? inFlight === 0 && ready <= features.customMusicTracks
+      : ready + inFlight < features.customMusicTracks;
+    if (!allowed)
       throw new UploadError(
-        `Maksimal ${features.customMusicTracks} lagu unggahan sendiri per undangan. Hapus lagu yang tidak dipakai untuk menggantinya.`,
+        req.replace && inFlight > 0
+          ? "Lagu sebelumnya masih diproses. Tunggu sebentar lalu coba lagi."
+          : `Maksimal ${features.customMusicTracks} lagu unggahan sendiri per undangan. Hapus lagu lama atau pakai “Ganti musik”.`,
         "MUSIC_LIMIT",
       );
     if (!req.rightsAccepted)
