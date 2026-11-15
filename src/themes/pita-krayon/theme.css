@@ -97,10 +97,12 @@
     transform: translateY(18px) rotate(-3deg);
   }
 }
+/* strip foto turun dari ATAS (tidak pernah melewati batas bawah section yang
+   memotong isinya — juga saat animasi dijeda di tengah) */
 @keyframes pk-strip {
   from {
     opacity: 0;
-    transform: translateY(40px) rotate(14deg);
+    transform: translateY(-28px) rotate(4deg);
   }
 }
 /* lingkaran coretan "digambar": muncul sambil berputar sedikit */

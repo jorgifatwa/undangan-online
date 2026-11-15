@@ -45,7 +45,7 @@ export function PhotoStrips() {
   let index = skip; // indeks lightbox = posisi di galeri penuh
 
   return (
-    <Section id="galeri" style={{ padding: `${u(26)} ${u(14)} ${u(56)}` }}>
+    <Section id="galeri" style={{ padding: `${u(26)} ${u(14)} ${u(64)}` }}>
       <Orn
         slot="ribbon-c"
         l={330}
@@ -96,7 +96,7 @@ export function PhotoStrips() {
               style={{
                 transform: `rotate(${strips.length === 1 && strip.length === 1 ? -4 : TILT[s]}deg)`,
                 background: "var(--inv-deep)",
-                padding: `${u(9)} ${u(9)} ${u(strip.length === 1 ? 34 : 9)}`,
+                padding: u(9),
                 display: "flex",
                 flexDirection: "column",
                 gap: u(8),
@@ -116,7 +116,11 @@ export function PhotoStrips() {
                       position: "relative",
                       display: "block",
                       width: "100%",
-                      aspectRatio: "3 / 4",
+                      // satu foto saja: rasio asli (tidak dipotong); strip: sel 3:4 seragam
+                      aspectRatio:
+                        strips.length === 1 && strip.length === 1 && p.width && p.height
+                          ? `${p.width} / ${p.height}`
+                          : "3 / 4",
                       overflow: "hidden",
                       background: "var(--inv-bg-alt)",
                     }}
