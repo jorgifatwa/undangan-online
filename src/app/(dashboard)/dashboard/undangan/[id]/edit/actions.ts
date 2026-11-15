@@ -1,5 +1,7 @@
 "use server";
 
+import { MAX_EVENTS } from "@/schemas/common";
+
 import { Prisma } from "@prisma/client";
 
 import { requireUser } from "@/lib/auth-guard";
@@ -83,6 +85,13 @@ export async function saveInvitation(
       ok: false,
       error: `Galeri maksimal ${features.galleryLimit} foto.`,
       fieldErrors: { gallery: `Maksimal ${features.galleryLimit} foto` },
+    };
+  }
+  if (data.events.length > MAX_EVENTS) {
+    return {
+      ok: false,
+      error: `Maksimal ${MAX_EVENTS} acara. Hapus acara yang tidak diperlukan agar perubahan tersimpan.`,
+      fieldErrors: { events: `Maksimal ${MAX_EVENTS} acara` },
     };
   }
   const ids = data.events.map((e) => e.id);

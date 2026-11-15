@@ -34,6 +34,9 @@ export const timezoneSchema = z.enum(TIMEZONE_VALUES);
 export const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal YYYY-MM-DD");
 export const timeString = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format jam HH:mm");
 
+/** Jumlah acara maksimal per undangan (mis. akad & resepsi). */
+export const MAX_EVENTS = 2;
+
 export const photoSchema = z.object({
   url: z.string().min(1),
   alt: optionalText(200),
@@ -153,6 +156,8 @@ export type SectionConfig = z.infer<typeof sectionConfigSchema>;
 /** Field yang ada di semua jenis acara. */
 export const baseInvitationShape = {
   /** Minimal satu acara (tanggal wajib). */
+  // Batas MAX_EVENTS ditegakkan saat MENYIMPAN (editor & server), bukan di sini,
+  // agar undangan lama yang terlanjur punya >2 acara tetap tampil untuk tamu.
   events: z.array(eventSchema).min(1, "Minimal satu acara"),
   greeting: greetingSchema.optional(),
   quote: quoteSchema.optional(),

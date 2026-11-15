@@ -2,9 +2,10 @@
 
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
+import { MAX_EVENTS } from "@/schemas/common";
+
 import { AddButton, CheckField, ItemCard, SelectField, TextField, grid2 } from "./fields";
 
-const MAX_EVENTS = 5;
 const newId = () => `acara-${Math.random().toString(36).slice(2, 8)}`;
 
 function EventItem({ index }: { index: number }) {
@@ -66,7 +67,17 @@ export function EventsForm({ defaultName }: { defaultName: string }) {
           <EventItem index={i} />
         </ItemCard>
       ))}
-      {fields.length < MAX_EVENTS && (
+      {fields.length > MAX_EVENTS && (
+        <p
+          role="alert"
+          className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-950"
+          data-testid="events-over-limit"
+        >
+          Maksimal {MAX_EVENTS} acara. Hapus {fields.length - MAX_EVENTS} acara agar perubahan bisa
+          tersimpan.
+        </p>
+      )}
+      {fields.length < MAX_EVENTS ? (
         <AddButton
           onClick={() =>
             append(
@@ -77,6 +88,10 @@ export function EventsForm({ defaultName }: { defaultName: string }) {
         >
           Tambah acara
         </AddButton>
+      ) : (
+        <p className="text-muted-foreground text-xs">
+          Maksimal {MAX_EVENTS} acara per undangan (mis. akad & resepsi).
+        </p>
       )}
     </div>
   );

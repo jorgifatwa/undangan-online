@@ -352,6 +352,69 @@ async function main() {
       );
       await q.close();
     }
+
+    // 2e. acara maksimal 2: bawaan pernikahan 2 acara → tombol tambah hilang;
+    // undangan lama dengan 3 acara → peringatan, hapus satu → tersimpan
+    if (!bday) {
+      await sleep(2500);
+      const cur = (await db.invitation.findUniqueOrThrow({ where: { id: inv.id } })).data as {
+        events: { id: string; name: string }[];
+      } & Record<string, unknown>;
+      check(
+        cur.events.length === 2,
+        `pernikahan baru: 2 acara bawaan (${cur.events.map((e) => e.name).join(", ")})`,
+      );
+      await db.invitation.update({
+        where: { id: inv.id },
+        data: {
+          data: {
+            ...cur,
+            events: [
+              ...cur.events,
+              { ...cur.events[1], id: "acara-ketiga", name: "Ngunduh Mantu" },
+            ],
+          } as Prisma.InputJsonValue,
+        },
+      });
+      const q = await browser.newPage();
+      await q.setViewport({ width: 1280, height: 900 });
+      await q.goto(`${base}/dashboard/undangan/${inv.id}/edit`, {
+        waitUntil: "networkidle0",
+        timeout: 120000,
+      });
+      await sleep(2000);
+      await openGroup(q, "Acara");
+      const box = async () =>
+        (await q.evaluate(
+          `document.querySelector("[data-group-open]")?.innerText ?? ""`,
+        )) as string;
+      check(
+        !!(await q.$('[data-testid="events-over-limit"]')) &&
+          !(await box()).includes("Tambah acara"),
+        "3 acara (data lama): peringatan maks. 2 acara, tanpa tombol tambah",
+      );
+      const removes = (await q.$$eval("[data-group-open] button", (bs) =>
+        bs.map((b, i) => (b.textContent?.trim() === "Hapus" ? i : -1)).filter((i) => i >= 0),
+      )) as number[];
+      await (await q.$$("[data-group-open] button"))[removes[removes.length - 1]].click();
+      let saved = 0;
+      for (let k = 0; k < 20 && saved !== 2; k++) {
+        await sleep(500);
+        const d = (await db.invitation.findUniqueOrThrow({ where: { id: inv.id } })).data as {
+          events: unknown[];
+        };
+        saved = d.events.length;
+      }
+      const after = await box();
+      check(
+        saved === 2 &&
+          !(await q.$('[data-testid="events-over-limit"]')) &&
+          !after.includes("Tambah acara") &&
+          after.includes("Maksimal 2 acara"),
+        "hapus satu → tersimpan 2 acara; tombol tambah tetap tidak ada",
+      );
+      await q.close();
+    }
   }
 
   await browser.close();
