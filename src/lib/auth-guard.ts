@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { NOT_ADMIN_ERROR, canUseDashboard } from "@/lib/admin-access";
 
 /**
  * Pastikan request berasal dari user yang login.
@@ -11,6 +12,9 @@ import { auth } from "@/auth";
 export async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) redirect("/masuk");
+  // Model jasa: dashboard/editor hanya untuk admin — diperiksa di setiap
+  // request, termasuk server action, bukan hanya di middleware.
+  if (!canUseDashboard(session.user.email)) redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
   return session.user;
 }
 

@@ -54,7 +54,8 @@
     "ml:assets": "tsx scripts/ml-assets.ts",
     "e2e:pita-topi": "tsx --env-file=.env scripts/e2e-pita-topi.ts",
     "licenses:build": "tsx scripts/licenses-build.ts",
-    "e2e:editor-grup": "tsx --env-file=.env scripts/e2e-editor-grup.ts"
+    "e2e:editor-grup": "tsx --env-file=.env scripts/e2e-editor-grup.ts",
+    "e2e:akses": "tsx --env-file=.env scripts/e2e-akses.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

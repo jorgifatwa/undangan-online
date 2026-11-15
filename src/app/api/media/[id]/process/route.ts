@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { canUseDashboard } from "@/lib/admin-access";
 import { mediaView, processAudio } from "@/lib/media/service";
 
 /**
@@ -12,6 +13,8 @@ export const maxDuration = 300;
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return Response.json({ error: "Harus masuk" }, { status: 401 });
+  if (!canUseDashboard(session.user.email))
+    return Response.json({ error: "Khusus admin" }, { status: 403 });
   const { id } = await params;
   try {
     const m = await processAudio(session.user.id, id);

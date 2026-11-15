@@ -195,15 +195,17 @@ model Invitation {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  guests Guest[]
-  rsvps  Rsvp[]
-  wishes Wish[]
-  orders Order[]
-  views  InvitationView[]
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guests       Guest[]
+  rsvps        Rsvp[]
+  wishes       Wish[]
+  orders       Order[]
+  views        InvitationView[]
   media        Media[]
   addons       InvitationAddon[]
   previewLinks PreviewLink[]
+  ownerLinks   OwnerLink[]
+  booking      Booking?
 
   @@index([userId])
   @@index([status])
@@ -459,4 +461,73 @@ model Media {
   @@index([userId, status])
   @@index([invitationId, slot])
   @@index([status, createdAt])
+}
+
+/// Status pesanan jasa: bayar dulu, baru dikerjakan.
+enum BookingStatus {
+  /// Form terkirim, menunggu pembayaran (admin mengirim QRIS).
+  NEW
+  /// Pembayaran diterima (ditandai admin).
+  PAID
+  /// Undangan sedang dikerjakan admin.
+  PROCESSING
+  /// Pratinjau dikirim ke pelanggan; revisi dihitung di revisionCount.
+  AWAITING_APPROVAL
+  PUBLISHED
+  CANCELLED
+}
+
+/// Pesanan jasa pembuatan undangan dari form /pesan (tanpa login).
+/// BEDA dengan Order (pembayaran tema): Order dibuat saat admin menandai lunas.
+model Booking {
+  id              String        @id @default(cuid())
+  /// Kode pendek untuk pelanggan & WhatsApp, mis. "UND-7K3P".
+  code            String        @unique
+  themeId         String
+  eventType       EventType
+  /// Harga tema (rupiah) saat pesanan dibuat — sudah termasuk jasa.
+  price           Int
+  customerName    String
+  /// Nomor WhatsApp ternormalisasi (62…).
+  customerPhone   String
+  /// Tanggal acara pertama (untuk daftar admin).
+  eventDate       DateTime?
+  /// Seluruh isian form (divalidasi schema form pemesanan).
+  form            Json
+  status          BookingStatus @default(NEW)
+  /// Revisi yang sudah diminta (gratis maksimal 2).
+  revisionCount   Int           @default(0)
+  /// Catatan internal admin (tidak terlihat pelanggan).
+  adminNote       String?
+  /// Undangan yang dibuat admin dari pesanan ini.
+  invitationId    String?       @unique
+  consentAt       DateTime
+  ipHash          String?
+  deviceId        String?
+  statusChangedAt DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: SetNull)
+
+  @@index([status, updatedAt])
+  @@index([createdAt])
+  @@index([ipHash, createdAt])
+  @@index([deviceId, createdAt])
+}
+
+/// Link pemilik untuk pelanggan (tanpa login): rekap kehadiran, kelola ucapan,
+/// bagikan link tamu. Berlaku sampai dicabut admin; satu link aktif per undangan.
+model OwnerLink {
+  id           String    @id @default(cuid())
+  invitationId String
+  /// sha256(token) hex — token asli hanya tampil sekali saat dibuat.
+  tokenHash    String    @unique
+  revokedAt    DateTime?
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId])
 }

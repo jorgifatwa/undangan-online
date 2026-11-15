@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
+import { NOT_ADMIN_ERROR, canUseDashboard, isAdminEmail } from "@/lib/admin-access";
+
 /**
  * Konfigurasi Auth.js yang AMAN untuk Edge runtime (dipakai middleware).
  * Jangan impor Prisma / bcrypt di sini — itu ada di src/auth.ts.
@@ -21,17 +23,25 @@ export const authConfig = {
     }),
   ],
   callbacks: {
+    /**
+     * Model jasa: hanya email admin (ADMIN_EMAILS) yang boleh masuk. Ditolak
+     * SEBELUM akun dibuat, jadi email lain tidak pernah tersimpan.
+     */
+    signIn({ user }) {
+      if (canUseDashboard(user?.email)) return true;
+      return `/masuk?error=${NOT_ADMIN_ERROR}`;
+    },
     /** Dipanggil middleware: tentukan rute mana yang butuh login. */
     authorized({ auth, request: { nextUrl } }) {
       const isProtected = nextUrl.pathname.startsWith("/dashboard");
-      if (isProtected) return Boolean(auth?.user);
+      if (isProtected) return Boolean(auth?.user) && canUseDashboard(auth?.user?.email);
       return true;
     },
     jwt({ token, user }) {
       // `user` hanya ada saat login pertama; simpan id & role ke token.
       if (user?.id) {
         token.id = user.id;
-        token.role = user.role ?? "USER";
+        token.role = isAdminEmail(user.email) ? "ADMIN" : (user.role ?? "USER");
       }
       return token;
     },

@@ -15,6 +15,8 @@ const serverSchema = z
     AUTH_SECRET: z.string().min(32, "AUTH_SECRET minimal 32 karakter"),
     AUTH_GOOGLE_ID: z.string().min(1, "AUTH_GOOGLE_ID wajib diisi"),
     AUTH_GOOGLE_SECRET: z.string().min(1, "AUTH_GOOGLE_SECRET wajib diisi"),
+    /** Email admin dipisah koma — hanya mereka yang bisa masuk (model jasa). */
+    ADMIN_EMAILS: z.string().optional(),
 
     // --- Penyimpanan file (foto & musik) ---
     /** "local" = folder .uploads/ (development); "r2" = Cloudflare R2 (production). */

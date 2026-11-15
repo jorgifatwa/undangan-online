@@ -25,8 +25,12 @@ export const business = {
    */
   about: null as string | null,
 
-  /** Nomor WhatsApp format internasional tanpa "+" (CONTOH: "6281234567890"). */
-  whatsapp: null as string | null,
+  /**
+   * Nomor WhatsApp admin, format internasional tanpa "+". Dipakai untuk
+   * pesanan (form /pesan → WhatsApp) dan sebagai kontak umum (footer,
+   * /tentang, halaman legal).
+   */
+  whatsapp: "6285795560811" as string | null,
   /** CONTOH: "halo@undanganonline.id" */
   email: null as string | null,
   /** Nama akun tanpa "@" (CONTOH: "undanganonline.id"). */
@@ -39,7 +43,33 @@ export const business = {
    * testimoni tidak tampil. Jangan mengarang testimoni atau angka pengguna.
    */
   testimonials: [] as { name: string; event: string; quote: string }[],
+
+  /**
+   * Layanan mandiri (pelanggan membuat & mengedit undangan sendiri).
+   * false = model jasa lewat WhatsApp: pelanggan memesan lewat /pesan, admin
+   * yang membuat undangan. Wizard & dashboard tetap ada tetapi hanya untuk
+   * admin (ADMIN_EMAILS). Ubah ke true untuk membuka layanan mandiri lagi.
+   */
+  selfService: false as boolean,
+
+  /** Aturan jasa pembuatan undangan (tampil di form, konfirmasi, FAQ, syarat). */
+  service: {
+    /** Jam operasional admin. */
+    hours: { open: "08.00", close: "21.00", timezone: "WIB" },
+    /** Lama pengerjaan setelah data lengkap & pembayaran diterima. */
+    turnaround: "1–2 jam",
+    /** Revisi gratis per pesanan. */
+    freeRevisions: 2,
+    /** Pesanan Baru/Dibatalkan yang belum dibayar & tidak diubah N hari → dihapus. */
+    purgeUnpaidAfterDays: 30,
+    /** Batas foto galeri yang disebut di form pemesanan. */
+    galleryPhotos: 12,
+  },
 } as const;
+
+/** "08.00–21.00 WIB" */
+export const serviceHours = () =>
+  `${business.service.hours.open}–${business.service.hours.close} ${business.service.hours.timezone}`;
 
 export const waLink = (text?: string) =>
   business.whatsapp

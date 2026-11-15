@@ -250,9 +250,14 @@ async function main() {
     `FAQ ${faq} pertanyaan, masa aktif 12 bulan`,
   );
   check(!all2.includes("Dari pengguna kami"), "testimoni tidak tampil (belum ada testimoni asli)");
+  // Kontak dari src/config/business.ts: WhatsApp admin terisi (model jasa);
+  // email & Instagram masih kosong → tidak boleh tampil.
   check(
-    !(await m.$('a[href^="https://wa.me/"]')) && !all2.includes("Hubungi kami"),
-    "kontak yang belum diisi tidak ditampilkan",
+    !!(await m.$('a[href^="https://wa.me/6285795560811"]')) &&
+      /hubungi kami/i.test(all2) &&
+      !(await m.$('a[href^="mailto:"]')) &&
+      !(await m.$('a[href^="https://instagram.com/"]')),
+    "kontak: WhatsApp admin tampil, kontak yang belum diisi (email, Instagram) tidak",
   );
   await m.evaluate("window.scrollTo(0, 2400)");
   await sleep(600);
