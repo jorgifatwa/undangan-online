@@ -24,6 +24,8 @@ export const PHOTO_SLOTS = [
   "celebrant",
   /** Foto masa kecil (tema Pita Krayon; PNG tanpa latar → efek stiker). */
   "child",
+  /** Foto kartu pemutar musik (Pita Krayon). */
+  "musicCover",
   "qris",
 ] as const;
 export type PhotoSlot = (typeof PHOTO_SLOTS)[number];
@@ -37,6 +39,7 @@ export const PHOTO_MAX_SIDE: Record<PhotoSlot, number> = {
   groom: 1200,
   celebrant: 1200,
   child: 1200,
+  musicCover: 600,
   strip: 1000,
   closing: 1200,
   loveStory: 1000,

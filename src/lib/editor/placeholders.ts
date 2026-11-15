@@ -48,6 +48,7 @@ export function withPhotoPlaceholders(inv: AnyInvitationData): AnyInvitationData
         // foto masa kecil: tema memakai foto utama bila kosong → tidak diisi penanda
       },
       closingPhoto: d.closingPhoto ?? ph("Foto penutup"),
+      musicPhoto: d.musicPhoto ?? ph("Foto pemutar musik"),
       stripPhotos: padTo(d.stripPhotos, () => ph("Strip foto")),
       gallery: d.gallery.length ? d.gallery : Array.from({ length: 4 }, () => ph("Foto galeri")),
     },

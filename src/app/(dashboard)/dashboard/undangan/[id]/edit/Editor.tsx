@@ -691,11 +691,22 @@ export function Editor(p: EditorProps) {
       key: "musik",
       title: "Musik",
       body: (
-        <MusicPicker
-          library={p.library}
-          themeDefault={manifest.defaultMusic}
-          uploaded={p.uploadedAudio}
-        />
+        <div className="space-y-5">
+          {!wedding && manifest.editorFields?.includes("musicPhoto") && (
+            <PhotoField
+              name="musicPhoto"
+              slot="musicCover"
+              label="Foto pemutar musik"
+              aspect={1}
+              hint="Tampil di kartu pemutar musik, terpisah dari foto lain."
+            />
+          )}
+          <MusicPicker
+            library={p.library}
+            themeDefault={manifest.defaultMusic}
+            uploaded={p.uploadedAudio}
+          />
+        </div>
       ),
     },
   ];

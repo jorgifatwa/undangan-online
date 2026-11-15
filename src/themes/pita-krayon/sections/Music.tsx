@@ -39,10 +39,8 @@ function Player() {
   const a = useAudio();
   const { inv } = useInvitation();
   if (!a.tracks.length) return null;
-  const thumb =
-    inv.eventType === "BIRTHDAY"
-      ? (inv.data.celebrant.photo ?? inv.data.celebrant.childPhoto)
-      : undefined;
+  // foto kartu pemutar: isian tersendiri (grup Musik di editor)
+  const thumb = inv.eventType === "BIRTHDAY" ? inv.data.musicPhoto : undefined;
   const elapsed = a.progress * a.duration;
   const btn: React.CSSProperties = {
     display: "grid",
@@ -80,6 +78,21 @@ function Player() {
           background: "#efe9e5",
         }}
       >
+        {!thumb && (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "grid",
+              placeItems: "center",
+              fontSize: u(34),
+              color: "var(--inv-red)",
+            }}
+          >
+            ♪
+          </span>
+        )}
         {thumb && (
           <Image
             src={thumb.url}

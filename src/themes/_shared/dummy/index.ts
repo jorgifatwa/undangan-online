@@ -180,6 +180,8 @@ const birthdayInput: BirthdayInput = {
     accounts: [{ bank: "BCA", number: "5550001112", holder: "Lestari Ayuningtyas" }],
     confirmContacts: [],
   },
+  // foto kartu pemutar musik — hanya tema yang mendukung (mis. Pita Krayon)
+  musicPhoto: { url: `${P}/birthday-g1.webp`, alt: "Foto musik" },
   // strip foto hitung mundur — hanya tema yang mendukung (mis. Pita Krayon)
   stripPhotos: [1, 3, 4].map((n) => ({ url: `${P}/birthday-g${n}.webp`, alt: `Strip ${n}` })),
   // section "cerita" — hanya tema yang mendukung (tema lain tidak menampilkannya)

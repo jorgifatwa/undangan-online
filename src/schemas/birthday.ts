@@ -50,6 +50,8 @@ export const birthdayDataSchema = z.object({
    * on"), TERPISAH dari galeri — maks. 3. Tema lain tidak membacanya.
    */
   stripPhotos: z.array(photoSchema).max(3).default([]),
+  /** Foto di kartu pemutar musik (tema yang mendukung, mis. Pita Krayon), terpisah. */
+  musicPhoto: photoSchema.optional(),
   /** Cerita ulang tahun (section "cerita"); teks polos, tidak pernah dijadikan link. */
   story: z
     .object({
