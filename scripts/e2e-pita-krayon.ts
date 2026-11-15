@@ -224,6 +224,43 @@ async function main() {
     "RSVP tidak hadir tersimpan (tanpa ucapan)",
   );
 
+  console.log("Tata letak desktop setelah render ulang (padding section tetap)");
+  const d = await (await browser.createBrowserContext()).newPage();
+  await d.setViewport({ width: 1440, height: 900 });
+  await d.goto(`${base}/preview/pita-krayon`, { waitUntil: "networkidle0", timeout: 90000 });
+  await sleep(1500);
+  await d.evaluate(`document.querySelector('[aria-label="Buka undangan"]')?.click()`);
+  await sleep(2500);
+  for (let y = 0; y < 9000; y += 150) {
+    await d.evaluate(`window.scrollBy(0,150)`);
+    await sleep(50);
+  }
+  await sleep(1200);
+  const layout = (await d.evaluate(`(() => {
+    const out = { noPad: [], over: [] };
+    for (const sec of document.querySelectorAll(".pk-sec")) {
+      const inner = sec.children[1];
+      const cs = inner && getComputedStyle(inner);
+      if (cs && parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) === 0 && !["inv-salam", "inv-hitungMundur"].includes(sec.id))
+        out.noPad.push(sec.id);
+      const r = sec.getBoundingClientRect();
+      for (const e of sec.querySelectorAll('[data-a="strip"] > div')) {
+        const b = e.getBoundingClientRect();
+        if (b.bottom > r.bottom + 0.5 || b.right > r.right + 0.5) out.over.push(sec.id);
+      }
+    }
+    return out;
+  })()`)) as { noPad: string[]; over: string[] };
+  check(
+    layout.noPad.length === 0,
+    `padding section tetap setelah render ulang (${layout.noPad.join(",") || "semua ok"})`,
+  );
+  check(
+    layout.over.length === 0,
+    `strip foto di dalam section (${layout.over.join(",") || "semua ok"})`,
+  );
+  await d.close();
+
   console.log("Link pratinjau: ucapan tidak dirender");
   const { createPreviewLink } = await import("../src/lib/invitations/preview-link");
   const { token } = await createPreviewLink(inv.id);

@@ -19,11 +19,11 @@ export function Story() {
   const title = inv.data.story.title?.trim() || t.story;
   const paras = inv.data.story.text.split(/\n\s*\n/).filter((p) => p.trim());
   return (
-    <Section id="cerita" style={{ padding: `${u(34)} ${u(30)} ${u(44)}` }}>
+    <Section id="cerita" style={{ padding: `${u(60)} ${u(30)} ${u(44)}` }}>
       <Orn
         slot="ribbon-b"
         l={18}
-        t={10}
+        t={34}
         w={40}
         ratio={1.36}
         rotate={-14}
@@ -35,7 +35,7 @@ export function Story() {
       <Orn
         slot="sparkle-c"
         l={378}
-        t={30}
+        t={54}
         w={18}
         ratio={1.03}
         tint={false}

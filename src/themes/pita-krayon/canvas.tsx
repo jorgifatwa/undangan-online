@@ -199,8 +199,23 @@ export function Section({
   // jadi padding horizontal akan mengecilkan semua satuan u(). Padding
   // dipindah ke pembungkus isi (tidak berposisi → ornamen absolut tetap
   // berkoordinat terhadap section).
-  const { padding, paddingTop, paddingBottom, paddingLeft, paddingRight, textAlign, ...outer } =
-    style ?? {};
+  // Hanya properti yang DIISI yang diteruskan: `padding` bersama `paddingTop:
+  // undefined` membuat React menghapus padding saat render ulang (mis. ketika
+  // section mulai terlihat) → isi melewati batas section & terpotong.
+  const inner: React.CSSProperties = {};
+  const outer: React.CSSProperties = {};
+  const INNER = new Set([
+    "padding",
+    "paddingTop",
+    "paddingBottom",
+    "paddingLeft",
+    "paddingRight",
+    "textAlign",
+  ]);
+  for (const [k, v] of Object.entries(style ?? {})) {
+    if (v === undefined) continue;
+    (INNER.has(k) ? inner : outer)[k as "color"] = v as string;
+  }
   return (
     <SectionShell
       id={id}
@@ -218,9 +233,7 @@ export function Section({
       }}
     >
       <div ref={ref} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
-      <div style={{ padding, paddingTop, paddingBottom, paddingLeft, paddingRight, textAlign }}>
-        {children}
-      </div>
+      <div style={inner}>{children}</div>
     </SectionShell>
   );
 }
