@@ -6,7 +6,7 @@ export const siteConfig = {
   name: process.env.NEXT_PUBLIC_BRAND_NAME || "Undangan Online",
   description:
     "Buat undangan digital pernikahan & ulang tahun yang cantik dalam hitungan menit. Bagikan lewat WhatsApp.",
-  appUrl: (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001").replace(/\/+$/, ""),
+  appUrl: (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, ""),
 } as const;
 
 /** URL publik undangan: {APP_URL}/{slug} (slug tidak pernah sama dengan rute website). */

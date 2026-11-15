@@ -12,7 +12,7 @@ import type { Page } from "puppeteer-core";
 import { FAST_4G, launchBrowser, MOBILE_VIEWPORT } from "./lib/browser";
 
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const runs = Number(args.find((a) => a.startsWith("--runs="))?.split("=")[1] ?? 3);
 const paths = args.filter((a) => a.startsWith("/"));
 if (!paths.length) paths.push("/");

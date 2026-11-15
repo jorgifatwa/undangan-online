@@ -23,7 +23,7 @@ const BDAY = THEME_MANIFESTS.filter((m) => m.eventTypes.includes("BIRTHDAY" as n
 );
 
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const shots = args.find((a) => a.startsWith("--shots="))?.split("=")[1];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let failed = 0;

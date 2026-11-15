@@ -27,7 +27,7 @@ import { assertSafeDatabase } from "./lib/guard";
 import { planFields } from "./lib/purchase";
 
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const shots = args.find((a) => a.startsWith("--shots="))?.split("=")[1];
 const db = new PrismaClient();
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

@@ -23,7 +23,7 @@ import { launchBrowser } from "./lib/browser";
 
 const run = promisify(execFile);
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const theme = args.find((a) => a.startsWith("--theme="))?.split("=")[1] ?? "renda-rimba";
 const OUT = path.join(process.cwd(), "public/landing");
 const TMP = path.join(process.cwd(), ".cache/landing-record");

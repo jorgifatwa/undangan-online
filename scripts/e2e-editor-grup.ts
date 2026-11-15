@@ -21,7 +21,7 @@ import { launchBrowser } from "./lib/browser";
 import { assertSafeDatabase } from "./lib/guard";
 import { purchased } from "./lib/purchase";
 
-const base = process.argv.slice(2).find((a) => a.startsWith("http")) ?? "http://localhost:3001";
+const base = process.argv.slice(2).find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const db = new PrismaClient();
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 let failed = 0;

@@ -4,7 +4,7 @@
  * mendaftarkannya ke registry.generated.ts (dipakai halaman /tema).
  *
  *   pnpm dev                       (atau pnpm build && pnpm start)
- *   pnpm themes:thumbs [base] [themeId ...]     base default http://localhost:3001
+ *   pnpm themes:thumbs [base] [themeId ...]     base default http://localhost:3000
  *
  * Jalankan ulang setiap kali cover tema berubah.
  */
@@ -18,7 +18,7 @@ import { THEME_MANIFESTS } from "../src/themes/registry.generated";
 import { launchBrowser } from "./lib/browser";
 
 const args = process.argv.slice(2);
-const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
+const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3000";
 const only = args.filter((a) => !a.startsWith("http"));
 const OUT = path.join(process.cwd(), "public/theme-thumbs");
 /** Ukuran kartu di /tema ±220 px lebar → 2× untuk layar retina. */
