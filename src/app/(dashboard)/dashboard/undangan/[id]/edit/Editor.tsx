@@ -569,7 +569,6 @@ export function Editor(p: EditorProps) {
             />
           )}
           {manifest.editorFields?.includes("photoDecor") && <PhotoDecorPanel invitationId={p.id} />}
-          <PhotoField name="closingPhoto" slot="closing" label="Foto penutup" aspect={1} />
         </div>
       ),
     },
@@ -667,7 +666,21 @@ export function Editor(p: EditorProps) {
       key: "penutup",
       section: "penutup",
       title: "Penutup",
-      body: <ClosingForm eventType={p.eventType} />,
+      body: wedding ? (
+        <ClosingForm eventType={p.eventType} />
+      ) : (
+        // foto penutup tampil di bagian penutup → isiannya di grup yang sama
+        <div className="space-y-5">
+          <ClosingForm eventType={p.eventType} />
+          <PhotoField
+            name="closingPhoto"
+            slot="closing"
+            label="Foto penutup"
+            aspect={1}
+            hint="Tampil di bagian penutup undangan."
+          />
+        </div>
+      ),
     },
     {
       key: "bukutamu",
