@@ -6,9 +6,8 @@ import { couple, shortName } from "../../_shared/format";
 import { useCountdown } from "../../_shared/hooks";
 import { useInvitation } from "../../_shared/runtime/context";
 import { BrushBox } from "../art/BrushBox";
-import { VintageFrame } from "../art/VintageFrame";
+import { HeroFrame } from "../art/HeroFrame";
 import { paperBg } from "../art/textures";
-import { Butterfly, LilyCluster } from "../art/Watercolor";
 import { box, F, Section, txt, u, useFit } from "../canvas";
 
 /**
@@ -17,8 +16,9 @@ import { box, F, Section, txt, u, useFit } from "../canvas";
  * lili cat air + mutiara, kupu-kupu, nama skrip, tagline, lalu angka hitung
  * mundur di atas sapuan pink. Setelah hari H, angka diganti ucapan.
  */
-const FRAME = { l: 74, t: 129 };
-const FRAME_W = 280;
+// komposisi bingkai + lili + kupu-kupu (lebar seperti desain)
+const FRAME = { l: 75, t: 81 };
+const FRAME_W = 278;
 const CELLS = [
   { x: 119, label: "Hari" },
   { x: 197, label: "Jam" },
@@ -65,14 +65,7 @@ export function LiliHero() {
 
       {/* foto + bingkai */}
       <div data-a="zoom" style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.2s" }}>
-        <VintageFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto pasangan" />
-      </div>
-
-      <div data-a="fade" style={{ ...box(205, 90, 150, 165), ["--d" as string]: "0.5s" }}>
-        <LilyCluster style={{ width: "100%", height: "100%", overflow: "visible" }} />
-      </div>
-      <div data-a="left" style={{ ...box(91, 413, 92, 78), ["--d" as string]: "0.6s" }}>
-        <Butterfly style={{ width: "100%", height: "100%", overflow: "visible" }} />
+        <HeroFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto pasangan" priority />
       </div>
 
       {/* nama */}

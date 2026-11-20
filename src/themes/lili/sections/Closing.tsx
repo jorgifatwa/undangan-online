@@ -4,11 +4,10 @@ import { useId } from "react";
 
 import { couple, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
-import { OVAL_FRAME } from "../art/oval-frame";
-import { VintageFrame } from "../art/VintageFrame";
+import { HERO_FRAME } from "../art/hero-frame";
+import { HeroFrame } from "../art/HeroFrame";
 import { paperBg } from "../art/textures";
 import { Alstroemeria, FlowerDefs, GreenOrchid, PinkLily } from "../art/Flowers";
-import { Butterfly, LilyCluster } from "../art/Watercolor";
 import { F, Section, box, txt, u, useFit } from "../canvas";
 
 /**
@@ -17,9 +16,9 @@ import { F, Section, box, txt, u, useFit } from "../canvas";
  * miring, "Wassalamualaikum Wr. Wb" (gaya islami), nama skrip, lalu hamparan
  * bunga (lili krem & pink, anggrek hijau, alstroemeria) selebar layar.
  */
-const FRAME = { l: 75, t: 24 };
-const FRAME_W = 280;
-const FRAME_H = Math.round(FRAME_W * OVAL_FRAME.ratio);
+const FRAME = { l: 75, t: -8 };
+const FRAME_W = 278;
+const FRAME_H = Math.round(FRAME_W * HERO_FRAME.ratio);
 const FALLBACK =
   "Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu untuk mengiringi langkah baru kami. Atas kehadiran dan doa yang diberikan, kami ucapkan terima kasih.";
 
@@ -67,18 +66,12 @@ export function LiliClosing() {
       }}
       overflow="hidden"
     >
-      <div style={{ position: "relative", height: u(FRAME.t + FRAME_H + 20) }}>
+      <div style={{ position: "relative", height: u(FRAME.t + FRAME_H - 72) }}>
         <div
           data-a="zoom"
           style={{ ...box(0, 0, 430, FRAME.t + FRAME_H), ["--d" as string]: "0.1s" }}
         >
-          <VintageFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto penutup" />
-        </div>
-        <div data-a="fade" style={{ ...box(206, -14, 150, 165), ["--d" as string]: "0.4s" }}>
-          <LilyCluster style={{ width: "100%", height: "100%", overflow: "visible" }} />
-        </div>
-        <div data-a="left" style={{ ...box(92, 308, 92, 78), ["--d" as string]: "0.5s" }}>
-          <Butterfly style={{ width: "100%", height: "100%", overflow: "visible" }} />
+          <HeroFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto penutup" />
         </div>
       </div>
 

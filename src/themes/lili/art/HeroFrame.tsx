@@ -1,0 +1,80 @@
+"use client";
+
+import Image from "next/image";
+
+import type { Photo } from "@/schemas/common";
+import { box, u } from "../canvas";
+import { HERO_FRAME } from "./hero-frame";
+import frameImg from "./hero-frame.webp";
+
+/**
+ * Komposisi bingkai hero & penutup dari gambar milik pemilik (bingkai oval
+ * vintage + alas pink + lili + mutiara + kupu-kupu), diolah oleh
+ * `scripts/lili-hero-frame.ts`. Foto diletakkan di bawah gambar, tepat di
+ * lubang elipsnya. `w` = lebar komposisi (px kanvas).
+ */
+export function HeroFrame({
+  l,
+  t,
+  w,
+  photo,
+  alt,
+  priority,
+}: {
+  l: number;
+  t: number;
+  w: number;
+  photo?: Photo;
+  alt: string;
+  priority?: boolean;
+}) {
+  const h = w * HERO_FRAME.ratio;
+  const { cx, cy, rx, ry } = HERO_FRAME.hole;
+  const pad = 2;
+  return (
+    <>
+      <div
+        style={{
+          ...box(
+            l + (cx - rx) * w - pad,
+            t + (cy - ry) * h - pad,
+            rx * 2 * w + pad * 2,
+            ry * 2 * h + pad * 2,
+          ),
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: "linear-gradient(160deg, #f6dcdc, #f2cfd0)",
+        }}
+      >
+        {photo && (
+          <Image
+            src={photo.url}
+            alt={photo.alt ?? alt}
+            fill
+            priority={priority}
+            sizes="(max-width: 440px) 46vw, 200px"
+            style={{
+              objectFit: "cover",
+              objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 40}%`,
+            }}
+          />
+        )}
+      </div>
+      <div
+        aria-hidden
+        style={{
+          ...box(l, t, w, h),
+          filter: `var(--inv-filter-frame, saturate(1)) drop-shadow(0 ${u(2)} ${u(3)} rgb(60 60 40 / 0.25))`,
+        }}
+      >
+        <Image
+          src={frameImg}
+          alt=""
+          fill
+          sizes="(max-width: 440px) 72vw, 320px"
+          priority={priority}
+        />
+      </div>
+    </>
+  );
+}
