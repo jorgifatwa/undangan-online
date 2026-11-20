@@ -8,6 +8,8 @@ import { manifest } from "./manifest";
 import { LiliCover } from "./sections/Cover";
 import { LiliCouple } from "./sections/Couple";
 import { LiliEvent } from "./sections/Event";
+import { LiliGallery } from "./sections/Gallery";
+import { LiliGift } from "./sections/Gift";
 import { LiliHero } from "./sections/Hero";
 import { LiliSalam } from "./sections/Salam";
 import { LiliSaveDate } from "./sections/SaveDate";
@@ -29,6 +31,8 @@ const definition: ThemeDefinition = {
     profil: LiliCouple,
     ayat: LiliSaveDate,
     acara: LiliEvent,
+    amplop: LiliGift,
+    galeri: LiliGallery,
   },
 };
 
