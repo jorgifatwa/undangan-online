@@ -15,29 +15,72 @@ import { SAGE_BLOCK, SALAM_H } from "./Salam";
 
 /**
  * Mempelai (section `profil`): lanjutan blok sage dari salam — mempelai
- * pertama (bingkai renda, mawar, kelinci, nama, orang tua, Instagram) + "&"
- * besar — lalu mempelai kedua di atas kertas krem. Koordinat lokal kanvas;
- * kolom bunga kanan memakai koordinat blok sage (mulai SALAM_H).
+ * pertama + "&" besar — lalu mempelai kedua di atas kertas krem dengan kolom
+ * bunga kiri. Kertas krem bersambung ke Save The Date (blok krem CREAM_BLOCK,
+ * kolom bunga kiri berpola global yang sama). Koordinat = px kanvas 430.
  */
 const SAGE_H = SAGE_BLOCK - SALAM_H; // 588
-const PAPER_H = 640;
+/** Tinggi bagian krem di section mempelai. */
+export const PAPER_H = 520;
+/** Blok krem: mempelai kedua (PAPER_H) + Save The Date. */
+export const CREAM_BLOCK = 810;
 
 type Tone = "sage" | "paper";
+type Rect = [l: number, t: number, w: number, h: number];
+
+interface CardLayout {
+  /** Pusat horizontal isi. */
+  cx: number;
+  /** Tepi atas & lebar bingkai renda. */
+  top: number;
+  frameW: number;
+  roses: Rect;
+  bunnies: Rect;
+  /** Tepi atas blok nama, ukuran nama, jarak ke orang tua & Instagram. */
+  textTop: number;
+  nameSize: number;
+  gapParents: number;
+  gapIg: number;
+  igSize: number;
+}
+
+/** Mempelai pertama (sage) — gambar 5. */
+const FIRST: CardLayout = {
+  cx: 178,
+  top: 10,
+  frameW: LACE_W,
+  roses: [222, -36, 58, 82],
+  bunnies: [100, 203, 52, 48],
+  textTop: 298,
+  nameSize: 25,
+  gapParents: 10,
+  gapIg: 18,
+  igSize: 43,
+};
+/** Mempelai kedua (krem) — gambar 6 & 7. */
+const SECOND: CardLayout = {
+  cx: 222,
+  top: 29,
+  frameW: 220,
+  roses: [264, 46, 50, 74],
+  bunnies: [188, 256, 52, 46],
+  textTop: 339,
+  nameSize: 27,
+  gapParents: 12,
+  gapIg: 16,
+  igSize: 48,
+};
 
 function PersonCard({
   person,
   lead,
   tone,
-  cx,
-  top,
+  L,
 }: {
   person: Person;
   lead: string;
   tone: Tone;
-  /** Pusat horizontal kolom isi (px kanvas). */
-  cx: number;
-  /** Tepi atas bingkai (px kanvas, lokal section). */
-  top: number;
+  L: CardLayout;
 }) {
   const name = displayFullName(person);
   const nameRef = useFit<HTMLHeadingElement>(name);
@@ -45,20 +88,21 @@ function PersonCard({
   const ig = instagramUrl(person.instagram);
   const ink = tone === "sage" ? "var(--inv-cream)" : "var(--inv-ink)";
   const nameInk = tone === "sage" ? "var(--inv-pink-text)" : "var(--inv-ink)";
-  const fl = cx - LACE_W / 2;
+  const k = L.frameW / LACE_W;
+  const fl = L.cx - L.frameW / 2;
   const photo = person.photo;
   return (
     <>
-      {/* foto + bingkai renda + hiasan */}
+      {/* foto + bingkai renda */}
       <div
         data-a="zoom"
-        style={{ ...box(0, 0, 430, top + LACE_H + 10), ["--d" as string]: "0.1s" }}
+        style={{ ...box(0, 0, 430, L.top + LACE_H * k + 10), ["--d" as string]: "0.1s" }}
       >
         <div
           style={{
-            ...box(fl + LACE_HOLE.x, top + LACE_HOLE.y, LACE_HOLE.w, LACE_HOLE.h),
+            ...box(fl + LACE_HOLE.x * k, L.top + LACE_HOLE.y * k, LACE_HOLE.w * k, LACE_HOLE.h * k),
             overflow: "hidden",
-            borderRadius: u(14),
+            borderRadius: u(14 * k),
             background: "linear-gradient(160deg, #c9d6de, #e9eef0)",
           }}
         >
@@ -67,7 +111,7 @@ function PersonCard({
               src={photo.url}
               alt={photo.alt ?? name}
               fill
-              sizes="(max-width: 440px) 30vw, 130px"
+              sizes="(max-width: 440px) 32vw, 140px"
               style={{
                 objectFit: "cover",
                 objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 30}%`,
@@ -77,22 +121,22 @@ function PersonCard({
         </div>
         <LaceFrame
           style={{
-            ...box(fl, top, LACE_W, LACE_H),
+            ...box(fl, L.top, L.frameW, LACE_H * k),
             filter: "drop-shadow(0 1px 2px rgb(40 40 30 / 0.25))",
           }}
         />
       </div>
-      <div data-a="fade" style={{ ...box(fl + 140, top - 46, 58, 82), ["--d" as string]: "0.45s" }}>
+      <div data-a="fade" style={{ ...box(...L.roses), ["--d" as string]: "0.45s" }}>
         <RoseSpray style={{ width: "100%", height: "100%" }} />
       </div>
-      <div data-a="fade" style={{ ...box(fl + 20, top + 193, 52, 48), ["--d" as string]: "0.55s" }}>
+      <div data-a="fade" style={{ ...box(...L.bunnies), ["--d" as string]: "0.55s" }}>
         <Bunnies style={{ width: "100%", height: "100%" }} />
       </div>
 
       {/* nama, orang tua, Instagram */}
       <div
         style={{
-          ...box(cx - 150, top + 288, 300),
+          ...box(L.cx - 150, L.textTop, 300),
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -102,8 +146,8 @@ function PersonCard({
           ref={nameRef}
           data-a
           style={{
-            ...txt(F.serif, 25, 1.3, { italic: true, color: nameInk }),
-            fontSize: `calc(${u(25)} * var(--fit, 1))`,
+            ...txt(F.serif, L.nameSize, 1.3, { italic: true, color: nameInk }),
+            fontSize: `calc(${u(L.nameSize)} * var(--fit, 1))`,
             whiteSpace: "nowrap",
             alignSelf: "stretch",
             ["--d" as string]: "0.3s",
@@ -116,7 +160,7 @@ function PersonCard({
             data-a
             style={{
               ...txt(F.serif, 13.4, 1.5, { color: ink }),
-              marginTop: u(10),
+              marginTop: u(L.gapParents),
               ["--d" as string]: "0.45s",
             }}
           >
@@ -131,9 +175,9 @@ function PersonCard({
             rel="noopener noreferrer"
             aria-label={`Instagram @${person.instagram}`}
             style={{
-              marginTop: u(18),
-              width: u(43),
-              height: u(43),
+              marginTop: u(L.gapIg),
+              width: u(L.igSize),
+              height: u(L.igSize),
               color: ink,
               pointerEvents: "auto",
               ["--d" as string]: "0.6s",
@@ -180,7 +224,7 @@ export function LiliCouple() {
         }}
       >
         <FloralColumn from={SALAM_H} height={SAGE_H} total={SAGE_BLOCK} />
-        <PersonCard person={a} lead={lead(a)} tone="sage" cx={178} top={10} />
+        <PersonCard person={a} lead={lead(a)} tone="sage" L={FIRST} />
         <p
           data-a="zoom"
           aria-hidden
@@ -194,9 +238,10 @@ export function LiliCouple() {
         </p>
       </div>
 
-      {/* kertas krem: mempelai kedua (disempurnakan di bagian berikutnya) */}
+      {/* kertas krem: mempelai kedua, kolom bunga kiri */}
       <div style={{ position: "relative", height: u(PAPER_H), ...paperBg() }}>
-        <PersonCard person={b} lead={lead(b)} tone="paper" cx={222} top={50} />
+        <FloralColumn from={0} height={PAPER_H} total={CREAM_BLOCK} side="left" shift={26} />
+        <PersonCard person={b} lead={lead(b)} tone="paper" L={SECOND} />
       </div>
     </Section>
   );

@@ -9,6 +9,7 @@ import { LiliCover } from "./sections/Cover";
 import { LiliCouple } from "./sections/Couple";
 import { LiliHero } from "./sections/Hero";
 import { LiliSalam } from "./sections/Salam";
+import { LiliSaveDate } from "./sections/SaveDate";
 import "./theme.css";
 
 /**
@@ -25,6 +26,7 @@ const definition: ThemeDefinition = {
     hitungMundur: LiliHero,
     salam: LiliSalam,
     profil: LiliCouple,
+    ayat: LiliSaveDate,
   },
 };
 

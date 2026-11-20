@@ -18,6 +18,8 @@ export function FloralColumn({
   height,
   total,
   side = "right",
+  shift = 0,
+  extraGlad,
   z,
 }: {
   /** Awal potongan dalam koordinat blok. */
@@ -27,10 +29,14 @@ export function FloralColumn({
   /** Tinggi seluruh blok (untuk membuat pola). */
   total: number;
   side?: "left" | "right";
+  /** Geser kolom ke luar layar (px kanvas) agar tidak menutupi isi. */
+  shift?: number;
+  /** Posisi y gladiol tambahan (koordinat blok). */
+  extraGlad?: number[];
   z?: number;
 }) {
   const id = useId().replace(/:/g, "");
-  const flowers = columnFlowers(total).filter(
+  const flowers = columnFlowers(total, extraGlad).filter(
     (fl) => fl.y > from - 90 && fl.y < from + height + 90,
   );
   return (
@@ -52,9 +58,11 @@ export function FloralColumn({
         <defs>
           <FlowerDefs id={id} />
         </defs>
-        {flowers.map((fl, i) => (
-          <ColumnFlowerArt key={i} id={id} fl={fl} />
-        ))}
+        <g transform={shift ? `translate(${shift} 0)` : undefined}>
+          {flowers.map((fl, i) => (
+            <ColumnFlowerArt key={i} id={id} fl={fl} />
+          ))}
+        </g>
       </svg>
     </div>
   );
