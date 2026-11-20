@@ -1,70 +1,54 @@
 "use client";
 
-import { useId } from "react";
-
-import { box } from "../canvas";
-import { ColumnFlowerArt, FlowerDefs, columnFlowers } from "./Flowers";
+import { u } from "../canvas";
+import column from "./floral-column.webp";
 
 /**
- * Kolom bunga di tepi layar (lili, anggrek hijau, alstroemeria, gladiol).
- * Pola bunga memakai koordinat GLOBAL satu blok (mis. blok sage salam +
- * mempelai wanita); tiap section menggambar potongan [from, from + height]
- * dari pola yang sama dan memotongnya di batas section, jadi section yang
- * bersebelahan menyambung tanpa jahitan (bunga di batas tergambar identik di
- * kedua sisi).
+ * Kolom bunga di tepi layar — foto kolom bunga milik pemilik (lili,
+ * alstroemeria, anggrek hijau, gladiol; PNG transparan) diulang tegak sebagai
+ * latar CSS. Posisi ulangan memakai koordinat GLOBAL satu blok (`from` = awal
+ * section di dalam blok), jadi section yang bersebelahan menyambung tanpa
+ * jahitan. Sisi kanan sedikit terpotong tepi layar seperti desain; `left` =
+ * dicerminkan.
  */
+/** Tinggi satu ubin (3 ulangan bunga) dalam px kanvas — periode desain ±230. */
+const TILE_H = 690;
+const TILE_W = (TILE_H * column.width) / column.height;
+/** Bagian kolom yang keluar tepi layar (px kanvas). */
+const BLEED = 34;
+
 export function FloralColumn({
   from,
   height,
-  total,
   side = "right",
-  shift = 0,
-  extraGlad,
   z,
 }: {
   /** Awal potongan dalam koordinat blok. */
   from: number;
   /** Tinggi section (px kanvas). */
   height: number;
-  /** Tinggi seluruh blok (untuk membuat pola). */
-  total: number;
   side?: "left" | "right";
-  /** Geser kolom ke luar layar (px kanvas) agar tidak menutupi isi. */
-  shift?: number;
-  /** Posisi y gladiol tambahan (koordinat blok). */
-  extraGlad?: number[];
   z?: number;
 }) {
-  const id = useId().replace(/:/g, "");
-  const flowers = columnFlowers(total, extraGlad).filter(
-    (fl) => fl.y > from - 90 && fl.y < from + height + 90,
-  );
   return (
     <div
       aria-hidden
       style={{
-        ...box(0, 0, 430, height),
-        overflow: "hidden",
+        position: "absolute",
+        top: 0,
+        right: side === "right" ? u(-BLEED) : undefined,
+        left: side === "left" ? u(-BLEED) : undefined,
+        width: u(TILE_W),
+        height: u(height),
         pointerEvents: "none",
         zIndex: z,
+        backgroundImage: `url(${column.src})`,
+        backgroundSize: `${u(TILE_W)} ${u(TILE_H)}`,
+        backgroundRepeat: "repeat-y",
+        backgroundPosition: `0 ${u(-from)}`,
         transform: side === "left" ? "scaleX(-1)" : undefined,
       }}
-    >
-      <svg
-        viewBox={`0 ${from} 430 ${height}`}
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-        overflow="hidden"
-      >
-        <defs>
-          <FlowerDefs id={id} />
-        </defs>
-        <g transform={shift ? `translate(${shift} 0)` : undefined}>
-          {flowers.map((fl, i) => (
-            <ColumnFlowerArt key={i} id={id} fl={fl} />
-          ))}
-        </g>
-      </svg>
-    </div>
+    />
   );
 }
 

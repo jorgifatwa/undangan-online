@@ -27,7 +27,7 @@ export function LiliSalam() {
         background: `${smoke([{ x: 20, y: 70, w: 40, h: 40, a: 0.12 }])}, var(--inv-sage)`,
       }}
     >
-      <FloralColumn from={0} height={SALAM_H} total={SAGE_BLOCK} />
+      <FloralColumn from={0} height={SALAM_H} />
       <div
         style={{
           position: "relative",

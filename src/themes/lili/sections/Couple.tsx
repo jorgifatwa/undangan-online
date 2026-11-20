@@ -223,7 +223,7 @@ export function LiliCouple() {
           ])}, var(--inv-sage)`,
         }}
       >
-        <FloralColumn from={SALAM_H} height={SAGE_H} total={SAGE_BLOCK} />
+        <FloralColumn from={SALAM_H} height={SAGE_H} />
         <PersonCard person={a} lead={lead(a)} tone="sage" L={FIRST} />
         <p
           data-a="zoom"
@@ -240,7 +240,7 @@ export function LiliCouple() {
 
       {/* kertas krem: mempelai kedua, kolom bunga kiri */}
       <div style={{ position: "relative", height: u(PAPER_H), ...paperBg() }}>
-        <FloralColumn from={0} height={PAPER_H} total={CREAM_BLOCK} side="left" shift={26} />
+        <FloralColumn from={0} height={PAPER_H} side="left" />
         <PersonCard person={b} lead={lead(b)} tone="paper" L={SECOND} />
       </div>
     </Section>

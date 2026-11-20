@@ -254,39 +254,3 @@ export function Gladiolus(p: FlowerProps) {
     </g>
   );
 }
-
-export type ColumnFlower = {
-  kind: "lily" | "alst" | "orchid" | "glad";
-  x: number;
-  y: number;
-  s?: number;
-  rot?: number;
-};
-
-/**
- * Pola kolom bunga sepanjang tepi (koordinat kanvas, sisi kanan; x > 430
- * terpotong tepi layar). Satu pola (alstroemeria → anggrek → lili) berulang
- * tiap 230 px, diawali setangkai gladiol.
- */
-export function columnFlowers(height: number, extraGlad: number[] = []): ColumnFlower[] {
-  const startY = 0;
-  const out: ColumnFlower[] = [{ kind: "glad", x: 352, y: startY + 100, s: 1.15, rot: -22 }];
-  const unit: ColumnFlower[] = [
-    { kind: "alst", x: 418, y: 36, s: 1.3, rot: 12 },
-    { kind: "orchid", x: 404, y: 118, s: 1.3, rot: -8 },
-    { kind: "lily", x: 414, y: 212, s: 1.4, rot: 8 },
-  ];
-  for (let base = startY; base < startY + height + 80; base += 230)
-    for (const fl of unit) out.push({ ...fl, y: base + fl.y });
-  // gladiol tambahan di atas bunga lain (mis. menjulur ke Save The Date)
-  for (const y of extraGlad) out.push({ kind: "glad", x: 358, y, s: 1.15, rot: -30 });
-  return out;
-}
-
-export function ColumnFlowerArt({ id, fl }: { id: string; fl: ColumnFlower }) {
-  const props = { id, x: fl.x, y: fl.y, s: fl.s, rot: fl.rot };
-  if (fl.kind === "lily") return <PinkLily {...props} />;
-  if (fl.kind === "alst") return <Alstroemeria {...props} />;
-  if (fl.kind === "orchid") return <GreenOrchid {...props} />;
-  return <Gladiolus {...props} />;
-}

@@ -75,14 +75,7 @@ export function LiliSaveDate() {
   return (
     <Section id="ayat" minHeight={H} bg={paperBg()} overflow="hidden">
       <LeafShadow />
-      <FloralColumn
-        from={PAPER_H}
-        height={H + 160}
-        total={CREAM_BLOCK + 160}
-        side="left"
-        shift={26}
-        extraGlad={[PAPER_H + 250]}
-      />
+      <FloralColumn from={PAPER_H} height={H + 160} side="left" />
       <div
         style={{
           position: "relative",
