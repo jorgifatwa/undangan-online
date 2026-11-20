@@ -10,6 +10,7 @@ import { LiliCouple } from "./sections/Couple";
 import { LiliEvent } from "./sections/Event";
 import { LiliGallery } from "./sections/Gallery";
 import { LiliGift } from "./sections/Gift";
+import { LiliLoveStory } from "./sections/LoveStory";
 import { LiliHero } from "./sections/Hero";
 import { LiliSalam } from "./sections/Salam";
 import { LiliSaveDate } from "./sections/SaveDate";
@@ -33,6 +34,7 @@ const definition: ThemeDefinition = {
     acara: LiliEvent,
     amplop: LiliGift,
     galeri: LiliGallery,
+    loveStory: LiliLoveStory,
   },
 };
 
