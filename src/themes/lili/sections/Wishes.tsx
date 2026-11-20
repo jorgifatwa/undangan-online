@@ -6,6 +6,7 @@ import { useInvitation } from "../../_shared/runtime/context";
 import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
 import { smoke } from "../art/FloralColumn";
 import { FlowerDefs, GreenOrchid, PinkLily } from "../art/Flowers";
+import laceStrip from "../art/lace-strip.webp";
 import { F, Section, txt, u } from "../canvas";
 
 /**
@@ -18,12 +19,6 @@ import { F, Section, txt, u } from "../canvas";
 type Attendance = "HADIR" | "TIDAK_HADIR";
 const MAX_MSG = 300;
 const CREAM = "var(--inv-cream)";
-
-const svg = (s: string) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
-/** Pita renda vertikal: tepi kiri scallop + bunga kecil berlubang, ubin 42 × 40. */
-const LACE_STRIP = svg(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="40"><path d="M8 0 C0 5 0 15 8 20 C0 25 0 35 8 40 H42 V0Z" fill="#f4f2ec"/><g fill="none" stroke="#c9c6bd" stroke-width="1"><circle cx="24" cy="10" r="5"/><circle cx="24" cy="30" r="5"/><path d="M12 20 C18 16 30 16 36 20 C30 24 18 24 12 20Z"/></g><g fill="#d6d3ca"><circle cx="24" cy="10" r="1.6"/><circle cx="24" cy="30" r="1.6"/><circle cx="6" cy="10" r="1.2"/><circle cx="6" cy="30" r="1.2"/><circle cx="37" cy="4" r="1"/><circle cx="37" cy="36" r="1"/></g></svg>`,
-);
 
 function relative(iso: string) {
   const s = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
@@ -145,13 +140,15 @@ export function LiliWishes() {
         aria-hidden
         style={{
           position: "absolute",
-          right: 0,
+          right: u(-6),
           top: u(150),
           bottom: 0,
-          width: u(42),
-          backgroundImage: LACE_STRIP,
-          backgroundSize: `${u(42)} ${u(40)}`,
-          filter: "drop-shadow(-1px 0 1.5px rgb(0 0 0 / 0.2))",
+          width: u(52),
+          // foto renda lurus milik pemilik, ubin mulus (scripts/lili-lace-strip.ts)
+          backgroundImage: `url(${laceStrip.src})`,
+          backgroundSize: `${u(52)} ${u((52 * laceStrip.height) / laceStrip.width)}`,
+          backgroundRepeat: "repeat-y",
+          filter: "drop-shadow(-1px 0 1.5px rgb(0 0 0 / 0.25))",
         }}
       />
       {/* lili besar kanan atas & anggrek kiri bawah */}

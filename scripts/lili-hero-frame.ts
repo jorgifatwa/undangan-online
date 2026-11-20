@@ -120,16 +120,37 @@ async function main() {
       if (y > hy1) hy1 = y;
     }
 
-  // lubang = elips bersih seukuran area pink (+ sedikit), bukan hasil flood
-  // yang bertepi berbintik; foto ditaruh di bawah gambar ini
+  // lubang = seluruh bagian dalam bingkai hijau (alas pink & tepi putih ikut
+  // dibuang, foto langsung menempel ke manik bingkai). Tepi dalam diukur dengan
+  // sinar dari pusat ke kiri, kanan & bawah (kanan atas tertutup bunga).
   const ecx = (hx0 + hx1) / 2;
   const ecy = (hy0 + hy1) / 2;
-  const erx = (hx1 - hx0) / 2 + 10;
-  const ery = (hy1 - hy0) / 2 + 10;
+  const green = (x: number, y: number) => {
+    const [r, g, b] = rgb((y | 0) * W + (x | 0));
+    return g > r + 4 && g > b + 18;
+  };
+  const ray = (dx: number, dy: number) => {
+    let d = 20;
+    while (!green(ecx + dx * d, ecy + dy * d)) d++;
+    return d;
+  };
+  const erx = (ray(-1, 0) + ray(1, 0)) / 2 + 3;
+  const ery = ray(0, 1) + 3;
+  /** Piksel alas (pink pucat / putih) — bunga & mutiara yang menumpang tetap. */
+  const isMat = (i: number) => {
+    const [r, g, b] = rgb(i);
+    return Math.min(r, g, b) >= 178 && r - g <= 46 && Math.abs(g - b) <= 16;
+  };
   const inHole = (i: number) => {
     const x = i % W;
     const y = (i / W) | 0;
-    return ((x - ecx) / erx) ** 2 + ((y - ecy) / ery) ** 2 <= 1;
+    const e = ((x - ecx) / erx) ** 2 + ((y - ecy) / ery) ** 2;
+    // inti elips selalu dibuang; dekat tepi hanya piksel alas
+    if (e > 1) return false;
+    // kelopak lili yang menjorok ke dalam lubang (pink pekat / garis) tetap
+    const [r, g] = rgb(i);
+    if (r - g >= 48 || g < 172) return false;
+    return e <= 0.86 || isMat(i);
   };
   hx0 = ecx - erx;
   hx1 = ecx + erx;
