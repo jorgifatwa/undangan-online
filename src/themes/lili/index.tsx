@@ -7,6 +7,7 @@ import { fontClassName } from "./fonts";
 import { manifest } from "./manifest";
 import { LiliCover } from "./sections/Cover";
 import { LiliCouple } from "./sections/Couple";
+import { LiliEvent } from "./sections/Event";
 import { LiliHero } from "./sections/Hero";
 import { LiliSalam } from "./sections/Salam";
 import { LiliSaveDate } from "./sections/SaveDate";
@@ -27,6 +28,7 @@ const definition: ThemeDefinition = {
     salam: LiliSalam,
     profil: LiliCouple,
     ayat: LiliSaveDate,
+    acara: LiliEvent,
   },
 };
 

@@ -1,0 +1,205 @@
+"use client";
+
+import { useId } from "react";
+
+import { eventDateLabel } from "@/lib/datetime";
+import { safeHref } from "@/lib/links";
+import type { InvitationEvent } from "@/schemas/common";
+
+import { useInvitation } from "../../_shared/runtime/context";
+import { smoke } from "../art/FloralColumn";
+import { Alstroemeria, FlowerDefs, Gladiolus, PinkLily } from "../art/Flowers";
+import { TornCard } from "../art/TornCard";
+import { F, Section, box, txt, u } from "../canvas";
+
+/**
+ * Acara (kanvas 430, latar sage berkabut): kartu kertas sobek bergantian
+ * kiri/kanan (Akad Nikah kiri, Resepsi kanan) berisi judul tebal miring,
+ * baris tanggal/jam/tempat berikon, dan tombol gelap "Lihat Lokasi". Lili di
+ * kanan atas, lili + alstroemeria + gladiol di kiri bawah.
+ */
+
+/** "08.00 WIB s.d Selesai" / "08.00 s.d 10.00 WIB" seperti desain. */
+function timeLabel(e: InvitationEvent): string | null {
+  if (!e.startTime) return null;
+  const s = e.startTime.replace(":", ".");
+  if (e.untilFinished || !e.endTime) return `${s} ${e.timezone} s.d Selesai`;
+  return `${s} s.d ${e.endTime.replace(":", ".")} ${e.timezone}`;
+}
+
+function IconCalendar() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
+      <rect x={2.5} y={4} width={19} height={17.5} rx={2.5} />
+      <path d="M2.5 9h19M7 2.5v3M17 2.5v3" />
+      {[0, 1, 2, 3].map((c) =>
+        [0, 1, 2].map((r) => (
+          <rect
+            key={`${c}${r}`}
+            x={5.2 + c * 3.7}
+            y={11.2 + r * 3.2}
+            width={2.2}
+            height={1.9}
+            rx={0.4}
+            fill="currentColor"
+            stroke="none"
+            opacity={0.75}
+          />
+        )),
+      )}
+    </svg>
+  );
+}
+function IconClock() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
+      <circle cx={12} cy={12} r={9.8} />
+      <circle cx={12} cy={12} r={8} opacity={0.5} />
+      <path d="M12 6.5V12l3.6 2.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconPin() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
+      <path d="M12 21s-6.5-6.4-6.5-11.2A6.5 6.5 0 0 1 18.5 9.8C18.5 14.6 12 21 12 21Z" />
+      <circle cx={12} cy={9.8} r={2.6} />
+      <path d="M8.5 21.5h7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Row({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: u(10), marginTop: u(11) }}>
+      <span style={{ flex: "none", width: u(21), height: u(21), color: "var(--inv-ink)" }}>
+        {icon}
+      </span>
+      <p
+        style={{
+          ...txt(F.serif, 13, 1.4, { color: "var(--inv-ink)", align: "left" }),
+          fontVariantNumeric: "oldstyle-nums",
+          paddingTop: u(1),
+        }}
+      >
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function EventCard({ e, i }: { e: InvitationEvent; i: number }) {
+  const right = i % 2 === 1;
+  const time = timeLabel(e);
+  const place = [e.venueName, e.address ?? e.city].filter(Boolean).join(", ");
+  const map = safeHref(e.mapsUrl, "maps");
+  return (
+    <div
+      data-a={right ? "right" : "left"}
+      style={{
+        position: "relative",
+        marginLeft: u(right ? 91 : 26),
+        width: u(314),
+        marginTop: u(i === 0 ? 0 : 40),
+        ["--d" as string]: "0.15s",
+      }}
+    >
+      <TornCard seed={right ? 1 : 0}>
+        <div
+          style={{ minHeight: u(247), padding: `${u(22)} ${u(30)} ${u(30)} ${u(right ? 68 : 76)}` }}
+        >
+          <h3
+            style={{
+              ...txt(F.serif, 31, 1.2, { italic: true, weight: 700, color: "var(--inv-ink)" }),
+              marginLeft: u(right ? 0 : -10),
+            }}
+          >
+            {e.name}
+          </h3>
+          <Row icon={<IconCalendar />}>{eventDateLabel(e)}</Row>
+          {time && <Row icon={<IconClock />}>{time}</Row>}
+          {place && <Row icon={<IconPin />}>{place}</Row>}
+          {map && (
+            <div style={{ marginTop: u(16), paddingLeft: u(right ? 28 : 20) }}>
+              <a
+                href={map}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block",
+                  padding: `${u(3)} ${u(9)}`,
+                  borderRadius: 999,
+                  background: "#2b2c22",
+                  ...txt(F.serif, 12.5, 1.3, { weight: 600, color: "#f4efe3" }),
+                  textDecoration: "none",
+                  pointerEvents: "auto",
+                }}
+              >
+                Lihat Lokasi
+              </a>
+            </div>
+          )}
+        </div>
+      </TornCard>
+    </div>
+  );
+}
+
+export function LiliEvent() {
+  const { inv } = useInvitation();
+  const id = useId().replace(/:/g, "");
+  const events = inv.data.events;
+  return (
+    <Section
+      id="acara"
+      bg={{
+        background: `${smoke([
+          { x: 30, y: 46, w: 50, h: 14, a: 0.22 },
+          { x: 80, y: 95, w: 45, h: 16, a: 0.2 },
+          { x: 10, y: 18, w: 30, h: 12, a: 0.12 },
+        ])}, var(--inv-sage)`,
+      }}
+      overflow="hidden"
+    >
+      <div style={{ position: "relative", padding: `${u(104)} 0 ${u(110)}` }}>
+        {events.map((e, i) => (
+          <EventCard key={e.id} e={e} i={i} />
+        ))}
+      </div>
+      {/* bunga: kanan atas & kiri bawah */}
+      <svg
+        aria-hidden
+        viewBox="0 0 430 140"
+        style={{ ...box(0, 0, 430, 140), overflow: "visible", pointerEvents: "none" }}
+      >
+        <defs>
+          <FlowerDefs id={id} />
+        </defs>
+        <g data-a="fade">
+          <Alstroemeria id={id} x={432} y={84} s={0.9} rot={20} />
+          <PinkLily id={id} x={404} y={36} s={0.95} rot={-12} />
+        </g>
+      </svg>
+      <svg
+        aria-hidden
+        viewBox="0 0 200 220"
+        style={{
+          position: "absolute",
+          left: 0,
+          bottom: 0,
+          width: u(200),
+          height: u(220),
+          overflow: "visible",
+          pointerEvents: "none",
+        }}
+      >
+        <defs>
+          <FlowerDefs id={`${id}b`} />
+        </defs>
+        <Gladiolus id={`${id}b`} x={14} y={150} s={1.2} rot={-6} />
+        <PinkLily id={`${id}b`} x={40} y={176} s={1.05} rot={24} />
+        <Alstroemeria id={`${id}b`} x={126} y={218} s={1.05} rot={-10} />
+      </svg>
+    </Section>
+  );
+}
