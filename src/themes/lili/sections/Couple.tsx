@@ -6,7 +6,6 @@ import { couple, displayFullName, parentsLines } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import type { Person } from "@/schemas/wedding";
 import { instagramUrl } from "@/lib/links";
-import { Bunnies, RoseSpray } from "../art/Critters";
 import { FloralColumn, smoke } from "../art/FloralColumn";
 import { LACE_H, LACE_HOLE, LACE_W, LaceFrame } from "../art/LaceFrame";
 import { paperBg } from "../art/textures";
@@ -26,7 +25,6 @@ export const PAPER_H = 520;
 export const CREAM_BLOCK = 810;
 
 type Tone = "sage" | "paper";
-type Rect = [l: number, t: number, w: number, h: number];
 
 interface CardLayout {
   /** Pusat horizontal isi. */
@@ -34,8 +32,6 @@ interface CardLayout {
   /** Tepi atas & lebar bingkai renda. */
   top: number;
   frameW: number;
-  roses: Rect;
-  bunnies: Rect;
   /** Tepi atas blok nama, ukuran nama, jarak ke orang tua & Instagram. */
   textTop: number;
   nameSize: number;
@@ -49,8 +45,6 @@ const FIRST: CardLayout = {
   cx: 178,
   top: 10,
   frameW: LACE_W,
-  roses: [222, -36, 58, 82],
-  bunnies: [100, 203, 52, 48],
   textTop: 298,
   nameSize: 25,
   gapParents: 10,
@@ -62,8 +56,6 @@ const SECOND: CardLayout = {
   cx: 222,
   top: 29,
   frameW: 220,
-  roses: [264, 46, 50, 74],
-  bunnies: [188, 256, 52, 46],
   textTop: 339,
   nameSize: 27,
   gapParents: 12,
@@ -102,7 +94,7 @@ function PersonCard({
           style={{
             ...box(fl + LACE_HOLE.x * k, L.top + LACE_HOLE.y * k, LACE_HOLE.w * k, LACE_HOLE.h * k),
             overflow: "hidden",
-            borderRadius: u(14 * k),
+            borderRadius: u(4 * k),
             background: "linear-gradient(160deg, #c9d6de, #e9eef0)",
           }}
         >
@@ -125,12 +117,6 @@ function PersonCard({
             filter: "drop-shadow(0 1px 2px rgb(40 40 30 / 0.25))",
           }}
         />
-      </div>
-      <div data-a="fade" style={{ ...box(...L.roses), ["--d" as string]: "0.45s" }}>
-        <RoseSpray style={{ width: "100%", height: "100%" }} />
-      </div>
-      <div data-a="fade" style={{ ...box(...L.bunnies), ["--d" as string]: "0.55s" }}>
-        <Bunnies style={{ width: "100%", height: "100%" }} />
       </div>
 
       {/* nama, orang tua, Instagram */}
