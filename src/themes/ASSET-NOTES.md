@@ -23,6 +23,18 @@ tetap bekerja, dan pecah per bagian bila dianimasikan.
 | `CarvedCorner`                                  | `_shared/ornaments/Objects.tsx` | Renda Rimba (galeri)  | Filigri simetris sederhana.                                                                                                                        |
 | `VelvetDrape`, `SuedeTexture`, `LeatherTexture` | `_shared/textures/index.tsx`    | Kedua tema            | Tekstur CSS + noise. Bisa diganti tekstur foto WebP berlisensi bebas bila mode ringan tetap memakai versi CSS.                                     |
 
+### Lili
+
+Seluruh ornamen Lili digambar ulang sebagai SVG orisinal dari screenshot
+desain (keputusan pemilik: tanpa file aset referensi), jadi tidak ada baris di
+`ASSET-AUDIT.md` dan tema boleh langsung ke production.
+
+| Komponen                | File                    | Catatan                                                                                  |
+| ----------------------- | ----------------------- | ---------------------------------------------------------------------------------------- |
+| `LaceBand`              | `lili/art/LaceBand.tsx` | Renda guipure prosedural (melengkung, jaring, medalion). Foto renda asli lebih padat.    |
+| `RoseSeal`              | `lili/art/RoseSeal.tsx` | Segel lilin + emboss mawar (bayangan/sorot berlapis, tanpa filter SVG).                  |
+| `paperBg`, `envelopeBg` | `lili/art/textures.ts`  | feTurbulence + pencahayaan sebagai data URI (diraster sekali), soft-light di atas token. |
+
 ## Font (semua OFL dari Google Fonts)
 
 | Font asli referensi      | Padanan yang dipakai                 |

@@ -139,6 +139,8 @@ const FAMILIES: Family[] = [
     outputs: [
       { file: "great-vibes.woff2", chars: LATIN },
       { file: "great-vibes.ttf", chars: LATIN, og: true },
+      // Lili: hanya "&" di antara nama skrip (cover, mempelai, penutup)
+      { file: "great-vibes-amp.woff2", chars: "&" },
     ],
   },
   {
@@ -208,6 +210,31 @@ const FAMILIES: Family[] = [
     src: "ofl/herrvonmuellerhoff/HerrVonMuellerhoff-Regular.ttf",
     license: "ofl/herrvonmuellerhoff/OFL.txt",
     outputs: [{ file: "herr-von-muellerhoff.woff2", chars: LATIN }],
+  },
+  // ---- Lili ----
+  {
+    name: "Playfair Display",
+    src: "ofl/playfairdisplay/PlayfairDisplay[wght].ttf",
+    license: "ofl/playfairdisplay/OFL.txt",
+    // onum: angka gaya lama di kartu acara ("2026", "08.00") seperti desain
+    features: ["kern", "liga", "clig", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "onum"],
+    outputs: [
+      { file: "playfair-400-600.woff2", chars: LATIN, axes: { wght: { min: 400, max: 600 } } },
+    ],
+  },
+  {
+    name: "Playfair Display Italic",
+    src: "ofl/playfairdisplay/PlayfairDisplay-Italic[wght].ttf",
+    license: "ofl/playfairdisplay/OFL.txt",
+    features: ["kern", "liga", "clig", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "onum"],
+    // nama mempelai & judul ("Save The Date", "Akad Nikah") — miring 400–700
+    outputs: [
+      {
+        file: "playfair-italic-400-700.woff2",
+        chars: LATIN,
+        axes: { wght: { min: 400, max: 700 } },
+      },
+    ],
   },
   {
     name: "Noto Serif",

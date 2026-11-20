@@ -7,6 +7,7 @@ import type { ThemeProps } from "./types";
 /** Komponen tema dimuat lazy: JS, CSS, dan font tema lain tidak ikut terunduh. */
 export const THEME_COMPONENTS: Record<string, ComponentType<ThemeProps>> = {
   "confetti-party": dynamic(() => import("./confetti-party")),
+  "lili": dynamic(() => import("./lili")),
   "pita-krayon": dynamic(() => import("./pita-krayon")),
   "renda-rimba": dynamic(() => import("./renda-rimba")),
   "tirai-beludru": dynamic(() => import("./tirai-beludru")),

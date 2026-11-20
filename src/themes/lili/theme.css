@@ -1,0 +1,81 @@
+/*
+ * Lili — gaya khusus tema. Selector selalu dibatasi [data-theme="lili"];
+ * animasi hanya transform/opacity. Animasi sengaja sederhana (fade/naik):
+ * koreografi desain menyusul.
+ */
+
+/* ---------- Cover: animasi masuk (nama tetap terlihat sejak HTML pertama) ---------- */
+@keyframes li-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes li-names {
+  from {
+    transform: translateY(10px) scale(0.97);
+  }
+}
+@keyframes li-lace {
+  from {
+    opacity: 0;
+    transform: scaleX(0.92);
+  }
+}
+@keyframes li-seal {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+[data-theme="lili"] .li-c-rise {
+  animation: li-rise 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) var(--d, 0s) both;
+}
+[data-theme="lili"] .li-c-names {
+  animation: li-names 1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+[data-theme="lili"] .li-c-lace {
+  animation: li-lace 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) 0.15s both;
+}
+[data-theme="lili"] .li-c-seal {
+  animation: li-seal 0.8s cubic-bezier(0.3, 1.4, 0.5, 1) 0.45s both;
+}
+
+/* ---------- Section: animasi masuk sekali saat terlihat ---------- */
+[data-theme="lili"] .li-sec [data-a] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.8s ease var(--d, 0s),
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) var(--d, 0s);
+}
+[data-theme="lili"] .li-sec [data-a="fade"] {
+  transform: none;
+}
+[data-theme="lili"] .li-sec [data-a="zoom"] {
+  transform: scale(0.94);
+}
+[data-theme="lili"] .li-sec [data-a="left"] {
+  transform: translateX(-24px);
+}
+[data-theme="lili"] .li-sec [data-a="right"] {
+  transform: translateX(24px);
+}
+[data-theme="lili"] .li-sec.li-in [data-a] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="lili"] .li-c-rise,
+  [data-theme="lili"] .li-c-names,
+  [data-theme="lili"] .li-c-lace,
+  [data-theme="lili"] .li-c-seal {
+    animation: none;
+  }
+  [data-theme="lili"] .li-sec [data-a] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
