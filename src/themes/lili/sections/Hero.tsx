@@ -1,14 +1,12 @@
 "use client";
 
-import Image from "next/image";
-
 import { eventStart, firstEvent } from "@/lib/datetime";
 
 import { couple, shortName } from "../../_shared/format";
 import { useCountdown } from "../../_shared/hooks";
 import { useInvitation } from "../../_shared/runtime/context";
 import { BrushBox } from "../art/BrushBox";
-import { FRAME_H, FRAME_HOLE, FRAME_W, OvalFrame } from "../art/OvalFrame";
+import { VintageFrame } from "../art/VintageFrame";
 import { paperBg } from "../art/textures";
 import { Butterfly, LilyCluster } from "../art/Watercolor";
 import { box, F, Section, txt, u, useFit } from "../canvas";
@@ -20,6 +18,7 @@ import { box, F, Section, txt, u, useFit } from "../canvas";
  * mundur di atas sapuan pink. Setelah hari H, angka diganti ucapan.
  */
 const FRAME = { l: 74, t: 129 };
+const FRAME_W = 280;
 const CELLS = [
   { x: 119, label: "Hari" },
   { x: 197, label: "Jam" },
@@ -39,14 +38,6 @@ export function LiliHero() {
   const photo = d?.photos.cover;
   const values = [cd.days, cd.hours, cd.minutes, cd.seconds];
   const passed = cd.ready && cd.done;
-
-  // lubang foto bingkai dalam koordinat kanvas
-  const hole = {
-    l: FRAME.l + FRAME_HOLE.cx - FRAME_HOLE.rx,
-    t: FRAME.t + FRAME_HOLE.cy - FRAME_HOLE.ry,
-    w: FRAME_HOLE.rx * 2,
-    h: FRAME_HOLE.ry * 2,
-  };
 
   return (
     <Section id="hitungMundur" height={763} bg={paperBg()} overflow="hidden">
@@ -74,33 +65,7 @@ export function LiliHero() {
 
       {/* foto + bingkai */}
       <div data-a="zoom" style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.2s" }}>
-        <div
-          style={{
-            ...box(hole.l, hole.t, hole.w, hole.h),
-            borderRadius: "50%",
-            overflow: "hidden",
-            background: "linear-gradient(160deg, var(--inv-sage-light), var(--inv-sage))",
-          }}
-        >
-          {photo && (
-            <Image
-              src={photo.url}
-              alt={photo.alt ?? "Foto pasangan"}
-              fill
-              sizes="(max-width: 440px) 46vw, 200px"
-              style={{
-                objectFit: "cover",
-                objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 40}%`,
-              }}
-            />
-          )}
-        </div>
-        <OvalFrame
-          style={{
-            ...box(FRAME.l, FRAME.t, FRAME_W, FRAME_H),
-            filter: "drop-shadow(0 2px 3px rgb(60 60 40 / 0.28))",
-          }}
-        />
+        <VintageFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto pasangan" />
       </div>
 
       <div data-a="fade" style={{ ...box(205, 90, 150, 165), ["--d" as string]: "0.5s" }}>

@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useLayoutEffect, useRef } from "react";
 
 import { couple, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import type { CoverProps } from "../../types";
-import { LaceBand } from "../art/LaceBand";
+import laceBand from "../art/lace-band.webp";
 import { RoseSeal } from "../art/RoseSeal";
 import { envelopeBg } from "../art/textures";
 import { F } from "../canvas";
@@ -14,7 +15,8 @@ import { F } from "../canvas";
 /**
  * Cover Lili — "A Love Letter From": amplop sage, nama skrip pink dengan "&"
  * krem, "Open The Invitation" bergaris bawah, pita renda melintang dengan
- * segel lilin mawar, lalu kotak gelap nama tamu.
+ * segel lilin mawar, lalu kotak gelap nama tamu. Pita renda = foto renda milik
+ * pemilik yang dilengkungkan (`scripts/lili-lace.ts` → art/lace-band.webp).
  *
  * Kanvas 430 × STAGE_H (= layar screenshot desain) diskalakan agar MUAT di
  * layar: --cu = min(100cqw/430, 100cqh/STAGE_H). Latar amplop & garis tutup
@@ -221,15 +223,23 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
 
         <div
           className="li-c-lace"
-          style={{ position: "absolute", left: 0, top: c(358), width: c(430), height: c(212) }}
+          style={{
+            position: "absolute",
+            // sedikit melebihi tepi kanvas → pita setebal desain (±185 px)
+            left: c(-28),
+            top: c(372),
+            width: c(486),
+            height: c((486 * laceBand.height) / laceBand.width),
+            filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.3))",
+          }}
         >
-          <LaceBand
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.28))",
-            }}
+          <Image
+            src={laceBand}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 440px) 100vw, 440px"
+            style={{ objectFit: "fill" }}
           />
         </div>
 

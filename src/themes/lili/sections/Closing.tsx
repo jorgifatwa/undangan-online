@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useId } from "react";
 
 import { couple, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
-import { FRAME_H, FRAME_HOLE, FRAME_W, OvalFrame } from "../art/OvalFrame";
+import { OVAL_FRAME } from "../art/oval-frame";
+import { VintageFrame } from "../art/VintageFrame";
 import { paperBg } from "../art/textures";
 import { Alstroemeria, FlowerDefs, GreenOrchid, PinkLily } from "../art/Flowers";
 import { Butterfly, LilyCluster } from "../art/Watercolor";
@@ -18,6 +18,8 @@ import { F, Section, box, txt, u, useFit } from "../canvas";
  * bunga (lili krem & pink, anggrek hijau, alstroemeria) selebar layar.
  */
 const FRAME = { l: 75, t: 24 };
+const FRAME_W = 280;
+const FRAME_H = Math.round(FRAME_W * OVAL_FRAME.ratio);
 const FALLBACK =
   "Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu untuk mengiringi langkah baru kami. Atas kehadiran dan doa yang diberikan, kami ucapkan terima kasih.";
 
@@ -53,12 +55,6 @@ export function LiliClosing() {
   const namesRef = useFit<HTMLParagraphElement>(names);
   const islami = inv.data.greeting?.style === "islami";
   const photo = d?.photos.closing ?? d?.photos.cover;
-  const hole = {
-    l: FRAME.l + FRAME_HOLE.cx - FRAME_HOLE.rx,
-    t: FRAME.t + FRAME_HOLE.cy - FRAME_HOLE.ry,
-    w: FRAME_HOLE.rx * 2,
-    h: FRAME_HOLE.ry * 2,
-  };
 
   return (
     <Section
@@ -76,33 +72,7 @@ export function LiliClosing() {
           data-a="zoom"
           style={{ ...box(0, 0, 430, FRAME.t + FRAME_H), ["--d" as string]: "0.1s" }}
         >
-          <div
-            style={{
-              ...box(hole.l, hole.t, hole.w, hole.h),
-              borderRadius: "50%",
-              overflow: "hidden",
-              background: "linear-gradient(160deg, var(--inv-sage-light), var(--inv-sage))",
-            }}
-          >
-            {photo && (
-              <Image
-                src={photo.url}
-                alt={photo.alt ?? "Foto penutup"}
-                fill
-                sizes="(max-width: 440px) 46vw, 200px"
-                style={{
-                  objectFit: "cover",
-                  objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 40}%`,
-                }}
-              />
-            )}
-          </div>
-          <OvalFrame
-            style={{
-              ...box(FRAME.l, FRAME.t, FRAME_W, FRAME_H),
-              filter: "drop-shadow(0 2px 3px rgb(60 60 40 / 0.28))",
-            }}
-          />
+          <VintageFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto penutup" />
         </div>
         <div data-a="fade" style={{ ...box(206, -14, 150, 165), ["--d" as string]: "0.4s" }}>
           <LilyCluster style={{ width: "100%", height: "100%", overflow: "visible" }} />

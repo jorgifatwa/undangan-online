@@ -13,7 +13,7 @@ export type ThemeId = "confetti-party" | "lili" | "pita-krayon" | "renda-rimba" 
 /** Thumbnail screenshot cover (pnpm themes:thumbs); tema tanpa file memakai gradien manifest. */
 export const THEME_THUMBS: Record<string, string> = {
   "confetti-party": "/theme-thumbs/confetti-party.webp?v=mwdqa5wu",
-  "lili": "/theme-thumbs/lili.webp?v=mwp83rj1",
+  "lili": "/theme-thumbs/lili.webp?v=mwp8wpb4",
   "pita-krayon": "/theme-thumbs/pita-krayon.webp?v=mwgt8gbv",
   "renda-rimba": "/theme-thumbs/renda-rimba.webp?v=mwdqaso1",
   "tirai-beludru": "/theme-thumbs/tirai-beludru.webp?v=mwdqb1lv",
