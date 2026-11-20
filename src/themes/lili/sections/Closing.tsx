@@ -66,7 +66,7 @@ export function LiliClosing() {
       }}
       overflow="hidden"
     >
-      <div style={{ position: "relative", height: u(FRAME.t + FRAME_H - 72) }}>
+      <div style={{ position: "relative", height: u(FRAME.t + FRAME_H + 4) }}>
         <div
           data-a="zoom"
           style={{ ...box(0, 0, 430, FRAME.t + FRAME_H), ["--d" as string]: "0.1s" }}

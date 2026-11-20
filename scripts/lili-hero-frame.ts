@@ -4,6 +4,8 @@
  *
  *   pnpm tsx scripts/lili-hero-frame.ts [.reference/lili/frame-composite.jpg]
  *
+ * Bila gambar sudah transparan (PNG), alfanya dipakai langsung dan lubang
+ * diukur dari area transparan di tengah. Bila tidak:
  * 1. Latar kertas → transparan: flood fill dari tepi gambar melewati piksel
  *    "kertas" (krem keabu, lebih gelap dari tepi stiker putih).
  * 2. Lubang foto: ukur area pink tengah (flood fill dari pusat), lalu potong
@@ -17,12 +19,87 @@ import path from "node:path";
 
 import sharp from "sharp";
 
-const SRC = process.argv[2] ?? path.resolve(".reference/lili/frame-composite.jpg");
+const SRC = process.argv[2] ?? path.resolve(".reference/lili/frame-composite-2.png");
 const OUT = path.resolve("src/themes/lili/art/hero-frame.webp");
 const META = path.resolve("src/themes/lili/art/hero-frame.ts");
 const OUT_W = 760;
 
+/** Gambar sudah transparan (PNG ekspor Canva): pakai alfanya langsung. */
+async function fromTransparent() {
+  const { data, info } = await sharp(SRC).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width;
+  const H = info.height;
+  const A = (x: number, y: number) => data[(Math.round(y) * W + Math.round(x)) * 4 + 3];
+  // kotak isi: baris/kolom yang berisi
+  const rowN = new Uint32Array(H);
+  const colN = new Uint32Array(W);
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++)
+      if (A(x, y) > 128) {
+        rowN[y]++;
+        colN[x]++;
+      }
+  let y0 = 0;
+  while (rowN[y0] < 3) y0++;
+  let y1 = H - 1;
+  while (rowN[y1] < 3) y1--;
+  let x0 = 0;
+  while (colN[x0] < 3) x0++;
+  let x1 = W - 1;
+  while (colN[x1] < 3) x1--;
+  const cw = x1 - x0 + 1;
+  const ch = y1 - y0 + 1;
+  // lubang: sinar dari pusat isi ke empat arah sampai bingkai (alfa > 128)
+  const mx = x0 + cw / 2;
+  const my = y0 + ch / 2;
+  const ray = (dx: number, dy: number) => {
+    let d = 4;
+    while (A(mx + dx * d, my + dy * d) <= 128) d++;
+    return d;
+  };
+  const l = mx - ray(-1, 0);
+  const r = mx + ray(1, 0);
+  const t = my - ray(0, -1);
+  const b = my + ray(0, 1);
+  await sharp(SRC)
+    .extract({ left: x0, top: y0, width: cw, height: ch })
+    .resize({ width: Math.min(OUT_W, cw) })
+    .webp({ quality: 86, alphaQuality: 95, effort: 6 })
+    .toFile(OUT);
+  const r4 = (v: number) => Math.round(v * 10000) / 10000;
+  const hole = {
+    cx: r4(((l + r) / 2 - x0) / cw),
+    cy: r4(((t + b) / 2 - y0) / ch),
+    rx: r4((r - l) / 2 / cw),
+    ry: r4((b - t) / 2 / ch),
+  };
+  writeMeta(ch / cw, hole);
+  const kb = Math.round((fs.statSync(OUT).size / 1024) * 10) / 10;
+  console.log(
+    `✓ ${path.relative(process.cwd(), OUT)} · ${kb} KB · isi ${cw}×${ch} (transparan) · lubang ${JSON.stringify(hole)}`,
+  );
+}
+
+function writeMeta(ratio: number, hole: Record<string, number>) {
+  const r4 = (v: number) => Math.round(v * 10000) / 10000;
+  fs.writeFileSync(
+    META,
+    `// FILE DIBUAT OTOMATIS oleh scripts/lili-hero-frame.ts — jangan diedit manual.\n` +
+      `/** Rasio tinggi/lebar komposisi & elips lubang foto (pecahan lebar/tinggi). */\n` +
+      `export const HERO_FRAME = { ratio: ${r4(ratio)}, hole: ${JSON.stringify(hole)} } as const;\n`,
+  );
+}
+
 async function main() {
+  const meta = await sharp(SRC).metadata();
+  if (meta.hasAlpha) {
+    const corner = await sharp(SRC)
+      .extract({ left: 0, top: 0, width: 4, height: 4 })
+      .ensureAlpha()
+      .raw()
+      .toBuffer();
+    if (corner[3] === 0) return fromTransparent();
+  }
   const { data, info } = await sharp(SRC).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const W = info.width;
   const H = info.height;
