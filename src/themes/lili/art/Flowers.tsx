@@ -31,6 +31,11 @@ export function FlowerDefs({ id }: { id: string }) {
         <stop offset="0.72" stopColor="#f5c3d0" />
         <stop offset="1" stopColor="#f9d3dc" />
       </linearGradient>
+      <linearGradient id={`${id}-lilyw`} x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stopColor="#eef0cf" />
+        <stop offset="0.35" stopColor="#fbf6ea" />
+        <stop offset="1" stopColor="#fffdf7" />
+      </linearGradient>
       <linearGradient id={`${id}-alst`} x1="0" y1="1" x2="0" y2="0">
         <stop offset="0" stopColor="#efe39a" />
         <stop offset="0.45" stopColor="#f6dfc8" />
@@ -53,7 +58,15 @@ export function FlowerDefs({ id }: { id: string }) {
   );
 }
 
-type FlowerProps = { id: string; x: number; y: number; s?: number; rot?: number };
+type FlowerProps = {
+  id: string;
+  x: number;
+  y: number;
+  s?: number;
+  rot?: number;
+  /** Lili putih krem (hamparan bunga penutup). */
+  white?: boolean;
+};
 
 const at = ({ x, y, s = 1, rot = 0 }: FlowerProps) =>
   `translate(${r2(x)} ${r2(y)}) rotate(${r2(rot)}) scale(${r2(s)})`;
@@ -78,7 +91,7 @@ export function PinkLily(p: FlowerProps) {
           key={r}
           rot={r}
           d={petal(i % 2 ? 58 : 64, i % 2 ? 27 : 30, 0.45)}
-          fill={`url(#${p.id}-lily)`}
+          fill={`url(#${p.id}-${p.white ? "lilyw" : "lily"})`}
         />
       ))}
       {/* urat tengah pink tua */}
@@ -88,7 +101,7 @@ export function PinkLily(p: FlowerProps) {
           d={`M0 -6 C2 -24 1 -40 0 ${-(i % 2 ? 50 : 56)}`}
           transform={`rotate(${r})`}
           fill="none"
-          stroke="#ee9db4"
+          stroke={p.white ? "#e9dcc0" : "#ee9db4"}
           strokeWidth={4}
           strokeLinecap="round"
           opacity={0.4}

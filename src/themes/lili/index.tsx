@@ -6,8 +6,10 @@ import { THEME_ASSETS } from "./assets/index.generated";
 import { fontClassName } from "./fonts";
 import { manifest } from "./manifest";
 import { LiliCover } from "./sections/Cover";
+import { LiliClosing } from "./sections/Closing";
 import { LiliCouple } from "./sections/Couple";
 import { LiliEvent } from "./sections/Event";
+import { LiliDressCode, LiliLiveStream } from "./sections/Extras";
 import { LiliGallery } from "./sections/Gallery";
 import { LiliGift } from "./sections/Gift";
 import { LiliLoveStory } from "./sections/LoveStory";
@@ -37,6 +39,9 @@ const definition: ThemeDefinition = {
     galeri: LiliGallery,
     loveStory: LiliLoveStory,
     ucapan: LiliWishes,
+    dressCode: LiliDressCode,
+    liveStream: LiliLiveStream,
+    penutup: LiliClosing,
   },
 };
 

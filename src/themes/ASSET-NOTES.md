@@ -29,11 +29,19 @@ Seluruh ornamen Lili digambar ulang sebagai SVG orisinal dari screenshot
 desain (keputusan pemilik: tanpa file aset referensi), jadi tidak ada baris di
 `ASSET-AUDIT.md` dan tema boleh langsung ke production.
 
-| Komponen                | File                    | Catatan                                                                                  |
-| ----------------------- | ----------------------- | ---------------------------------------------------------------------------------------- |
-| `LaceBand`              | `lili/art/LaceBand.tsx` | Renda guipure prosedural (melengkung, jaring, medalion). Foto renda asli lebih padat.    |
-| `RoseSeal`              | `lili/art/RoseSeal.tsx` | Segel lilin + emboss mawar (bayangan/sorot berlapis, tanpa filter SVG).                  |
-| `paperBg`, `envelopeBg` | `lili/art/textures.ts`  | feTurbulence + pencahayaan sebagai data URI (diraster sekali), soft-light di atas token. |
+| Komponen                                               | File                      | Catatan                                                                                                           |
+| ------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `LaceBand`                                             | `lili/art/LaceBand.tsx`   | Renda guipure prosedural (melengkung, jaring, medalion). Foto renda asli lebih padat.                             |
+| `RoseSeal`                                             | `lili/art/RoseSeal.tsx`   | Segel lilin + emboss mawar (bayangan/sorot berlapis, tanpa filter SVG).                                           |
+| `paperBg`, `envelopeBg`                                | `lili/art/textures.ts`    | feTurbulence + pencahayaan sebagai data URI (diraster sekali), soft-light di atas token.                          |
+| `OvalFrame`                                            | `lili/art/OvalFrame.tsx`  | Bingkai oval barok sage (hero & penutup), emboss berlapis, warna per varian.                                      |
+| `LilyCluster`, `Butterfly`, `Pearl`                    | `lili/art/Watercolor.tsx` | Lili cat air + mutiara, kupu-kupu; gaya vektor (desain asli foto cat air).                                        |
+| `BrushBox`                                             | `lili/art/BrushBox.tsx`   | Sapuan kuas pink latar hitung mundur.                                                                             |
+| `PinkLily`, `Alstroemeria`, `GreenOrchid`, `Gladiolus` | `lili/art/Flowers.tsx`    | Bunga bertepi putih (stiker); kolom bunga berpola global lintas section. Kandidat utama diganti ilustrasi tangan. |
+| `LaceFrame`                                            | `lili/art/LaceFrame.tsx`  | Bingkai renda mempelai (renda hijau + renda putih-pink, foto bertepi sobek).                                      |
+| `Bunnies`, `RoseSpray`                                 | `lili/art/Critters.tsx`   | Sepasang kelinci & rangkaian mawar kecil.                                                                         |
+| `TornCard`                                             | `lili/art/TornCard.tsx`   | Kartu kertas sobek (mask SVG meregang mengikuti isi).                                                             |
+| `SwanPair`                                             | `lili/art/Swans.tsx`      | Sepasang angsa + lili (Love Story); desain asli ilustrasi realistis.                                              |
 
 ## Font (semua OFL dari Google Fonts)
 
