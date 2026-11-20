@@ -9,7 +9,7 @@ const svg = (s: string) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
 
 /** Kertas cat air krem: benjolan kasar bercahaya dari kiri atas. */
 const PAPER_GRAIN = svg(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260"><filter id="f" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="4" seed="7" stitchTiles="stitch" result="n"/><feDiffuseLighting in="n" surfaceScale="2.6" diffuseConstant="1" lighting-color="#fff"><feDistantLight azimuth="225" elevation="52"/></feDiffuseLighting><feComponentTransfer><feFuncR type="linear" slope="2.2" intercept="-1.25"/><feFuncG type="linear" slope="2.2" intercept="-1.25"/><feFuncB type="linear" slope="2.2" intercept="-1.25"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#f)"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260"><filter id="f" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="4" seed="7" stitchTiles="stitch" result="n"/><feDiffuseLighting in="n" surfaceScale="1.6" diffuseConstant="1" lighting-color="#fff"><feDistantLight azimuth="225" elevation="52"/></feDiffuseLighting><feComponentTransfer><feFuncR type="linear" slope="0.8" intercept="-0.13"/><feFuncG type="linear" slope="0.8" intercept="-0.13"/><feFuncB type="linear" slope="0.8" intercept="-0.13"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#f)"/></svg>`,
 );
 
 /** Noda lembut berskala besar (cat air / kertas tidak rata). */

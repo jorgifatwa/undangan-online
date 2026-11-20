@@ -18,7 +18,7 @@ export const F = {
   serif: "var(--li-serif), 'Playfair Display', Georgia, serif",
   script: "var(--li-script), 'Pinyon Script', cursive",
   amp: "var(--li-amp), 'Great Vibes', cursive",
-  hand: "var(--li-hand), 'Herr Von Muellerhoff', cursive",
+  hand: "var(--li-hand), 'Sacramento', cursive",
   arabic: "var(--li-arabic), 'Amiri', serif",
 } as const;
 
@@ -79,7 +79,8 @@ export function Section({
   id: SectionId;
   height?: number;
   minHeight?: number;
-  bg?: string;
+  /** Warna latar, atau objek gaya latar (mis. `paperBg()`). */
+  bg?: string | React.CSSProperties;
   z?: number;
   overflow?: "visible" | "hidden" | "clip";
   threshold?: number;
@@ -100,7 +101,7 @@ export function Section({
         height: height ? u(height) : undefined,
         minHeight: minHeight ? u(minHeight) : undefined,
         containerType: "inline-size",
-        background: bg,
+        ...(typeof bg === "string" ? { background: bg } : bg),
         overflow,
         zIndex: z,
         contentVisibility: "visible",

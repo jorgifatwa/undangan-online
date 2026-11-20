@@ -1,0 +1,188 @@
+"use client";
+
+import Image from "next/image";
+
+import { eventStart, firstEvent } from "@/lib/datetime";
+
+import { couple, shortName } from "../../_shared/format";
+import { useCountdown } from "../../_shared/hooks";
+import { useInvitation } from "../../_shared/runtime/context";
+import { BrushBox } from "../art/BrushBox";
+import { FRAME_H, FRAME_HOLE, FRAME_W, OvalFrame } from "../art/OvalFrame";
+import { paperBg } from "../art/textures";
+import { Butterfly, LilyCluster } from "../art/Watercolor";
+import { box, F, Section, txt, u, useFit } from "../canvas";
+
+/**
+ * Hero + hitung mundur (section `hitungMundur`, kanvas 430 × 763): kertas
+ * krem, tulisan tangan "The Wedding", bingkai oval barok berisi foto sampul,
+ * lili cat air + mutiara, kupu-kupu, nama skrip, tagline, lalu angka hitung
+ * mundur di atas sapuan pink. Setelah hari H, angka diganti ucapan.
+ */
+const FRAME = { l: 74, t: 129 };
+const CELLS = [
+  { x: 119, label: "Hari" },
+  { x: 197, label: "Jam" },
+  { x: 263, label: "Menit" },
+  { x: 329, label: "Detik" },
+] as const;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+export function LiliHero() {
+  const { inv } = useInvitation();
+  const d = inv.eventType === "WEDDING" ? inv.data : null;
+  const event = firstEvent(inv.data.events);
+  const cd = useCountdown(eventStart(event));
+  const [a, b] = d ? couple(d) : [null, null];
+  const names = `${a ? shortName(a) : ""}|${b ? shortName(b) : ""}`;
+  const namesRef = useFit<HTMLHeadingElement>(names);
+  const photo = d?.photos.cover;
+  const values = [cd.days, cd.hours, cd.minutes, cd.seconds];
+  const passed = cd.ready && cd.done;
+
+  // lubang foto bingkai dalam koordinat kanvas
+  const hole = {
+    l: FRAME.l + FRAME_HOLE.cx - FRAME_HOLE.rx,
+    t: FRAME.t + FRAME_HOLE.cy - FRAME_HOLE.ry,
+    w: FRAME_HOLE.rx * 2,
+    h: FRAME_HOLE.ry * 2,
+  };
+
+  return (
+    <Section id="hitungMundur" height={763} bg={paperBg()} overflow="hidden">
+      {/* noda cat air abu lembut di kertas */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse 22% 9% at 14% 26%, rgb(120 116 100 / 0.15), transparent 70%), radial-gradient(ellipse 14% 12% at 96% 66%, rgb(120 116 100 / 0.16), transparent 70%), radial-gradient(ellipse 30% 14% at 78% 80%, rgb(120 116 100 / 0.09), transparent 70%), radial-gradient(ellipse 18% 8% at 20% 58%, rgb(120 116 100 / 0.08), transparent 70%)",
+        }}
+      />
+
+      <p
+        data-a="fade"
+        style={{
+          ...box(0, 12, 430),
+          ...txt(F.hand, 37, 1.3, { color: "var(--inv-ink)", ls: 1.2 }),
+          ["--d" as string]: "0.1s",
+        }}
+      >
+        The Wedding
+      </p>
+
+      {/* foto + bingkai */}
+      <div data-a="zoom" style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.2s" }}>
+        <div
+          style={{
+            ...box(hole.l, hole.t, hole.w, hole.h),
+            borderRadius: "50%",
+            overflow: "hidden",
+            background: "linear-gradient(160deg, var(--inv-sage-light), var(--inv-sage))",
+          }}
+        >
+          {photo && (
+            <Image
+              src={photo.url}
+              alt={photo.alt ?? "Foto pasangan"}
+              fill
+              sizes="(max-width: 440px) 46vw, 200px"
+              style={{
+                objectFit: "cover",
+                objectPosition: `${photo.focusX ?? 50}% ${photo.focusY ?? 40}%`,
+              }}
+            />
+          )}
+        </div>
+        <OvalFrame
+          style={{
+            ...box(FRAME.l, FRAME.t, FRAME_W, FRAME_H),
+            filter: "drop-shadow(0 2px 3px rgb(60 60 40 / 0.28))",
+          }}
+        />
+      </div>
+
+      <div data-a="fade" style={{ ...box(205, 90, 150, 165), ["--d" as string]: "0.5s" }}>
+        <LilyCluster style={{ width: "100%", height: "100%", overflow: "visible" }} />
+      </div>
+      <div data-a="left" style={{ ...box(91, 413, 92, 78), ["--d" as string]: "0.6s" }}>
+        <Butterfly style={{ width: "100%", height: "100%", overflow: "visible" }} />
+      </div>
+
+      {/* nama */}
+      <h2
+        ref={namesRef}
+        data-a
+        style={{
+          ...box(20, 505, 390),
+          whiteSpace: "nowrap",
+          textAlign: "center",
+          fontFamily: F.script,
+          fontWeight: 400,
+          fontSize: `calc(${u(46)} * var(--fit, 1))`,
+          lineHeight: 1.45,
+          color: "var(--inv-ink)",
+          ["--d" as string]: "0.3s",
+        }}
+      >
+        {a ? shortName(a) : ""} <span style={{ fontFamily: F.amp, fontSize: "0.92em" }}>&amp;</span>{" "}
+        {b ? shortName(b) : ""}
+      </h2>
+      <p
+        data-a
+        style={{
+          ...box(15, 581, 400),
+          ...txt(F.serif, 12.8, 1.35, { color: "var(--inv-ink)" }),
+          ["--d" as string]: "0.4s",
+        }}
+      >
+        Your presence will make our special day even more meaningful
+      </p>
+
+      {/* hitung mundur */}
+      <div data-a style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.5s" }}>
+        <BrushBox style={{ ...box(55, 612, 335, 47) }} />
+        {passed ? (
+          <p
+            style={{
+              ...box(55, 612, 335, 47),
+              ...txt(F.serif, 17, 1, { italic: true, color: "var(--inv-ink)" }),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            Hari bahagia telah tiba
+          </p>
+        ) : (
+          <div role="timer" aria-label="Hitung mundur menuju hari bahagia">
+            {/* satu baris "543:23:20:01" seperti desain (angka gaya lama Playfair) */}
+            <p
+              style={{
+                ...box(30, 610, 370, 47),
+                ...txt(F.serif, 40, u(47), { color: "var(--inv-ink)", ls: 6.2 }),
+                textIndent: u(6.2), // imbangi spasi setelah huruf terakhir
+                fontVariantNumeric: "oldstyle-nums tabular-nums",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {cd.ready ? `${cd.days}:${values.slice(1).map(pad).join(":")}` : "–"}
+            </p>
+            {CELLS.map((c) => (
+              <p
+                key={c.label}
+                style={{
+                  ...box(c.x - 40, 666, 80),
+                  ...txt(F.serif, 16, 1.3, { color: "var(--inv-ink)" }),
+                }}
+              >
+                {c.label}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+}

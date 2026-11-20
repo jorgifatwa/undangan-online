@@ -213,6 +213,13 @@ const FAMILIES: Family[] = [
   },
   // ---- Lili ----
   {
+    name: "Sacramento",
+    src: "ofl/sacramento/Sacramento-Regular.ttf",
+    license: "ofl/sacramento/OFL.txt",
+    // tulisan tangan monoline "The Wedding" di hero (teks statis)
+    outputs: [{ file: "sacramento-wedding.woff2", chars: "The Wedding" }],
+  },
+  {
     name: "Playfair Display",
     src: "ofl/playfairdisplay/PlayfairDisplay[wght].ttf",
     license: "ofl/playfairdisplay/OFL.txt",

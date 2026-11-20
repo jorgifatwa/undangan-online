@@ -5,7 +5,7 @@ import localFont from "next/font/local";
  * `pnpm fonts:build`, lisensi di _fonts/licenses/):
  *   serif judul & teks (tegak/miring)  → Playfair Display
  *   nama skrip "Clarissa & Dimas"       → Pinyon Script (+ "&" Great Vibes, 1 glyph)
- *   tulisan tangan "The Wedding"        → Herr Von Muellerhoff
+ *   tulisan tangan "The Wedding"        → Sacramento (subset 11 huruf)
  *   bismillah                           → Amiri
  * Cover: Playfair (2 file) + Pinyon Script + subset "&" (1 KB).
  * Semua `display: swap` + `preload: false`; nama konstanta berawalan `li`
@@ -40,7 +40,7 @@ const liAmp = localFont({
   fallback: ["cursive"],
 });
 const liHand = localFont({
-  src: "../_fonts/herr-von-muellerhoff.woff2",
+  src: "../_fonts/sacramento-wedding.woff2",
   weight: "400",
   variable: "--li-hand",
   display: "swap",

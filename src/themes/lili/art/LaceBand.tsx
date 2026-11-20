@@ -14,6 +14,8 @@ const LACE = "var(--inv-lace, #f8f5ee)";
 const TOP = 60; // tepi atas pita (di x = 0)
 const BOT = 138; // pangkal scallop bawah (di x = 0)
 const SAG = 9; // lengkung: tengah pita turun sebanyak ini
+/** Bulatkan 2 desimal: hasil trigonometri server & browser bisa beda di digit terakhir (hidrasi). */
+const r2 = (v: number) => Math.round(v * 100) / 100;
 
 /** Pergeseran vertikal & kemiringan pita di x. */
 const dy = (x: number) => SAG * (1 - ((x - W / 2) / (W / 2)) ** 2);
@@ -94,7 +96,7 @@ function Loop({
   return (
     <g transform={`translate(${x} ${y}) rotate(${rot})`}>
       <path
-        d={`M${-r * 0.75} 0 C${-r * 1.15} ${-r * 1.4} ${r * 1.15} ${-r * 1.4} ${r * 0.75} 0`}
+        d={`M${r2(-r * 0.75)} 0 C${r2(-r * 1.15)} ${r2(-r * 1.4)} ${r2(r * 1.15)} ${r2(-r * 1.4)} ${r2(r * 0.75)} 0`}
         fill={`url(#${mesh})`}
         stroke={LACE}
         strokeWidth={3.4}
@@ -109,8 +111,8 @@ function Loop({
       {[-0.8, -0.4, 0, 0.4, 0.8].map((t) => (
         <circle
           key={t}
-          cx={Math.sin(t) * r * 1.02}
-          cy={-Math.cos(t) * r * 1.1 - 2.6}
+          cx={r2(Math.sin(t) * r * 1.02)}
+          cy={r2(-Math.cos(t) * r * 1.1 - 2.6)}
           r={1.7}
           fill={LACE}
         />
@@ -203,7 +205,7 @@ export function LaceBand({
       <path d={edge(TOP + 6)} fill="none" stroke={LACE} strokeWidth={1.2} />
       {Array.from({ length: Math.ceil(W / 9) + 1 }, (_, i) => {
         const x = i * 9 + 3;
-        return <circle key={i} cx={x} cy={TOP - 4.5 + dy(x)} r={2.6} fill={LACE} />;
+        return <circle key={i} cx={x} cy={r2(TOP - 4.5 + dy(x))} r={2.6} fill={LACE} />;
       })}
 
       {/* tepi bawah: scallop besar dengan lubang oval & bintil luar */}
@@ -231,8 +233,8 @@ export function LaceBand({
               return (
                 <circle
                   key={t}
-                  cx={Math.cos(a) * (r + 2.6)}
-                  cy={Math.sin(a) * (r * 1.15 + 2.6)}
+                  cx={r2(Math.cos(a) * (r + 2.6))}
+                  cy={r2(Math.sin(a) * (r * 1.15 + 2.6))}
                   r={2}
                   fill={LACE}
                 />
