@@ -6,7 +6,9 @@ import { THEME_ASSETS } from "./assets/index.generated";
 import { fontClassName } from "./fonts";
 import { manifest } from "./manifest";
 import { LiliCover } from "./sections/Cover";
+import { LiliCouple } from "./sections/Couple";
 import { LiliHero } from "./sections/Hero";
+import { LiliSalam } from "./sections/Salam";
 import "./theme.css";
 
 /**
@@ -21,6 +23,8 @@ const definition: ThemeDefinition = {
   Cover: LiliCover,
   sections: {
     hitungMundur: LiliHero,
+    salam: LiliSalam,
+    profil: LiliCouple,
   },
 };
 

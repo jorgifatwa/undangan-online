@@ -7,6 +7,8 @@ import type { ColorVariant } from "../types";
  * membaca token ini.
  */
 const shared = {
+  "--inv-lace-green": "#d3dcae",
+  "--inv-lace-green-dark": "#b0bc85",
   "--inv-lace": "#f8f5ee",
   "--inv-lace-shade": "#d9d6cb",
   "--inv-cream": "#f2ecdc",
