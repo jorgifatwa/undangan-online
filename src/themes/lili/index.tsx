@@ -14,6 +14,7 @@ import { LiliLoveStory } from "./sections/LoveStory";
 import { LiliHero } from "./sections/Hero";
 import { LiliSalam } from "./sections/Salam";
 import { LiliSaveDate } from "./sections/SaveDate";
+import { LiliWishes } from "./sections/Wishes";
 import "./theme.css";
 
 /**
@@ -35,6 +36,7 @@ const definition: ThemeDefinition = {
     amplop: LiliGift,
     galeri: LiliGallery,
     loveStory: LiliLoveStory,
+    ucapan: LiliWishes,
   },
 };
 
