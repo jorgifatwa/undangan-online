@@ -6,6 +6,7 @@ import { couple, displayFullName, parentsLines } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import type { Person } from "@/schemas/wedding";
 import { instagramUrl } from "@/lib/links";
+import { Ampersand } from "../art/Ampersand";
 import { FloralColumn, smoke } from "../art/FloralColumn";
 import { LACE_H, LACE_HOLE, LACE_W, LaceFrame } from "../art/LaceFrame";
 import { paperBg } from "../art/textures";
@@ -51,7 +52,7 @@ const FIRST: CardLayout = {
   nameSize: 25,
   gapParents: 10,
   gapIg: 18,
-  igSize: 43,
+  igSize: 48,
   textW: 300,
 };
 /** Mempelai kedua (krem) — gambar 6 & 7. */
@@ -84,6 +85,8 @@ function PersonCard({
   const parents = parentsLines(person.childOrder, person.father, person.mother, lead);
   const ig = instagramUrl(person.instagram);
   const ink = tone === "sage" ? "var(--inv-cream)" : "var(--inv-ink)";
+  // ikon Instagram: pink muda di sage (seperti nama), tinta di kertas krem
+  const igInk = tone === "sage" ? "var(--inv-pink-text)" : "var(--inv-ink)";
   const nameInk = tone === "sage" ? "var(--inv-pink-text)" : "var(--inv-ink)";
   const k = L.frameW / LACE_W;
   const fl = L.cx - L.frameW / 2;
@@ -170,7 +173,7 @@ function PersonCard({
               marginTop: u(L.gapIg),
               width: u(L.igSize),
               height: u(L.igSize),
-              color: ink,
+              color: igInk,
               pointerEvents: "auto",
               ["--d" as string]: "0.6s",
             }}
@@ -217,17 +220,17 @@ export function LiliCouple() {
       >
         <FloralColumn from={SALAM_H} height={SAGE_H} />
         <PersonCard person={a} lead={lead(a)} tone="sage" L={FIRST} />
-        <p
+        <div
           data-a="zoom"
-          aria-hidden
           style={{
-            ...box(112, 440, 140),
-            ...txt(F.amp, 112, 1.2, { color: "var(--inv-pink-text)" }),
+            // ±108 × 78 kanvas seperti desain, tengah kolom isi (x 178)
+            ...box(124, 458, 108, 78),
+            color: "var(--inv-pink-text)",
             ["--d" as string]: "0.2s",
           }}
         >
-          &amp;
-        </p>
+          <Ampersand style={{ width: "100%", height: "100%" }} />
+        </div>
       </div>
 
       {/* kertas krem: mempelai kedua, kolom bunga kiri */}
