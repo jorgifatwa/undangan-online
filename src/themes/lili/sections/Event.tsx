@@ -7,10 +7,10 @@ import { safeHref } from "@/lib/links";
 import type { InvitationEvent } from "@/schemas/common";
 
 import { useInvitation } from "../../_shared/runtime/context";
-import { smoke } from "../art/FloralColumn";
 import eventBottom from "../art/event-bottom.webp";
 import eventTop from "../art/event-top.webp";
 import { TornCard } from "../art/TornCard";
+import { greenBg } from "../art/textures";
 import { F, Section, txt, u } from "../canvas";
 
 /**
@@ -156,17 +156,7 @@ export function LiliEvent() {
   const { inv } = useInvitation();
   const events = inv.data.events;
   return (
-    <Section
-      id="acara"
-      bg={{
-        background: `${smoke([
-          { x: 30, y: 46, w: 50, h: 14, a: 0.22 },
-          { x: 80, y: 95, w: 45, h: 16, a: 0.2 },
-          { x: 10, y: 18, w: 30, h: 12, a: 0.12 },
-        ])}, var(--inv-sage)`,
-      }}
-      overflow="hidden"
-    >
+    <Section id="acara" bg={greenBg()} overflow="hidden">
       {/* bunga milik pemilik (diekspor selebar layar 482 px → skala 430/482),
           di belakang kartu: rangkaian kanan atas & buket kiri bawah (dicerminkan) */}
       <div

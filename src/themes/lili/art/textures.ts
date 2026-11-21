@@ -1,3 +1,5 @@
+import greenTile from "./green-bg.webp";
+
 /**
  * Tekstur Lili sebagai SVG data URI (feTurbulence + pencahayaan). Browser
  * merasternya SEKALI menjadi ubin latar, jadi tidak ada biaya per frame.
@@ -36,4 +38,20 @@ export const envelopeBg = (color = "var(--inv-sage)"): React.CSSProperties => ({
   backgroundImage: `${ENVELOPE_GRAIN}, ${MOTTLE}`,
   backgroundSize: "220px 220px, 640px 640px",
   backgroundBlendMode: "soft-light, soft-light",
+});
+
+/**
+ * Latar hijau sapuan kuas (gambar milik pemilik). Ubin = gambar + salinan
+ * terbalik vertikal → berulang tanpa sambungan. `offset` (px kanvas) = posisi
+ * section di dalam blok agar section bersebelahan menyambung. Varian lain
+ * memakai luminositas gambar di atas warna token (--inv-green-blend).
+ */
+export const greenBg = (offset = 0): React.CSSProperties => ({
+  backgroundColor: "var(--inv-sage)",
+  backgroundImage: `url(${greenTile.src})`,
+  backgroundSize: "100% auto",
+  backgroundRepeat: "repeat-y",
+  backgroundPosition: `0 calc(${offset} * 100cqw / 430 * -1)`,
+  backgroundBlendMode:
+    "var(--inv-green-blend, normal)" as React.CSSProperties["backgroundBlendMode"],
 });

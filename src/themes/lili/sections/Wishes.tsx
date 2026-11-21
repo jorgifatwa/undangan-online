@@ -5,10 +5,10 @@ import { useId, useState } from "react";
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
-import { smoke } from "../art/FloralColumn";
 import { FlowerDefs, GreenOrchid } from "../art/Flowers";
 import wishesLily from "../art/wishes-lily.webp";
 import laceStrip from "../art/lace-strip.webp";
+import { greenBg } from "../art/textures";
 import { F, Section, txt, u } from "../canvas";
 
 /**
@@ -129,18 +129,7 @@ export function LiliWishes() {
   };
 
   return (
-    <Section
-      id="ucapan"
-      threshold={0.1}
-      overflow="hidden"
-      bg={{
-        background: `${smoke([
-          { x: 8, y: 14, w: 40, h: 22, a: 0.24 },
-          { x: 12, y: 88, w: 46, h: 14, a: 0.2 },
-          { x: 45, y: 96, w: 40, h: 10, a: 0.14 },
-        ])}, var(--inv-sage)`,
-      }}
-    >
+    <Section id="ucapan" threshold={0.1} overflow="hidden" bg={greenBg()}>
       {/* pita renda vertikal di tepi kanan */}
       <div
         aria-hidden

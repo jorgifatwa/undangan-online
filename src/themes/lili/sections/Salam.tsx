@@ -1,7 +1,8 @@
 "use client";
 
 import { useInvitation } from "../../_shared/runtime/context";
-import { FloralColumn, smoke } from "../art/FloralColumn";
+import { FloralColumn } from "../art/FloralColumn";
+import { greenBg } from "../art/textures";
 import { F, Section, txt, u } from "../canvas";
 
 /**
@@ -20,13 +21,7 @@ export function LiliSalam() {
   const { inv } = useInvitation();
   const islami = inv.data.greeting?.style === "islami";
   return (
-    <Section
-      id="salam"
-      minHeight={SALAM_H}
-      bg={{
-        background: `${smoke([{ x: 20, y: 70, w: 40, h: 40, a: 0.12 }])}, var(--inv-sage)`,
-      }}
-    >
+    <Section id="salam" minHeight={SALAM_H} bg={greenBg(0)}>
       <FloralColumn from={0} height={SALAM_H} />
       <div
         style={{
