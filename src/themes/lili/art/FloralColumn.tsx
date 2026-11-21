@@ -4,18 +4,23 @@ import { u } from "../canvas";
 import column from "./floral-column.webp";
 
 /**
- * Kolom bunga di tepi layar — foto kolom bunga milik pemilik (lili,
- * alstroemeria, anggrek hijau, gladiol; PNG transparan) diulang tegak sebagai
+ * Kolom bunga di tepi layar — ubin mulus dari foto kolom bunga milik pemilik
+ * (lili, alstroemeria, anggrek hijau; PNG transparan) diulang tegak sebagai
  * latar CSS. Posisi ulangan memakai koordinat GLOBAL satu blok (`from` = awal
  * section di dalam blok), jadi section yang bersebelahan menyambung tanpa
  * jahitan. Sisi kanan sedikit terpotong tepi layar seperti desain; `left` =
  * dicerminkan.
  */
-/** Tinggi satu ubin (3 ulangan bunga) dalam px kanvas — periode desain ±230. */
-const TILE_H = 690;
+/**
+ * Tinggi satu ubin (satu ulangan alstroemeria → lili → anggrek) dalam px
+ * kanvas. Ubin dibuat mulus oleh `scripts/lili-floral-column.ts` (sambungan di
+ * tengah anggrek), jadi berulang tanpa bunga terpotong. Sengaja kecil agar
+ * sumber beresolusi rendah tetap tajam.
+ */
+const TILE_H = 140;
 const TILE_W = (TILE_H * column.width) / column.height;
 /** Bagian kolom yang keluar tepi layar (px kanvas). */
-const BLEED = 34;
+const BLEED = 26;
 
 export function FloralColumn({
   from,

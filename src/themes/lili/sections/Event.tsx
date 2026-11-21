@@ -17,12 +17,15 @@ import { F, Section, txt, u } from "../canvas";
  * Acara (kanvas 430, latar sage berkabut): kartu kertas sobek bergantian
  * kiri/kanan (Akad Nikah kiri, Resepsi kanan) berisi judul tebal miring,
  * baris tanggal/jam/tempat berikon, dan tombol gelap "Lihat Lokasi". Bunga
- * foto milik pemilik: rangkaian kiri atas & buket kanan bawah (di belakang kartu).
+ * foto milik pemilik: rangkaian kanan atas & buket kiri bawah, dicerminkan (di belakang kartu).
  */
 
 /** "08.00 WIB s.d Selesai" / "08.00 s.d 10.00 WIB" seperti desain. */
-/** Skala gambar bunga (diekspor selebar layar 482 px) ke kanvas 430. */
-const K = 430 / 482;
+/**
+ * Skala gambar bunga: ekspor selebar layar 482 px → kanvas 430, lalu ×0,62
+ * agar tetap tajam (sumber beresolusi rendah).
+ */
+const K = (430 / 482) * 0.62;
 
 function timeLabel(e: InvitationEvent): string | null {
   if (!e.startTime) return null;
@@ -165,35 +168,37 @@ export function LiliEvent() {
       overflow="hidden"
     >
       {/* bunga milik pemilik (diekspor selebar layar 482 px → skala 430/482),
-          di belakang kartu: rangkaian kiri atas & buket kanan bawah */}
-      <div
-        aria-hidden
-        data-a="fade"
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: u(363 * K),
-          height: u(255 * K),
-          pointerEvents: "none",
-        }}
-      >
-        <Image src={eventTop} alt="" fill sizes="(max-width: 440px) 76vw, 330px" />
-      </div>
+          di belakang kartu: rangkaian kanan atas & buket kiri bawah (dicerminkan) */}
       <div
         aria-hidden
         data-a="fade"
         style={{
           position: "absolute",
           right: 0,
+          top: 0,
+          transform: "scaleX(-1)",
+          width: u(363 * K),
+          height: u(255 * K),
+          pointerEvents: "none",
+        }}
+      >
+        <Image src={eventTop} alt="" fill sizes="(max-width: 440px) 48vw, 210px" />
+      </div>
+      <div
+        aria-hidden
+        data-a="fade"
+        style={{
+          position: "absolute",
+          left: 0,
           bottom: 0,
+          transform: "scaleX(-1)",
           width: u(256 * K),
           height: u(590 * K),
           pointerEvents: "none",
           ["--d" as string]: "0.3s",
         }}
       >
-        <Image src={eventBottom} alt="" fill sizes="(max-width: 440px) 54vw, 240px" />
+        <Image src={eventBottom} alt="" fill sizes="(max-width: 440px) 34vw, 150px" />
       </div>
       <div style={{ position: "relative", padding: `${u(104)} 0 ${u(110)}` }}>
         {events.map((e, i) => (
