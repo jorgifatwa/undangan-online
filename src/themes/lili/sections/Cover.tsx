@@ -8,14 +8,14 @@ import { couple, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import type { CoverProps } from "../../types";
 import laceBand from "../art/lace-band.webp";
-import { RoseSeal } from "../art/RoseSeal";
+import waxSeal from "../art/wax-seal.webp";
 import { envelopeBg } from "../art/textures";
 import { F } from "../canvas";
 
 /**
  * Cover Lili — "A Love Letter From": amplop sage, nama skrip pink dengan "&"
  * krem, "Open The Invitation" bergaris bawah, pita renda melintang dengan
- * segel lilin mawar, lalu kotak gelap nama tamu. Pita renda = foto renda milik
+ * segel lilin lili (foto milik pemilik), lalu kotak gelap nama tamu. Pita renda = foto renda milik
  * pemilik yang dilengkungkan (`scripts/lili-lace.ts` → art/lace-band.webp).
  *
  * Kanvas 430 × STAGE_H (= layar screenshot desain) diskalakan agar MUAT di
@@ -247,13 +247,13 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
           className="li-c-seal"
           style={{ position: "absolute", left: c(138), top: c(411), width: c(154), height: c(154) }}
         >
-          <RoseSeal
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              filter: "drop-shadow(0 3px 4px rgb(0 0 0 / 0.3))",
-            }}
+          <Image
+            src={waxSeal}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 440px) 38vw, 170px"
+            style={{ filter: "drop-shadow(0 3px 4px rgb(0 0 0 / 0.3))" }}
           />
         </div>
 
