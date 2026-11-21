@@ -3,13 +3,14 @@
 import Image from "next/image";
 
 import { useInvitation } from "../../_shared/runtime/context";
+import lilyBouquet from "../art/lily-bouquet.webp";
 import { SWANS_H, SWANS_W, SwanPair } from "../art/Swans";
 import { F, Section, txt, u } from "../canvas";
 
 /**
  * Love Story: latar renda gading timbul (pola lubang & bunga kecil), panel
  * krem bertepi titik, judul skrip "Love Story", bab cerita (judul tebal
- * miring + paragraf), lalu sepasang angsa di bawah.
+ * miring + paragraf), lalu sepasang angsa diapit buket lili kiri & kanan.
  */
 const svg = (s: string) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
 const LACE = svg(
@@ -19,6 +20,9 @@ const LACE = svg(
 const LACE_FLORAL = svg(
   `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="72"><g fill="none" stroke="#faf7f0" stroke-width="2"><path d="M60 64 C40 50 36 26 60 10 C84 26 80 50 60 64Z"/><path d="M60 50 C50 40 50 28 60 20 C70 28 70 40 60 50Z"/><path d="M10 60 C20 40 34 34 44 44 M110 60 C100 40 86 34 76 44"/></g><g fill="#cfc6b2" opacity="0.6"><circle cx="60" cy="36" r="2"/><circle cx="30" cy="20" r="1.4"/><circle cx="90" cy="20" r="1.4"/></g></svg>`,
 );
+
+/** Sisi buket lili (gambar milik pemilik, persegi) dalam px kanvas. */
+const BOUQUET = 232;
 
 export function LiliLoveStory() {
   const { inv } = useInvitation();
@@ -106,6 +110,23 @@ export function LiliLoveStory() {
         data-a="fade"
         style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + 18) }}
       >
+        {/* buket lili kiri & kanan (cermin), keluar tepi layar, di belakang sayap angsa */}
+        {(["left", "right"] as const).map((side) => (
+          <div
+            key={side}
+            aria-hidden
+            style={{
+              position: "absolute",
+              [side]: u(-34),
+              top: u(36),
+              width: u(BOUQUET),
+              height: u(BOUQUET),
+              transform: side === "right" ? "scaleX(-1)" : undefined,
+            }}
+          >
+            <Image src={lilyBouquet} alt="" fill sizes="(max-width: 440px) 48vw, 210px" />
+          </div>
+        ))}
         <SwanPair
           style={{
             position: "absolute",
