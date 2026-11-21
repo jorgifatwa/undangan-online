@@ -79,16 +79,16 @@ export function LiliSaveDate() {
       <div
         style={{
           position: "relative",
-          marginLeft: u(100),
-          width: u(328),
-          padding: `${u(90)} 0 ${u(22)}`,
+          // garis tengah sama dengan mempelai kedua (x 246), tidak menempel tepi
+          marginLeft: u(96),
+          width: u(300),
+          padding: `${u(22)} 0 ${u(48)}`,
         }}
       >
         <h2
           data-a
           style={{
-            ...txt(F.serif, 33, 1.25, { italic: true, weight: 700, color: "var(--inv-ink)" }),
-            marginLeft: u(18),
+            ...txt(F.serif, 32, 1.25, { italic: true, weight: 700, color: "var(--inv-ink)" }),
             ["--d" as string]: "0.1s",
           }}
         >
@@ -98,8 +98,9 @@ export function LiliSaveDate() {
           <p
             data-a
             style={{
-              ...txt(F.serif, 14.2, u(21.5), { weight: 600, color: "var(--inv-ink)" }),
-              marginTop: u(12),
+              ...txt(F.serif, 13.6, u(21), { weight: 600, color: "var(--inv-ink)" }),
+              marginTop: u(14),
+              textWrap: "pretty",
               ["--d" as string]: "0.3s",
             }}
           >
