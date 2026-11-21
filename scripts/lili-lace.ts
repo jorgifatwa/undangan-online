@@ -1,6 +1,7 @@
 /**
- * Pita renda cover tema Lili dari foto renda milik pemilik (latar hitam;
- * renda mendatar melintang foto, atau strip tegak yang diputar):
+ * Pita renda cover tema Lili dari gambar renda milik pemilik — PNG transparan
+ * (dipakai langsung) atau foto berlatar hitam (renda mendatar, atau strip tegak
+ * yang diputar):
  *
  *   pnpm tsx scripts/lili-lace.ts [.reference/lili/lace-source.png]
  *
@@ -16,7 +17,7 @@ import path from "node:path";
 
 import sharp from "sharp";
 
-const SRC = process.argv[2] ?? path.resolve(".reference/lili/lace-source.png");
+const SRC = process.argv[2] ?? path.resolve(".reference/lili/lace-horizontal.png");
 const OUT = path.resolve("src/themes/lili/art/lace-band.webp");
 /** Panjang segmen strip yang dipakai (px sumber) → rasio pita ±3:1 di cover. */
 const LENGTH = 1060;
@@ -31,7 +32,44 @@ const smooth = (a: number, b: number, v: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/** PNG transparan (sudut alfa 0): pakai alfanya langsung, potong ke isi. */
+async function transparentFlat() {
+  const meta = await sharp(SRC).metadata();
+  if (!meta.hasAlpha) return null;
+  const { data, info } = await sharp(SRC).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (data[3] !== 0) return null;
+  const W = info.width;
+  const H = info.height;
+  let x0 = W;
+  let x1 = 0;
+  let y0 = H;
+  let y1 = 0;
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++)
+      if (data[(y * W + x) * 4 + 3] > 40) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+  return sharp(SRC)
+    .ensureAlpha()
+    .extract({ left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 })
+    .resize({ width: Math.min(OUT_W, x1 - x0 + 1) })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+}
+
 async function main() {
+  const pre = await transparentFlat();
+  const flat = pre ?? (await fromDark());
+  const fw = flat.info.width;
+  const fh = flat.info.height;
+  const label = pre ? "PNG transparan" : "latar hitam";
+  return curveAndSave(flat.data, fw, fh, label);
+}
+
+async function fromDark() {
   const grey = await sharp(SRC)
     .removeAlpha()
     .greyscale()
@@ -85,9 +123,11 @@ async function main() {
     .resize({ width: Math.min(OUT_W, horizontal ? sw : sh) })
     .raw()
     .toBuffer({ resolveWithObject: true });
-  const fw = flat.info.width;
-  const fh = flat.info.height;
+  return flat;
+}
 
+async function curveAndSave(data: Buffer, fw: number, fh: number, label: string) {
+  const flat = { data };
   // lengkung: geser tiap kolom ke bawah
   const oh = fh + SAG;
   const curved = Buffer.alloc(fw * oh * 4);
@@ -120,7 +160,7 @@ async function main() {
   const meta = await sharp(OUT).metadata();
   const kb = Math.round(((await import("node:fs")).statSync(OUT).size / 1024) * 10) / 10;
   console.log(
-    `✓ ${path.relative(process.cwd(), OUT)} ${meta.width}×${meta.height} · ${kb} KB (${horizontal ? "mendatar" : "tegak"}, x ${l}–${r}, y ${top}–${top + sh - 1})`,
+    `✓ ${path.relative(process.cwd(), OUT)} ${meta.width}×${meta.height} · ${kb} KB (${label})`,
   );
 }
 

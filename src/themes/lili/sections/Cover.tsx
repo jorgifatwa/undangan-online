@@ -225,11 +225,12 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
           className="li-c-lace"
           style={{
             position: "absolute",
-            // sedikit melebihi tepi kanvas → pita setebal desain (±185 px)
-            left: c(-28),
-            top: c(372),
-            width: c(486),
-            height: c((486 * laceBand.height) / laceBand.width),
+            // pita lebih lebar dari kanvas (ditengahkan) → medalion jatuh di
+            // x ±70 & ±360 dan tebal pita ±185 px seperti desain
+            left: c(-100),
+            top: c(338),
+            width: c(630),
+            height: c((630 * laceBand.height) / laceBand.width),
             filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.3))",
           }}
         >
@@ -245,7 +246,7 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
 
         <div
           className="li-c-seal"
-          style={{ position: "absolute", left: c(138), top: c(411), width: c(154), height: c(154) }}
+          style={{ position: "absolute", left: c(138), top: c(400), width: c(154), height: c(154) }}
         >
           <Image
             src={waxSeal}
@@ -264,7 +265,7 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
               position: "absolute",
               left: c(30),
               width: c(370),
-              top: c(572),
+              top: c(588),
               textAlign: "center",
               ["--d" as string]: "0.4s",
             }}
