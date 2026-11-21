@@ -32,11 +32,15 @@ const SIDE: Omit<B, "mirror">[] = [
   { x: -46, y: 70, s: 250, rot: 6 },
 ];
 const SIDE_FRONT: Omit<B, "mirror">[] = [{ x: -40, y: 168, s: 170, rot: 24, flip: true }];
+/** Panel krem diperpanjang ke belakang angsa (px kanvas) — tanpa celah latar. */
+const PANEL_EXT = 120;
 /** Seberapa jauh angsa diturunkan dari tepi atas rangkaian (px kanvas). */
 const SWANS_DROP = 38;
 const both = (list: Omit<B, "mirror">[]): B[] => list.flatMap((b) => [b, { ...b, mirror: true }]);
 const BACK = both(SIDE);
-const FRONT: B[] = [...both(SIDE_FRONT), { x: 168, y: 250, s: 96, rot: 90, flip: false }];
+/** Baris bawah: menutup sisa latar di bawah badan angsa (kiri-kanan + tengah). */
+const BOTTOM: Omit<B, "mirror">[] = [{ x: 70, y: 226, s: 130, rot: -8 }];
+const FRONT: B[] = [...both(SIDE_FRONT), ...both(BOTTOM), { x: 150, y: 236, s: 130, rot: 80 }];
 
 function Bouquet({ x, y, s, rot = 0, flip, mirror }: B) {
   const scaleX = (flip ? -1 : 1) * (mirror ? -1 : 1);
@@ -80,7 +84,7 @@ export function LiliLoveStory() {
         style={{
           position: "relative",
           margin: `${u(72)} ${u(38)} 0`,
-          padding: `${u(26)} ${u(6)} ${u(96)}`,
+          padding: `${u(26)} ${u(6)} ${u(96 + PANEL_EXT)}`,
           background: "#f3e9d3",
           boxShadow: "0 0 0 1px #ded5c2, inset 0 0 0 4px #f2ecdd, inset 0 0 0 5px #d9cfb9",
         }}
@@ -142,7 +146,11 @@ export function LiliLoveStory() {
           bawah panel (seperti desain) */}
       <div
         data-a="fade"
-        style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + SWANS_DROP + 30) }}
+        style={{
+          position: "relative",
+          marginTop: u(-84 - PANEL_EXT),
+          height: u(SWANS_H + SWANS_DROP + 8),
+        }}
       >
         {/* rangkaian lili di belakang angsa: penuh di kiri & kanan */}
         {BACK.map((b, i) => (
