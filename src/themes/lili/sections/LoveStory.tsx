@@ -21,8 +21,40 @@ const LACE_FLORAL = svg(
   `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="72"><g fill="none" stroke="#faf7f0" stroke-width="2"><path d="M60 64 C40 50 36 26 60 10 C84 26 80 50 60 64Z"/><path d="M60 50 C50 40 50 28 60 20 C70 28 70 40 60 50Z"/><path d="M10 60 C20 40 34 34 44 44 M110 60 C100 40 86 34 76 44"/></g><g fill="#cfc6b2" opacity="0.6"><circle cx="60" cy="36" r="2"/><circle cx="30" cy="20" r="1.4"/><circle cx="90" cy="20" r="1.4"/></g></svg>`,
 );
 
-/** Sisi buket lili (gambar milik pemilik, persegi) dalam px kanvas. */
-const BOUQUET = 232;
+/**
+ * Buket lili (gambar milik pemilik, persegi) disusun berulang dengan ukuran,
+ * rotasi & arah berbeda agar sekitar angsa terasa penuh seperti desain.
+ * `x` = tepi kiri (px kanvas, sisi kiri); sisi kanan = cermin otomatis.
+ */
+type B = { x: number; y: number; s: number; rot?: number; flip?: boolean; mirror?: boolean };
+const SIDE: Omit<B, "mirror">[] = [
+  { x: -70, y: 0, s: 200, rot: -12 },
+  { x: -46, y: 70, s: 250, rot: 6 },
+];
+const SIDE_FRONT: Omit<B, "mirror">[] = [{ x: -40, y: 168, s: 170, rot: 24, flip: true }];
+const both = (list: Omit<B, "mirror">[]): B[] => list.flatMap((b) => [b, { ...b, mirror: true }]);
+const BACK = both(SIDE);
+const FRONT: B[] = [...both(SIDE_FRONT), { x: 158, y: 196, s: 114, rot: 90, flip: false }];
+
+function Bouquet({ x, y, s, rot = 0, flip, mirror }: B) {
+  const scaleX = (flip ? -1 : 1) * (mirror ? -1 : 1);
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        left: mirror ? undefined : u(x),
+        right: mirror ? u(x) : undefined,
+        top: u(y),
+        width: u(s),
+        height: u(s),
+        transform: `scaleX(${scaleX}) rotate(${mirror ? -rot : rot}deg)`,
+      }}
+    >
+      <Image src={lilyBouquet} alt="" fill sizes="(max-width: 440px) 56vw, 250px" />
+    </div>
+  );
+}
 
 export function LiliLoveStory() {
   const { inv } = useInvitation();
@@ -108,24 +140,11 @@ export function LiliLoveStory() {
           bawah panel (seperti desain) */}
       <div
         data-a="fade"
-        style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + 18) }}
+        style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + 40) }}
       >
-        {/* buket lili kiri & kanan (cermin), keluar tepi layar, di belakang sayap angsa */}
-        {(["left", "right"] as const).map((side) => (
-          <div
-            key={side}
-            aria-hidden
-            style={{
-              position: "absolute",
-              [side]: u(-34),
-              top: u(36),
-              width: u(BOUQUET),
-              height: u(BOUQUET),
-              transform: side === "right" ? "scaleX(-1)" : undefined,
-            }}
-          >
-            <Image src={lilyBouquet} alt="" fill sizes="(max-width: 440px) 48vw, 210px" />
-          </div>
+        {/* rangkaian lili di belakang angsa: penuh di kiri & kanan */}
+        {BACK.map((b, i) => (
+          <Bouquet key={`b${i}`} {...b} />
         ))}
         <SwanPair
           style={{
@@ -136,6 +155,10 @@ export function LiliLoveStory() {
             height: u(SWANS_H),
           }}
         />
+        {/* lili di depan: bawah sayap & tengah bawah */}
+        {FRONT.map((b, i) => (
+          <Bouquet key={`f${i}`} {...b} />
+        ))}
       </div>
     </Section>
   );
