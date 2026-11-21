@@ -3,23 +3,18 @@
 import Image from "next/image";
 
 import { useInvitation } from "../../_shared/runtime/context";
+import { DOILY } from "../art/doily";
+import doily from "../art/doily.webp";
 import lilyBouquet from "../art/lily-bouquet.webp";
+import { paperBg } from "../art/textures";
 import { SWANS_H, SWANS_W, SwanPair } from "../art/Swans";
 import { F, Section, txt, u } from "../canvas";
 
 /**
- * Love Story: latar renda gading timbul (pola lubang & bunga kecil), panel
- * krem bertepi titik, judul skrip "Love Story", bab cerita (judul tebal
- * miring + paragraf), lalu sepasang angsa diapit buket lili kiri & kanan.
+ * Love Story: latar hijau tua bertekstur, kartu renda persegi (doily milik
+ * pemilik, 9-slice: tinggi mengikuti isi) berisi judul skrip "Love Story" &
+ * bab cerita, lalu sepasang angsa diapit buket lili kiri & kanan.
  */
-const svg = (s: string) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
-const LACE = svg(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><rect width="22" height="22" fill="#dcd4c2"/><circle cx="11" cy="11" r="4.4" fill="#e9e2d2" stroke="#fbf8f1" stroke-width="1.8"/><circle cx="11.7" cy="11.7" r="4.4" fill="none" stroke="#b9ae96" stroke-width="0.7"/><circle cx="0" cy="0" r="1.6" fill="#f8f5ee"/><circle cx="22" cy="0" r="1.6" fill="#f8f5ee"/><circle cx="0" cy="22" r="1.6" fill="#f8f5ee"/><circle cx="22" cy="22" r="1.6" fill="#f8f5ee"/><circle cx="11" cy="0" r="0.9" fill="#d8cfbd"/><circle cx="0" cy="11" r="0.9" fill="#d8cfbd"/></svg>`,
-);
-/** Motif bunga renda besar (pita atas), ubin 120 px. */
-const LACE_FLORAL = svg(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="72"><g fill="none" stroke="#faf7f0" stroke-width="2"><path d="M60 64 C40 50 36 26 60 10 C84 26 80 50 60 64Z"/><path d="M60 50 C50 40 50 28 60 20 C70 28 70 40 60 50Z"/><path d="M10 60 C20 40 34 34 44 44 M110 60 C100 40 86 34 76 44"/></g><g fill="#cfc6b2" opacity="0.6"><circle cx="60" cy="36" r="2"/><circle cx="30" cy="20" r="1.4"/><circle cx="90" cy="20" r="1.4"/></g></svg>`,
-);
 
 /**
  * Buket lili (gambar milik pemilik, persegi) disusun berulang dengan ukuran,
@@ -32,6 +27,9 @@ const SIDE: Omit<B, "mirror">[] = [
   { x: -46, y: 70, s: 250, rot: 6 },
 ];
 const SIDE_FRONT: Omit<B, "mirror">[] = [{ x: -40, y: 168, s: 170, rot: 24, flip: true }];
+/** Kartu renda: margin kiri-kanan & skala irisan (lebar kartu 382 px kanvas). */
+const DOILY_M = 24;
+const DK = (430 - DOILY_M * 2) / DOILY.w;
 /** Panel krem diperpanjang ke belakang angsa (px kanvas) — tanpa celah latar. */
 const PANEL_EXT = 120;
 /** Seberapa jauh angsa diturunkan dari tepi atas rangkaian (px kanvas). */
@@ -69,30 +67,24 @@ export function LiliLoveStory() {
   if (items.length === 0) return null;
 
   return (
-    <Section
-      id="loveStory"
-      bg={{
-        backgroundColor: "#dcd4c2",
-        backgroundImage: `${LACE_FLORAL}, ${LACE}`,
-        backgroundSize: `${u(120)} ${u(72)}, ${u(22)} ${u(22)}`,
-        backgroundRepeat: "repeat-x, repeat",
-        backgroundPosition: "0 0, 0 0",
-      }}
-      overflow="hidden"
-    >
+    <Section id="loveStory" bg={paperBg("var(--inv-forest)")} overflow="hidden">
       <div
         style={{
           position: "relative",
-          margin: `${u(72)} ${u(38)} 0`,
-          padding: `${u(26)} ${u(6)} ${u(96 + PANEL_EXT)}`,
-          background: "#f3e9d3",
-          boxShadow: "0 0 0 1px #ded5c2, inset 0 0 0 4px #f2ecdd, inset 0 0 0 5px #d9cfb9",
+          margin: `${u(44)} ${u(DOILY_M)} 0`,
+          // kartu renda 9-slice: sudut tetap, tepi diulang, tengah krem meregang
+          borderStyle: "solid",
+          borderColor: "transparent",
+          borderWidth: `${u(DOILY.t * DK)} ${u(DOILY.r * DK)} ${u(DOILY.b * DK)} ${u(DOILY.l * DK)}`,
+          borderImage: `url(${doily.src}) ${DOILY.t} ${DOILY.r} ${DOILY.b} ${DOILY.l} fill / ${u(DOILY.t * DK)} ${u(DOILY.r * DK)} ${u(DOILY.b * DK)} ${u(DOILY.l * DK)} stretch round`,
+          padding: `${u(4)} 0 ${u(40 + PANEL_EXT)}`,
+          filter: `drop-shadow(0 ${u(3)} ${u(6)} rgb(0 0 0 / 0.3))`,
         }}
       >
         <h2
           data-a
           style={{
-            ...txt(F.script, 58, 1.25, { color: "var(--inv-sage-dark)" }),
+            ...txt(F.script, 50, 1.25, { color: "var(--inv-sage-dark)" }),
           }}
         >
           Love Story
