@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useState } from "react";
+import { useState } from "react";
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
-import { FlowerDefs, GreenOrchid } from "../art/Flowers";
+import orchid from "../art/orchid.webp";
 import wishesLily from "../art/wishes-lily.webp";
 import laceStrip from "../art/lace-strip.webp";
 import { greenBg } from "../art/textures";
@@ -97,7 +97,6 @@ function Option({
 
 export function LiliWishes() {
   const { inv, guestName, showToast } = useInvitation();
-  const id = useId().replace(/:/g, "");
   const guestbook = useGuestbook();
   const [hp, setHp] = useState("");
   const [busy, setBusy] = useState(false);
@@ -162,24 +161,22 @@ export function LiliWishes() {
       >
         <Image src={wishesLily} alt="" fill sizes="(max-width: 440px) 40vw, 180px" />
       </div>
-      {/* anggrek kiri bawah */}
-      <svg
+      {/* anggrek hijau kiri bawah (gambar milik pemilik), menyerong & terpotong
+          tepi kiri-bawah seperti desain */}
+      <div
         aria-hidden
-        viewBox="0 0 140 120"
         style={{
           position: "absolute",
-          left: 0,
-          bottom: 0,
-          width: u(140),
-          height: u(120),
-          overflow: "visible",
+          left: u(-40),
+          bottom: u(-34),
+          width: u(190),
+          height: u((190 * orchid.height) / orchid.width),
+          transform: "rotate(32deg)",
+          pointerEvents: "none",
         }}
       >
-        <defs>
-          <FlowerDefs id={`${id}b`} />
-        </defs>
-        <GreenOrchid id={`${id}b`} x={30} y={110} s={1.2} rot={18} />
-      </svg>
+        <Image src={orchid} alt="" fill sizes="(max-width: 440px) 42vw, 190px" />
+      </div>
 
       <div style={{ position: "relative", padding: `${u(116)} ${u(45)} ${u(110)} ${u(56)}` }}>
         <h2
