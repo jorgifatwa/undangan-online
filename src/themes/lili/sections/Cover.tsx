@@ -118,16 +118,16 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
             overflow: "visible",
           }}
         >
-          <path d="M-400 84 L215 490 L830 113 V900 H-400Z" fill="rgb(0 0 0 / 0.045)" />
+          <path d="M-400 84 L215 498 L830 113 V900 H-400Z" fill="rgb(0 0 0 / 0.045)" />
           <path
-            d="M-400 84 L215 490 L830 113"
+            d="M-400 84 L215 498 L830 113"
             fill="none"
             stroke="rgb(0 0 0 / 0.2)"
             strokeWidth={3}
             transform="translate(0 1.6)"
           />
           <path
-            d="M-400 84 L215 490 L830 113"
+            d="M-400 84 L215 498 L830 113"
             fill="none"
             stroke="rgb(255 255 255 / 0.14)"
             strokeWidth={1.2}
@@ -246,7 +246,7 @@ export function LiliCover({ onOpen, startMusic }: CoverProps) {
 
         <div
           className="li-c-seal"
-          style={{ position: "absolute", left: c(138), top: c(413), width: c(154), height: c(154) }}
+          style={{ position: "absolute", left: c(149), top: c(432), width: c(132), height: c(132) }}
         >
           <Image
             src={waxSeal}
