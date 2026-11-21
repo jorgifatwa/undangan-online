@@ -41,16 +41,17 @@ function relative(iso: string) {
 }
 
 const label: React.CSSProperties = {
-  ...txt(F.serif, 13.5, 1.3, { color: CREAM, align: "left" }),
+  ...txt(F.serif, 12, 1.3, { color: CREAM, align: "left" }),
   display: "block",
-  marginTop: u(22),
+  marginTop: u(26),
   marginBottom: u(8),
 };
 const field: React.CSSProperties = {
   boxSizing: "border-box",
   width: "100%",
-  padding: `${u(7)} ${u(10)}`,
-  borderRadius: u(8),
+  height: u(32),
+  padding: `0 ${u(10)}`,
+  borderRadius: u(6),
   border: "1.5px solid rgb(242 236 220 / 0.75)",
   background: "transparent",
   color: CREAM,
@@ -80,12 +81,13 @@ function Option({
         display: "block",
         width: "100%",
         marginTop: u(7),
-        padding: `${u(8)} ${u(10)}`,
-        borderRadius: u(6),
+        height: u(32),
+        padding: `0 ${u(8)}`,
+        borderRadius: u(5),
         border: on ? "1.5px solid rgb(242 236 220 / 0.8)" : "1.5px solid transparent",
         background: on ? "rgb(255 255 255 / 0.24)" : "rgb(255 255 255 / 0.12)",
         cursor: "pointer",
-        ...txt(F.serif, 13.5, 1.3, { color: CREAM, align: "left" }),
+        ...txt(F.serif, 12, 1.3, { color: CREAM, align: "left" }),
       }}
     >
       {children}
@@ -190,21 +192,20 @@ export function LiliWishes() {
         <GreenOrchid id={`${id}b`} x={30} y={110} s={1.2} rot={18} />
       </svg>
 
-      <div style={{ position: "relative", padding: `${u(108)} ${u(48)} ${u(110)} ${u(56)}` }}>
+      <div style={{ position: "relative", padding: `${u(116)} ${u(45)} ${u(110)} ${u(56)}` }}>
         <h2
           data-a
           style={{
-            ...txt(F.serif, 31, 1.25, { italic: true, weight: 700, color: CREAM }),
-            // geser ke kiri agar tidak tertutup rangkaian lili kanan atas
-            marginLeft: u(-30),
-            marginRight: u(30),
+            ...txt(F.serif, 25, 1.25, { italic: true, weight: 700, color: CREAM }),
+            // tengah layar seperti desain (kolom isi 56–385)
+            marginLeft: u(-56 + 45),
           }}
         >
           Ucapkan Sesuatu
         </h2>
 
-        <form onSubmit={submit} data-a style={{ marginTop: u(34), ["--d" as string]: "0.15s" }}>
-          <p style={txt(F.serif, 30, 1.2, { color: CREAM, align: "left" })}>You&rsquo;re Invited</p>
+        <form onSubmit={submit} data-a style={{ marginTop: u(48), ["--d" as string]: "0.15s" }}>
+          <p style={txt(F.serif, 24, 1.2, { color: CREAM, align: "left" })}>You&rsquo;re Invited</p>
           <label htmlFor="li-name" style={label}>
             Your name
           </label>
@@ -232,7 +233,7 @@ export function LiliWishes() {
           </label>
           <textarea
             id="li-msg"
-            style={{ ...field, minHeight: u(34), resize: "vertical" }}
+            style={{ ...field, height: u(32), padding: `${u(6)} ${u(10)}`, resize: "none" }}
             rows={1}
             value={message}
             onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
@@ -256,12 +257,12 @@ export function LiliWishes() {
               display: "block",
               width: "100%",
               marginTop: u(12),
-              padding: `${u(10)} 0`,
-              borderRadius: 999,
+              height: u(36),
+              borderRadius: u(12),
               border: 0,
               background: "#fffdf8",
               cursor: "pointer",
-              ...txt(F.serif, 14, 1, { weight: 600, color: "var(--inv-sage-dark)", ls: 1 }),
+              ...txt(F.serif, 13, 1, { weight: 600, color: "var(--inv-sage-dark)", ls: 1 }),
             }}
           >
             {busy ? "Mengirim…" : "RSVP"}
