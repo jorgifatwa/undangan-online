@@ -38,6 +38,8 @@ interface CardLayout {
   gapParents: number;
   gapIg: number;
   igSize: number;
+  /** Lebar blok nama/orang tua (px kanvas). */
+  textW: number;
 }
 
 /** Mempelai pertama (sage) — gambar 5. */
@@ -50,17 +52,20 @@ const FIRST: CardLayout = {
   gapParents: 10,
   gapIg: 18,
   igSize: 43,
+  textW: 300,
 };
 /** Mempelai kedua (krem) — gambar 6 & 7. */
 const SECOND: CardLayout = {
-  cx: 222,
+  // tengah area kosong di kanan kolom bunga kiri (±75–430)
+  cx: 246,
   top: 29,
   frameW: 220,
   textTop: 339,
   nameSize: 27,
   gapParents: 12,
   gapIg: 16,
-  igSize: 48,
+  igSize: 46,
+  textW: 270,
 };
 
 function PersonCard({
@@ -122,7 +127,7 @@ function PersonCard({
       {/* nama, orang tua, Instagram */}
       <div
         style={{
-          ...box(L.cx - 150, L.textTop, 300),
+          ...box(L.cx - L.textW / 2, L.textTop, L.textW),
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -147,6 +152,7 @@ function PersonCard({
             style={{
               ...txt(F.serif, 13.4, 1.5, { color: ink }),
               marginTop: u(L.gapParents),
+              textWrap: "balance",
               ["--d" as string]: "0.45s",
             }}
           >
