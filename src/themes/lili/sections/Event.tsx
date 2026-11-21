@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useId } from "react";
 
 import { eventDateLabel } from "@/lib/datetime";
@@ -8,7 +9,8 @@ import type { InvitationEvent } from "@/schemas/common";
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { smoke } from "../art/FloralColumn";
-import { Alstroemeria, FlowerDefs, Gladiolus, PinkLily } from "../art/Flowers";
+import eventCorner from "../art/event-corner.webp";
+import { Alstroemeria, FlowerDefs, PinkLily } from "../art/Flowers";
 import { TornCard } from "../art/TornCard";
 import { F, Section, box, txt, u } from "../canvas";
 
@@ -16,7 +18,7 @@ import { F, Section, box, txt, u } from "../canvas";
  * Acara (kanvas 430, latar sage berkabut): kartu kertas sobek bergantian
  * kiri/kanan (Akad Nikah kiri, Resepsi kanan) berisi judul tebal miring,
  * baris tanggal/jam/tempat berikon, dan tombol gelap "Lihat Lokasi". Lili di
- * kanan atas, lili + alstroemeria + gladiol di kiri bawah.
+ * kanan atas, buket foto milik pemilik di kiri bawah (di belakang kartu).
  */
 
 /** "08.00 WIB s.d Selesai" / "08.00 s.d 10.00 WIB" seperti desain. */
@@ -161,6 +163,23 @@ export function LiliEvent() {
       }}
       overflow="hidden"
     >
+      {/* buket kiri bawah — gambar milik pemilik */}
+      <div
+        aria-hidden
+        data-a="fade"
+        style={{
+          position: "absolute",
+          left: 0,
+          bottom: u(4),
+          // tinggi ±330 px kanvas seperti buket kiri bawah di desain
+          width: u((330 * 278) / 588),
+          height: u(330),
+          pointerEvents: "none",
+          ["--d" as string]: "0.3s",
+        }}
+      >
+        <Image src={eventCorner} alt="" fill sizes="(max-width: 440px) 58vw, 250px" />
+      </div>
       <div style={{ position: "relative", padding: `${u(104)} 0 ${u(110)}` }}>
         {events.map((e, i) => (
           <EventCard key={e.id} e={e} i={i} />
@@ -179,26 +198,6 @@ export function LiliEvent() {
           <Alstroemeria id={id} x={432} y={84} s={0.9} rot={20} />
           <PinkLily id={id} x={404} y={36} s={0.95} rot={-12} />
         </g>
-      </svg>
-      <svg
-        aria-hidden
-        viewBox="0 0 200 220"
-        style={{
-          position: "absolute",
-          left: 0,
-          bottom: 0,
-          width: u(200),
-          height: u(220),
-          overflow: "visible",
-          pointerEvents: "none",
-        }}
-      >
-        <defs>
-          <FlowerDefs id={`${id}b`} />
-        </defs>
-        <Gladiolus id={`${id}b`} x={14} y={150} s={1.2} rot={-6} />
-        <PinkLily id={`${id}b`} x={40} y={176} s={1.05} rot={24} />
-        <Alstroemeria id={`${id}b`} x={126} y={218} s={1.05} rot={-10} />
       </svg>
     </Section>
   );
