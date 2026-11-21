@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useId } from "react";
 
 import { eventDateLabel } from "@/lib/datetime";
 import { safeHref } from "@/lib/links";
@@ -9,19 +8,22 @@ import type { InvitationEvent } from "@/schemas/common";
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { smoke } from "../art/FloralColumn";
-import eventCorner from "../art/event-corner.webp";
-import { Alstroemeria, FlowerDefs, PinkLily } from "../art/Flowers";
+import eventBottom from "../art/event-bottom.webp";
+import eventTop from "../art/event-top.webp";
 import { TornCard } from "../art/TornCard";
-import { F, Section, box, txt, u } from "../canvas";
+import { F, Section, txt, u } from "../canvas";
 
 /**
  * Acara (kanvas 430, latar sage berkabut): kartu kertas sobek bergantian
  * kiri/kanan (Akad Nikah kiri, Resepsi kanan) berisi judul tebal miring,
- * baris tanggal/jam/tempat berikon, dan tombol gelap "Lihat Lokasi". Lili di
- * kanan atas, buket foto milik pemilik di kiri bawah (di belakang kartu).
+ * baris tanggal/jam/tempat berikon, dan tombol gelap "Lihat Lokasi". Bunga
+ * foto milik pemilik: rangkaian kiri atas & buket kanan bawah (di belakang kartu).
  */
 
 /** "08.00 WIB s.d Selesai" / "08.00 s.d 10.00 WIB" seperti desain. */
+/** Skala gambar bunga (diekspor selebar layar 482 px) ke kanvas 430. */
+const K = 430 / 482;
+
 function timeLabel(e: InvitationEvent): string | null {
   if (!e.startTime) return null;
   const s = e.startTime.replace(":", ".");
@@ -149,7 +151,6 @@ function EventCard({ e, i }: { e: InvitationEvent; i: number }) {
 
 export function LiliEvent() {
   const { inv } = useInvitation();
-  const id = useId().replace(/:/g, "");
   const events = inv.data.events;
   return (
     <Section
@@ -163,42 +164,42 @@ export function LiliEvent() {
       }}
       overflow="hidden"
     >
-      {/* buket kiri bawah — gambar milik pemilik */}
+      {/* bunga milik pemilik (diekspor selebar layar 482 px → skala 430/482),
+          di belakang kartu: rangkaian kiri atas & buket kanan bawah */}
       <div
         aria-hidden
         data-a="fade"
         style={{
           position: "absolute",
           left: 0,
-          bottom: u(4),
-          // tinggi ±330 px kanvas seperti buket kiri bawah di desain
-          width: u((330 * 278) / 588),
-          height: u(330),
+          top: 0,
+          width: u(363 * K),
+          height: u(255 * K),
+          pointerEvents: "none",
+        }}
+      >
+        <Image src={eventTop} alt="" fill sizes="(max-width: 440px) 76vw, 330px" />
+      </div>
+      <div
+        aria-hidden
+        data-a="fade"
+        style={{
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+          width: u(256 * K),
+          height: u(590 * K),
           pointerEvents: "none",
           ["--d" as string]: "0.3s",
         }}
       >
-        <Image src={eventCorner} alt="" fill sizes="(max-width: 440px) 58vw, 250px" />
+        <Image src={eventBottom} alt="" fill sizes="(max-width: 440px) 54vw, 240px" />
       </div>
       <div style={{ position: "relative", padding: `${u(104)} 0 ${u(110)}` }}>
         {events.map((e, i) => (
           <EventCard key={e.id} e={e} i={i} />
         ))}
       </div>
-      {/* bunga: kanan atas & kiri bawah */}
-      <svg
-        aria-hidden
-        viewBox="0 0 430 140"
-        style={{ ...box(0, 0, 430, 140), overflow: "visible", pointerEvents: "none" }}
-      >
-        <defs>
-          <FlowerDefs id={id} />
-        </defs>
-        <g data-a="fade">
-          <Alstroemeria id={id} x={432} y={84} s={0.9} rot={20} />
-          <PinkLily id={id} x={404} y={36} s={0.95} rot={-12} />
-        </g>
-      </svg>
     </Section>
   );
 }
