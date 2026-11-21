@@ -1,23 +1,27 @@
 "use client";
 
+import Image from "next/image";
 import { useId, useState } from "react";
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
 import { smoke } from "../art/FloralColumn";
-import { FlowerDefs, GreenOrchid, PinkLily } from "../art/Flowers";
+import { FlowerDefs, GreenOrchid } from "../art/Flowers";
+import wishesLily from "../art/wishes-lily.webp";
 import laceStrip from "../art/lace-strip.webp";
 import { F, Section, txt, u } from "../canvas";
 
 /**
  * Ucapkan Sesuatu (section `ucapan`, RSVP menyatu seperti desain): latar
- * sage berkabut, lili pink besar di kanan atas, pita renda vertikal di tepi
+ * sage berkabut, rangkaian lili (gambar milik pemilik) di kanan atas, pita renda vertikal di tepi
  * kanan, anggrek hijau di kiri bawah. Form "You're Invited": nama, pilihan
  * hadir (dua kotak), ucapan & doa, tombol putih "RSVP". Di bawahnya dinding
  * ucapan tamu.
  */
 type Attendance = "HADIR" | "TIDAK_HADIR";
 const MAX_MSG = 300;
+/** Lebar rangkaian lili kanan atas (px kanvas). */
+const LILY_W = 130;
 const CREAM = "var(--inv-cream)";
 
 function relative(iso: string) {
@@ -151,24 +155,23 @@ export function LiliWishes() {
           filter: "drop-shadow(-1px 0 1.5px rgb(0 0 0 / 0.25))",
         }}
       />
-      {/* lili besar kanan atas & anggrek kiri bawah */}
-      <svg
+      {/* rangkaian lili kanan atas (gambar milik pemilik, dicerminkan ke kiri),
+          menumpang ujung atas pita renda */}
+      <div
         aria-hidden
-        viewBox="0 0 170 170"
         style={{
           position: "absolute",
-          right: 0,
-          top: 0,
-          width: u(170),
-          height: u(170),
-          overflow: "visible",
+          right: u(-20),
+          top: u(-4),
+          width: u(LILY_W),
+          height: u((LILY_W * wishesLily.height) / wishesLily.width),
+          zIndex: 1,
+          pointerEvents: "none",
         }}
       >
-        <defs>
-          <FlowerDefs id={id} />
-        </defs>
-        <PinkLily id={id} x={158} y={62} s={2.1} rot={-28} />
-      </svg>
+        <Image src={wishesLily} alt="" fill sizes="(max-width: 440px) 40vw, 180px" />
+      </div>
+      {/* anggrek kiri bawah */}
       <svg
         aria-hidden
         viewBox="0 0 140 120"
@@ -192,7 +195,9 @@ export function LiliWishes() {
           data-a
           style={{
             ...txt(F.serif, 31, 1.25, { italic: true, weight: 700, color: CREAM }),
-            marginLeft: u(-12),
+            // geser ke kiri agar tidak tertutup rangkaian lili kanan atas
+            marginLeft: u(-30),
+            marginRight: u(30),
           }}
         >
           Ucapkan Sesuatu
