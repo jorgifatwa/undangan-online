@@ -145,7 +145,7 @@ export function LiliWishes() {
         style={{
           position: "absolute",
           right: u(-6),
-          top: u(150),
+          top: u(96), // mulai di balik rangkaian lili (tanpa celah)
           bottom: 0,
           width: u(52),
           // foto renda lurus milik pemilik, ubin mulus (scripts/lili-lace-strip.ts)
