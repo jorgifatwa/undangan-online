@@ -32,9 +32,11 @@ const SIDE: Omit<B, "mirror">[] = [
   { x: -46, y: 70, s: 250, rot: 6 },
 ];
 const SIDE_FRONT: Omit<B, "mirror">[] = [{ x: -40, y: 168, s: 170, rot: 24, flip: true }];
+/** Seberapa jauh angsa diturunkan dari tepi atas rangkaian (px kanvas). */
+const SWANS_DROP = 38;
 const both = (list: Omit<B, "mirror">[]): B[] => list.flatMap((b) => [b, { ...b, mirror: true }]);
 const BACK = both(SIDE);
-const FRONT: B[] = [...both(SIDE_FRONT), { x: 158, y: 196, s: 114, rot: 90, flip: false }];
+const FRONT: B[] = [...both(SIDE_FRONT), { x: 168, y: 250, s: 96, rot: 90, flip: false }];
 
 function Bouquet({ x, y, s, rot = 0, flip, mirror }: B) {
   const scaleX = (flip ? -1 : 1) * (mirror ? -1 : 1);
@@ -140,7 +142,7 @@ export function LiliLoveStory() {
           bawah panel (seperti desain) */}
       <div
         data-a="fade"
-        style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + 40) }}
+        style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + SWANS_DROP + 30) }}
       >
         {/* rangkaian lili di belakang angsa: penuh di kiri & kanan */}
         {BACK.map((b, i) => (
@@ -150,7 +152,8 @@ export function LiliLoveStory() {
           style={{
             position: "absolute",
             left: u((430 - SWANS_W) / 2),
-            top: 0,
+            // agak ke bawah: badan angsa menutupi celah di antara lili bawah
+            top: u(SWANS_DROP),
             width: u(SWANS_W),
             height: u(SWANS_H),
           }}
