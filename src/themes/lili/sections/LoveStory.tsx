@@ -3,13 +3,13 @@
 import Image from "next/image";
 
 import { useInvitation } from "../../_shared/runtime/context";
-import { SwanPair } from "../art/Swans";
+import { SWANS_H, SWANS_W, SwanPair } from "../art/Swans";
 import { F, Section, txt, u } from "../canvas";
 
 /**
  * Love Story: latar renda gading timbul (pola lubang & bunga kecil), panel
  * krem bertepi titik, judul skrip "Love Story", bab cerita (judul tebal
- * miring + paragraf), lalu sepasang angsa di antara lili pink di bawah.
+ * miring + paragraf), lalu sepasang angsa di bawah.
  */
 const svg = (s: string) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
 const LACE = svg(
@@ -100,8 +100,21 @@ export function LiliLoveStory() {
           </div>
         ))}
       </div>
-      <div data-a="fade" style={{ position: "relative", marginTop: u(-110), height: u(230) }}>
-        <SwanPair style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
+      {/* angsa: kepala tepat di bawah teks terakhir, badan menumpang tepi
+          bawah panel (seperti desain) */}
+      <div
+        data-a="fade"
+        style={{ position: "relative", marginTop: u(-84), height: u(SWANS_H + 18) }}
+      >
+        <SwanPair
+          style={{
+            position: "absolute",
+            left: u((430 - SWANS_W) / 2),
+            top: 0,
+            width: u(SWANS_W),
+            height: u(SWANS_H),
+          }}
+        />
       </div>
     </Section>
   );
