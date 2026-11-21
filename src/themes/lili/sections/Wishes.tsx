@@ -167,10 +167,10 @@ export function LiliWishes() {
         aria-hidden
         style={{
           position: "absolute",
-          left: u(-40),
-          bottom: u(-34),
-          width: u(190),
-          height: u((190 * orchid.height) / orchid.width),
+          left: u(-30),
+          bottom: u(-26),
+          width: u(140),
+          height: u((140 * orchid.height) / orchid.width),
           transform: "rotate(32deg)",
           pointerEvents: "none",
         }}
@@ -178,13 +178,14 @@ export function LiliWishes() {
         <Image src={orchid} alt="" fill sizes="(max-width: 440px) 42vw, 190px" />
       </div>
 
-      <div style={{ position: "relative", padding: `${u(116)} ${u(45)} ${u(110)} ${u(56)}` }}>
+      <div style={{ position: "relative", padding: `${u(116)} ${u(66)} ${u(110)} ${u(40)}` }}>
+        {/* kolom isi 40–364: tidak bertabrakan dengan pita renda (±384) */}
         <h2
           data-a
           style={{
             ...txt(F.serif, 25, 1.25, { italic: true, weight: 700, color: CREAM }),
-            // tengah layar seperti desain (kolom isi 56–385)
-            marginLeft: u(-56 + 45),
+            // judul ditengahkan pada area kiri renda (0–384)
+            marginLeft: u(-40 + 6),
           }}
         >
           Ucapkan Sesuatu
