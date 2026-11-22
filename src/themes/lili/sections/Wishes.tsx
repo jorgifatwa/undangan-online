@@ -187,7 +187,6 @@ export function LiliWishes() {
           bottom: u(-26),
           width: u(140),
           height: u((140 * orchid.height) / orchid.width),
-          transform: "rotate(32deg)",
           transformOrigin: "0 100%",
           ["--amp" as string]: "2.2deg",
           ["--sdur" as string]: "4.6s",
@@ -195,7 +194,9 @@ export function LiliWishes() {
           pointerEvents: "none",
         }}
       >
-        <Image src={orchid} alt="" fill sizes="(max-width: 440px) 42vw, 190px" />
+        <div style={{ position: "absolute", inset: 0, transform: "rotate(32deg)" }}>
+          <Image src={orchid} alt="" fill sizes="(max-width: 440px) 42vw, 190px" />
+        </div>
       </div>
 
       <div style={{ position: "relative", padding: `${u(116)} ${u(66)} ${u(110)} ${u(40)}` }}>

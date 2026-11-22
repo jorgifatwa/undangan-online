@@ -58,10 +58,17 @@ function Bouquet({ x, y, s, rot = 0, flip, mirror }: B) {
         top: u(y),
         width: u(s),
         height: u(s),
-        transform: `scaleX(${scaleX}) rotate(${mirror ? -rot : rot}deg)`,
       }}
     >
-      <Image src={lilyBouquet} alt="" fill sizes="(max-width: 440px) 56vw, 250px" />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          transform: `scaleX(${scaleX}) rotate(${mirror ? -rot : rot}deg)`,
+        }}
+      >
+        <Image src={lilyBouquet} alt="" fill sizes="(max-width: 440px) 56vw, 250px" />
+      </div>
     </div>
   );
 }

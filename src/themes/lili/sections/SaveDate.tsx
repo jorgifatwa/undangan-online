@@ -34,6 +34,7 @@ function LeafShadow() {
   return (
     <svg
       aria-hidden
+      className="li-shadow"
       viewBox="0 0 260 300"
       style={{
         position: "absolute",
@@ -86,7 +87,7 @@ export function LiliSaveDate() {
         }}
       >
         <h2
-          data-a
+          data-a="write"
           style={{
             ...txt(F.serif, 32, 1.25, { italic: true, weight: 700, color: "var(--inv-ink)" }),
             ["--d" as string]: "0.1s",
@@ -101,7 +102,7 @@ export function LiliSaveDate() {
               ...txt(F.serif, 13.6, u(21), { weight: 600, color: "var(--inv-ink)" }),
               marginTop: u(14),
               textWrap: "pretty",
-              ["--d" as string]: "0.3s",
+              ["--d" as string]: "0.8s",
             }}
           >
             &ldquo;{translation}&rdquo;
@@ -113,7 +114,7 @@ export function LiliSaveDate() {
             style={{
               ...txt(F.serif, 13, 1.4, { weight: 600, color: "var(--inv-ink)" }),
               marginTop: u(12),
-              ["--d" as string]: "0.45s",
+              ["--d" as string]: "1.1s",
             }}
           >
             &mdash; {source}

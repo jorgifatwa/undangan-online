@@ -416,6 +416,44 @@
 [data-theme="lili"] [data-inv-section]:not([data-inview]) .li-column {
   animation-play-state: running !important;
 }
+/* bayangan daun Save The Date: bergeser pelan seperti ranting tertiup angin */
+@keyframes li-drift {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  50% {
+    translate: 1.6cqw 0.8cqw;
+    rotate: 2.5deg;
+  }
+}
+[data-theme="lili"] .li-shadow {
+  transform-origin: 0 100%;
+  animation: li-drift 9s ease-in-out infinite;
+}
+/* kilau chip kartu bank saat nomor disalin */
+@keyframes li-shine {
+  from {
+    translate: -120% 0;
+  }
+  to {
+    translate: 120% 0;
+  }
+}
+[data-theme="lili"] .li-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.85) 50%,
+    transparent 70%
+  );
+  animation: li-shine 0.8s ease-out both;
+}
 /* angsa mengapung */
 [data-theme="lili"] .li-float {
   animation: li-bob 4.8s ease-in-out infinite;
@@ -425,7 +463,8 @@
 [data-theme="lili"][data-lite] .li-bfly,
 [data-theme="lili"][data-lite] [data-sway],
 [data-theme="lili"][data-lite] .li-column,
-[data-theme="lili"][data-lite] .li-float {
+[data-theme="lili"][data-lite] .li-float,
+[data-theme="lili"][data-lite] .li-shadow {
   animation: none;
 }
 /* mode ringan: tetap satu gerakan kecil (kepak kupu-kupu) */
@@ -440,7 +479,9 @@
   [data-theme="lili"] .li-bfly-wing,
   [data-theme="lili"] [data-sway],
   [data-theme="lili"] .li-column,
-  [data-theme="lili"] .li-float {
+  [data-theme="lili"] .li-float,
+  [data-theme="lili"] .li-shadow,
+  [data-theme="lili"] .li-shine::after {
     animation: none;
   }
   [data-theme="lili"] .li-sec [data-a] {

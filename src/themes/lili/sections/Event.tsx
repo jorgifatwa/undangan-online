@@ -11,7 +11,7 @@ import { smoke } from "../art/FloralColumn";
 import eventBottom from "../art/event-bottom.webp";
 import eventTop from "../art/event-top.webp";
 import { TornCard } from "../art/TornCard";
-import { F, Section, txt, u } from "../canvas";
+import { EnterGroup, F, Section, txt, u } from "../canvas";
 
 /**
  * Acara (kanvas 430, latar sage berkabut): kartu kertas sobek bergantian
@@ -76,9 +76,27 @@ function IconPin() {
   );
 }
 
-function Row({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+function Row({
+  icon,
+  d,
+  children,
+}: {
+  icon: React.ReactNode;
+  /** jeda animasi masuk (detik) */
+  d: number;
+  children: React.ReactNode;
+}) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: u(10), marginTop: u(11) }}>
+    <div
+      data-a
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: u(10),
+        marginTop: u(11),
+        ["--d" as string]: `${d}s`,
+      }}
+    >
       <span style={{ flex: "none", width: u(21), height: u(21), color: "var(--inv-ink)" }}>
         {icon}
       </span>
@@ -102,13 +120,14 @@ function EventCard({ e, i }: { e: InvitationEvent; i: number }) {
   const map = safeHref(e.mapsUrl, "maps");
   return (
     <div
-      data-a={right ? "right" : "left"}
+      data-a="drop"
       style={{
+        ["--tilt" as string]: right ? "4deg" : "-4deg",
         position: "relative",
         marginLeft: u(right ? 91 : 26),
         width: u(314),
         marginTop: u(i === 0 ? 0 : 40),
-        ["--d" as string]: "0.15s",
+        ["--d" as string]: "0.1s",
       }}
     >
       <TornCard seed={right ? 1 : 0}>
@@ -116,18 +135,37 @@ function EventCard({ e, i }: { e: InvitationEvent; i: number }) {
           style={{ minHeight: u(247), padding: `${u(22)} ${u(30)} ${u(30)} ${u(right ? 68 : 76)}` }}
         >
           <h3
+            data-a="write"
             style={{
               ...txt(F.serif, 31, 1.2, { italic: true, weight: 700, color: "var(--inv-ink)" }),
               marginLeft: u(right ? 0 : -10),
+              ["--d" as string]: "0.6s",
             }}
           >
             {e.name}
           </h3>
-          <Row icon={<IconCalendar />}>{eventDateLabel(e)}</Row>
-          {time && <Row icon={<IconClock />}>{time}</Row>}
-          {place && <Row icon={<IconPin />}>{place}</Row>}
+          <Row icon={<IconCalendar />} d={0.95}>
+            {eventDateLabel(e)}
+          </Row>
+          {time && (
+            <Row icon={<IconClock />} d={1.1}>
+              {time}
+            </Row>
+          )}
+          {place && (
+            <Row icon={<IconPin />} d={1.25}>
+              {place}
+            </Row>
+          )}
           {map && (
-            <div style={{ marginTop: u(16), paddingLeft: u(right ? 28 : 20) }}>
+            <div
+              data-a
+              style={{
+                marginTop: u(16),
+                paddingLeft: u(right ? 28 : 20),
+                ["--d" as string]: "1.4s",
+              }}
+            >
               <a
                 href={map}
                 target="_blank"
@@ -158,6 +196,7 @@ export function LiliEvent() {
   return (
     <Section
       id="acara"
+      groups
       bg={{
         background: `${smoke([
           { x: 30, y: 46, w: 50, h: 14, a: 0.22 },
@@ -169,49 +208,58 @@ export function LiliEvent() {
     >
       {/* bunga milik pemilik (diekspor selebar layar 482 px → skala 430/482),
           di belakang kartu: rangkaian kanan atas & buket kiri bawah (dicerminkan) */}
-      <div
-        aria-hidden
-        data-a="fade"
-        data-sway="corner"
-        style={{
-          position: "absolute",
-          right: 0,
-          top: 0,
-          transform: "scaleX(-1)",
-          transformOrigin: "100% 0",
-          ["--amp" as string]: "2.6deg",
-          ["--sdur" as string]: "5.4s",
-          width: u(363 * K),
-          height: u(255 * K),
-          pointerEvents: "none",
-        }}
+      <EnterGroup
+        threshold={0.05}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
       >
-        <Image src={eventTop} alt="" fill sizes="(max-width: 440px) 48vw, 210px" />
-      </div>
-      <div
-        aria-hidden
-        data-a="fade"
-        data-sway="corner"
-        style={{
-          position: "absolute",
-          left: 0,
-          bottom: 0,
-          transform: "scaleX(-1)",
-          transformOrigin: "0 100%",
-          ["--amp" as string]: "2.8deg",
-          ["--sdur" as string]: "4.8s",
-          ["--sdly" as string]: "-2s",
-          width: u(256 * K),
-          height: u(590 * K),
-          pointerEvents: "none",
-          ["--d" as string]: "0.3s",
-        }}
-      >
-        <Image src={eventBottom} alt="" fill sizes="(max-width: 440px) 34vw, 150px" />
-      </div>
+        <div
+          aria-hidden
+          data-a="fade"
+          data-sway="corner"
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+            transformOrigin: "100% 0",
+            ["--amp" as string]: "2.6deg",
+            ["--sdur" as string]: "5.4s",
+            width: u(363 * K),
+            height: u(255 * K),
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, transform: "scaleX(-1)" }}>
+            <Image src={eventTop} alt="" fill sizes="(max-width: 440px) 48vw, 210px" />
+          </div>
+        </div>
+        <div
+          aria-hidden
+          data-a="fade"
+          data-sway="corner"
+          style={{
+            position: "absolute",
+            left: 0,
+            bottom: 0,
+            transformOrigin: "0 100%",
+            ["--amp" as string]: "2.8deg",
+            ["--sdur" as string]: "4.8s",
+            ["--sdly" as string]: "-2s",
+            width: u(256 * K),
+            height: u(590 * K),
+            pointerEvents: "none",
+            ["--d" as string]: "0.3s",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, transform: "scaleX(-1)" }}>
+            <Image src={eventBottom} alt="" fill sizes="(max-width: 440px) 34vw, 150px" />
+          </div>
+        </div>
+      </EnterGroup>
       <div style={{ position: "relative", padding: `${u(104)} 0 ${u(110)}` }}>
         {events.map((e, i) => (
-          <EventCard key={e.id} e={e} i={i} />
+          <EnterGroup key={e.id} threshold={0.3}>
+            <EventCard e={e} i={i} />
+          </EnterGroup>
         ))}
       </div>
     </Section>

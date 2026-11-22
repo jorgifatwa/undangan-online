@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import { useCopy, whatsappLink } from "../../_shared/hooks";
 import { useInvitation } from "../../_shared/runtime/context";
@@ -22,18 +23,36 @@ export const warmBg: React.CSSProperties = {
     "radial-gradient(ellipse 45% 18% at 85% 30%, rgb(255 255 255 / 0.35), transparent 70%), radial-gradient(ellipse 50% 20% at 10% 70%, rgb(200 190 160 / 0.18), transparent 70%), radial-gradient(ellipse 40% 16% at 70% 90%, rgb(255 255 255 / 0.3), transparent 70%), var(--inv-warm, #f2e9d4)",
 };
 
-function Chip() {
+function Chip({ shine }: { shine?: number }) {
   return (
-    <svg viewBox="0 0 45 33" style={{ width: u(45), height: u(33), display: "block" }} aria-hidden>
-      <rect x={0.5} y={0.5} width={44} height={32} rx={6} fill="#f1cf5f" stroke="#c9a53a" />
-      <path
-        d="M0.5 11h13M0.5 22h13M31 11h13.5M31 22h13.5M13.5 0.5v32M31 0.5v32M13.5 16.5H31"
-        stroke="#b8952c"
-        strokeWidth={1}
-        fill="none"
-      />
-      <rect x={13.5} y={6} width={17.5} height={21} rx={3} fill="none" stroke="#b8952c" />
-    </svg>
+    <span
+      // key berubah tiap salin → kilau diputar ulang
+      key={shine}
+      className={shine ? "li-shine" : undefined}
+      style={{
+        position: "relative",
+        display: "block",
+        width: u(45),
+        height: u(33),
+        borderRadius: u(6),
+        overflow: "hidden",
+      }}
+    >
+      <svg
+        viewBox="0 0 45 33"
+        style={{ width: u(45), height: u(33), display: "block" }}
+        aria-hidden
+      >
+        <rect x={0.5} y={0.5} width={44} height={32} rx={6} fill="#f1cf5f" stroke="#c9a53a" />
+        <path
+          d="M0.5 11h13M0.5 22h13M31 11h13.5M31 22h13.5M13.5 0.5v32M31 0.5v32M13.5 16.5H31"
+          stroke="#b8952c"
+          strokeWidth={1}
+          fill="none"
+        />
+        <rect x={13.5} y={6} width={17.5} height={21} rx={3} fill="none" stroke="#b8952c" />
+      </svg>
+    </span>
   );
 }
 
@@ -53,11 +72,20 @@ function CopyIcon() {
   );
 }
 
-function SageCard({ children, d }: { children: React.ReactNode; d: number }) {
+function SageCard({
+  children,
+  d,
+  tilt = -4,
+}: {
+  children: React.ReactNode;
+  d: number;
+  tilt?: number;
+}) {
   return (
     <div
-      data-a
+      data-a="place"
       style={{
+        ["--tilt" as string]: `${tilt}deg`,
         position: "relative",
         width: u(266),
         minHeight: u(155),
@@ -102,8 +130,14 @@ function CopyButton({ label, onClick }: { label: string; onClick: () => void }) 
 
 function BankCard({ a, i }: { a: BankAccount; i: number }) {
   const copy = useCopy();
+  const [copied, setCopied] = useState(0);
+  useEffect(() => {
+    if (!copied) return;
+    const t = window.setTimeout(() => setCopied(0), 1800);
+    return () => window.clearTimeout(t);
+  }, [copied]);
   return (
-    <SageCard d={0.25 + i * 0.12}>
+    <SageCard d={0.25 + i * 0.12} tilt={i % 2 ? 4 : -4}>
       <p
         style={{
           position: "absolute",
@@ -117,7 +151,7 @@ function BankCard({ a, i }: { a: BankAccount; i: number }) {
         {a.bank}
       </p>
       <div style={{ marginTop: u(10) }}>
-        <Chip />
+        <Chip shine={copied} />
       </div>
       <p
         style={{
@@ -140,8 +174,11 @@ function BankCard({ a, i }: { a: BankAccount; i: number }) {
       </p>
       <div style={{ position: "absolute", right: u(24), bottom: u(18) }}>
         <CopyButton
-          label="Salin Rekening"
-          onClick={() => copy(a.number.replace(/\s/g, ""), "Nomor rekening disalin")}
+          label={copied ? "Tersalin ✓" : "Salin Rekening"}
+          onClick={() => {
+            void copy(a.number.replace(/\s/g, ""), "Nomor rekening disalin");
+            setCopied(Date.now());
+          }}
         />
       </div>
     </SageCard>
