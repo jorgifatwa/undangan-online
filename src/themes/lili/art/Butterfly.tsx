@@ -26,7 +26,10 @@ export function Butterfly({ style }: { style?: React.CSSProperties }) {
   });
   return (
     // pembungkus: posisi & kemiringan dari pemanggil; dalam: animasi melayang
-    <div aria-hidden style={{ aspectRatio: `${w} / ${h}`, ...style }}>
+    <div
+      aria-hidden
+      style={{ aspectRatio: `${w} / ${h}`, transformStyle: "preserve-3d", ...style }}
+    >
       <div
         className="li-bfly"
         style={{

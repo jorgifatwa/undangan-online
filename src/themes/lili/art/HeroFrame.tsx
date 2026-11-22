@@ -90,11 +90,13 @@ export function HeroFrame({
         <Butterfly
           style={{
             position: "absolute",
-            // kepala menghadap kanan (agak ke atas) seperti referensi
-            left: "7%",
-            top: "80%",
-            width: "28%",
-            rotate: "72deg",
+            // pose tampak samping seperti referensi: sayap kanan terlipat rapat
+            // di belakang sayap kiri, badan di kanan
+            // badan (pusat kotak) di ±(35 %, 89 %) bingkai, sayap ke kiri atas
+            left: "13%",
+            top: "77%",
+            width: "44%",
+            transform: "perspective(500px) rotate(-28deg)",
           }}
         />
       </div>
