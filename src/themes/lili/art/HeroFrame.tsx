@@ -4,11 +4,9 @@ import Image from "next/image";
 
 import type { Photo } from "@/schemas/common";
 import { box, u } from "../canvas";
+import { Butterfly } from "./Butterfly";
 import { HERO_FRAME } from "./hero-frame";
 import frameImg from "./hero-frame.webp";
-import bflyA from "./hero-bfly-a.webp";
-import bflyB from "./hero-bfly-b.webp";
-import bflyBody from "./hero-bfly-body.webp";
 import lilyImg from "./hero-lily.webp";
 
 /**
@@ -88,27 +86,16 @@ export function HeroFrame({
             priority={priority}
           />
         </div>
-        {/* kupu-kupu: badan & sayap bawah, lalu dua sayap atas yang mengepak
-            terpisah (sudut & waktu berbeda) di sumbu badan */}
-        <div className="li-bfly" style={{ position: "absolute", inset: 0 }}>
-          {(
-            [
-              ["li-wing-b", bflyB],
-              ["", bflyBody],
-              ["li-wing-a", bflyA],
-            ] as const
-          ).map(([cls, src], i) => (
-            <div key={i} className={cls || undefined} style={{ position: "absolute", inset: 0 }}>
-              <Image
-                src={src}
-                alt=""
-                fill
-                sizes="(max-width: 440px) 72vw, 320px"
-                priority={priority}
-              />
-            </div>
-          ))}
-        </div>
+        {/* kupu-kupu (lapisan sendiri) hinggap di kiri bawah bingkai, sayap mengepak */}
+        <Butterfly
+          style={{
+            position: "absolute",
+            left: "8%",
+            top: "81.5%",
+            width: "30%",
+            rotate: "-24deg",
+          }}
+        />
       </div>
     </>
   );
