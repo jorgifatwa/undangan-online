@@ -125,7 +125,19 @@ export function LiliHero() {
                 whiteSpace: "nowrap",
               }}
             >
-              {cd.ready ? `${cd.days}:${values.slice(1).map(pad).join(":")}` : "–"}
+              {cd.ready
+                ? // tiap digit punya key = posisi + nilai → hanya digit yang
+                  // berubah dipasang ulang & menjalankan animasi li-tick
+                  [...`${cd.days}:${values.slice(1).map(pad).join(":")}`].map((ch, i) =>
+                    ch === ":" ? (
+                      <span key={`c${i}`}>:</span>
+                    ) : (
+                      <span key={`${i}-${ch}`} className="li-digit">
+                        {ch}
+                      </span>
+                    ),
+                  )
+                : "–"}
             </p>
             {CELLS.map((c) => (
               <p

@@ -22,6 +22,7 @@ export function Ampersand({
       aria-hidden
     >
       <path
+        pathLength={1}
         d={PATH}
         fill="none"
         stroke="currentColor"
@@ -31,6 +32,7 @@ export function Ampersand({
       />
       {/* tebal-tipis: lapis kedua hanya di lengkung badan */}
       <path
+        pathLength={1}
         d="M118 48 C96 48 76 60 76 80 C76 100 92 112 110 110"
         fill="none"
         stroke="currentColor"

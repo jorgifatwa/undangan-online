@@ -10,7 +10,7 @@ import { Ampersand } from "../art/Ampersand";
 import { FloralColumn, smoke } from "../art/FloralColumn";
 import { LACE_H, LACE_HOLE, LACE_W, LaceFrame } from "../art/LaceFrame";
 import { paperBg } from "../art/textures";
-import { F, Section, box, txt, u, useFit } from "../canvas";
+import { EnterGroup, F, Section, box, txt, u, useFit } from "../canvas";
 import { SAGE_BLOCK, SALAM_H } from "./Salam";
 
 /**
@@ -95,8 +95,12 @@ function PersonCard({
     <>
       {/* foto + bingkai renda */}
       <div
-        data-a="zoom"
-        style={{ ...box(0, 0, 430, L.top + LACE_H * k + 10), ["--d" as string]: "0.1s" }}
+        data-a="paste"
+        style={{
+          ...box(0, 0, 430, L.top + LACE_H * k + 10),
+          ["--d" as string]: "0.1s",
+          ["--tilt" as string]: tone === "sage" ? "-5deg" : "5deg",
+        }}
       >
         <div
           style={{
@@ -138,13 +142,13 @@ function PersonCard({
       >
         <h3
           ref={nameRef}
-          data-a
+          data-a="write"
           style={{
             ...txt(F.serif, L.nameSize, 1.3, { italic: true, color: nameInk }),
             fontSize: `calc(${u(L.nameSize)} * var(--fit, 1))`,
             whiteSpace: "nowrap",
             alignSelf: "stretch",
-            ["--d" as string]: "0.3s",
+            ["--d" as string]: "0.55s",
           }}
         >
           {name}
@@ -156,7 +160,7 @@ function PersonCard({
               ...txt(F.serif, 13.4, 1.5, { color: ink }),
               marginTop: u(L.gapParents),
               textWrap: "balance",
-              ["--d" as string]: "0.45s",
+              ["--d" as string]: "1s",
             }}
           >
             {parents.lead} {parents.names}
@@ -175,7 +179,7 @@ function PersonCard({
               height: u(L.igSize),
               color: igInk,
               pointerEvents: "auto",
-              ["--d" as string]: "0.6s",
+              ["--d" as string]: "1.15s",
             }}
           >
             <svg
@@ -204,7 +208,7 @@ export function LiliCouple() {
   const lead = (p: Person) => (p === d.bride ? "Putri dari" : "Putra dari");
 
   return (
-    <Section id="profil" z={2}>
+    <Section id="profil" z={2} groups>
       {/* blok sage: mempelai pertama + "&" */}
       <div
         style={{
@@ -219,24 +223,28 @@ export function LiliCouple() {
         }}
       >
         <FloralColumn from={SALAM_H} height={SAGE_H} />
-        <PersonCard person={a} lead={lead(a)} tone="sage" L={FIRST} />
-        <div
-          data-a="zoom"
-          style={{
-            // ±108 × 78 kanvas seperti desain, tengah kolom isi (x 178)
-            ...box(124, 458, 108, 78),
-            color: "var(--inv-pink-text)",
-            ["--d" as string]: "0.2s",
-          }}
-        >
-          <Ampersand style={{ width: "100%", height: "100%" }} />
-        </div>
+        <EnterGroup style={{ position: "absolute", inset: 0 }}>
+          <PersonCard person={a} lead={lead(a)} tone="sage" L={FIRST} />
+          <div
+            className="li-ink"
+            style={{
+              // ±108 × 78 kanvas seperti desain, tengah kolom isi (x 178)
+              ...box(124, 458, 108, 78),
+              color: "var(--inv-pink-text)",
+              ["--d" as string]: "1.3s",
+            }}
+          >
+            <Ampersand style={{ width: "100%", height: "100%" }} />
+          </div>
+        </EnterGroup>
       </div>
 
       {/* kertas krem: mempelai kedua, kolom bunga kiri */}
       <div style={{ position: "relative", height: u(PAPER_H), ...paperBg() }}>
         <FloralColumn from={0} height={PAPER_H} side="left" />
-        <PersonCard person={b} lead={lead(b)} tone="paper" L={SECOND} />
+        <EnterGroup style={{ position: "absolute", inset: 0 }}>
+          <PersonCard person={b} lead={lead(b)} tone="paper" L={SECOND} />
+        </EnterGroup>
       </div>
     </Section>
   );

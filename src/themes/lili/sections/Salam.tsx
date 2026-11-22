@@ -40,12 +40,12 @@ export function LiliSalam() {
         {islami && (
           <>
             <p
-              data-a="fade"
+              data-a="blur"
               dir="rtl"
               lang="ar"
               style={{
                 ...txt(F.arabic, 29, 1.25, { color: "var(--inv-pink-text)" }),
-                ["--d" as string]: "0.1s",
+                ["--d" as string]: "0.15s",
               }}
             >
               بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
@@ -55,7 +55,7 @@ export function LiliSalam() {
               style={{
                 ...txt(F.serif, 21, 1.3, { italic: true, color: "var(--inv-pink-text)" }),
                 marginTop: u(8),
-                ["--d" as string]: "0.25s",
+                ["--d" as string]: "0.55s",
               }}
             >
               Assalamu&rsquo;alaikum Wr. Wb
@@ -67,7 +67,7 @@ export function LiliSalam() {
           style={{
             ...txt(F.serif, 13.6, u(20), { color: "var(--inv-cream)" }),
             marginTop: u(8),
-            ["--d" as string]: "0.4s",
+            ["--d" as string]: "0.8s",
           }}
         >
           {inv.data.greeting?.openingText ?? FALLBACK}

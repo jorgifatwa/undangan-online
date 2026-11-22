@@ -74,6 +74,7 @@ export function Section({
   threshold = 0.15,
   className,
   style,
+  groups,
   children,
 }: {
   id: SectionId;
@@ -86,11 +87,13 @@ export function Section({
   threshold?: number;
   className?: string;
   style?: React.CSSProperties;
+  /** true = animasi masuk dipicu per <EnterGroup> (section tinggi), bukan per section. */
+  groups?: boolean;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const { opened } = useInvitation();
-  const entered = useEnter(ref, threshold, opened);
+  const entered = useEnter(ref, threshold, opened && !groups);
   return (
     <SectionShell
       id={id}
@@ -161,4 +164,27 @@ export function useFit<T extends HTMLElement>(key: string, limit = 1) {
     document.fonts?.ready.then(measure).catch(() => undefined);
   }, [key, limit]);
   return ref;
+}
+
+/**
+ * Kelompok animasi masuk di dalam section tinggi (`<Section groups>`): elemen
+ * `data-a` di dalamnya baru beranimasi saat kelompok ini sendiri terlihat.
+ */
+export function EnterGroup({
+  threshold = 0.25,
+  style,
+  children,
+}: {
+  threshold?: number;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const { opened } = useInvitation();
+  const entered = useEnter(ref, threshold, opened);
+  return (
+    <div ref={ref} className={`li-sec ${entered ? "li-in" : ""}`} style={style}>
+      {children}
+    </div>
+  );
 }
