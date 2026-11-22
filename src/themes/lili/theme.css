@@ -355,31 +355,57 @@
     translate: 0 -0.8cqw;
   }
 }
+/* kepak sayap 3D: sayap berputar di sumbu badan (badan miring di tepi kanan
+   kupu-kupu, arah ±(0.41, 0.91)); tiga kepakan cepat lalu meluncur */
 @keyframes li-flutter {
   0%,
-  62%,
   100% {
-    scale: 1 1;
+    transform: rotate3d(0.41, 0.91, 0, 0deg);
   }
-  70% {
-    scale: 0.55 1;
+  6% {
+    transform: rotate3d(0.41, 0.91, 0, 68deg);
   }
-  78% {
-    scale: 1 1;
+  12% {
+    transform: rotate3d(0.41, 0.91, 0, 4deg);
   }
-  86% {
-    scale: 0.62 1;
+  18% {
+    transform: rotate3d(0.41, 0.91, 0, 70deg);
+  }
+  24% {
+    transform: rotate3d(0.41, 0.91, 0, 6deg);
+  }
+  30% {
+    transform: rotate3d(0.41, 0.91, 0, 66deg);
+  }
+  37% {
+    transform: rotate3d(0.41, 0.91, 0, 10deg);
+  }
+  /* meluncur: sayap setengah terbuka bergetar halus */
+  60% {
+    transform: rotate3d(0.41, 0.91, 0, 22deg);
+  }
+  80% {
+    transform: rotate3d(0.41, 0.91, 0, 8deg);
   }
 }
+/* jalur terbang kecil di sekitar bingkai: naik saat mengepak, turun meluncur */
 @keyframes li-hover {
   0%,
   100% {
     translate: 0 0;
     rotate: 0deg;
   }
-  50% {
-    translate: 0.4cqw -1cqw;
-    rotate: -3deg;
+  30% {
+    translate: 0.8cqw -2.4cqw;
+    rotate: -6deg;
+  }
+  55% {
+    translate: 1.4cqw -1.6cqw;
+    rotate: -2deg;
+  }
+  80% {
+    translate: 0.4cqw -0.4cqw;
+    rotate: 2deg;
   }
 }
 /* lili di bingkai: berporos di pangkal (dekat mutiara kiri atas rangkaian) */
@@ -390,12 +416,14 @@
 }
 /* kupu-kupu: melayang + mengepak (sayap menyempit ke arah badan) */
 [data-theme="lili"] .li-bfly {
-  transform-origin: 34% 88%;
-  animation: li-hover 5.2s ease-in-out infinite;
+  transform-origin: 34% 89%;
+  perspective: 600px;
+  animation: li-hover 3s ease-in-out infinite;
 }
 [data-theme="lili"] .li-bfly-wing {
-  transform-origin: 34% 88%;
-  animation: li-flutter 3.2s ease-in-out infinite;
+  /* poros = titik di badan (x 120, y 445 dari gambar 353 × 498) */
+  transform-origin: 34% 89.4%;
+  animation: li-flutter 3s linear infinite;
 }
 /* bunga gantung/tegak umum (data-sway="hang|stand|corner") */
 [data-theme="lili"] [data-sway] {
