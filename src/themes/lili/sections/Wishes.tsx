@@ -7,7 +7,7 @@ import { useInvitation } from "../../_shared/runtime/context";
 import { Honeypot, useGuestbook } from "../../_shared/runtime/guestbook";
 import { smoke } from "../art/FloralColumn";
 import orchid from "../art/orchid.webp";
-import wishesLily from "../art/wishes-lily.webp";
+import eventTop from "../art/event-top.webp";
 import laceStrip from "../art/lace-strip.webp";
 import { F, Section, txt, u } from "../canvas";
 
@@ -21,7 +21,7 @@ import { F, Section, txt, u } from "../canvas";
 type Attendance = "HADIR" | "TIDAK_HADIR";
 const MAX_MSG = 300;
 /** Lebar rangkaian lili kanan atas (px kanvas). */
-const LILY_W = 130;
+const LILY_W = 190;
 const CREAM = "var(--inv-cream)";
 
 function relative(iso: string) {
@@ -147,7 +147,7 @@ export function LiliWishes() {
         style={{
           position: "absolute",
           right: u(-6),
-          top: u(96), // mulai di balik rangkaian lili (tanpa celah)
+          top: u(70), // mulai di balik rangkaian bunga (tanpa celah)
           bottom: 0,
           width: u(52),
           // foto renda lurus milik pemilik, ubin mulus (art/lace-strip.webp)
@@ -158,8 +158,9 @@ export function LiliWishes() {
           ["--d" as string]: "0.4s",
         }}
       />
-      {/* rangkaian lili kanan atas (gambar milik pemilik, dicerminkan ke kiri),
-          menumpang ujung atas pita renda */}
+      {/* rangkaian pink kanan atas = cermin rangkaian kiri atas Live Streaming
+          (menghadap kiri), menyambung anggrek kanan bawah Live Streaming &
+          menutup ujung atas pita renda */}
       <div
         aria-hidden
         data-a="hang"
@@ -169,15 +170,17 @@ export function LiliWishes() {
           ["--amp" as string]: "2deg",
           ["--sdur" as string]: "5.2s",
           position: "absolute",
-          right: u(-20),
-          top: u(-4),
+          right: u(-16),
+          top: u(-6),
           width: u(LILY_W),
-          height: u((LILY_W * wishesLily.height) / wishesLily.width),
+          height: u((LILY_W * eventTop.height) / eventTop.width),
           zIndex: 1,
           pointerEvents: "none",
         }}
       >
-        <Image src={wishesLily} alt="" fill sizes="(max-width: 440px) 40vw, 180px" />
+        <div style={{ position: "absolute", inset: 0, transform: "scaleX(-1)" }}>
+          <Image src={eventTop} alt="" fill sizes="(max-width: 440px) 46vw, 200px" />
+        </div>
       </div>
       {/* anggrek hijau kiri bawah (gambar milik pemilik), menyerong & terpotong
           tepi kiri-bawah seperti desain */}

@@ -33,7 +33,9 @@ const DECOS: Record<"dressCode" | "liveStream", Deco[]> = {
   ],
   liveStream: [
     { src: eventTop, at: "tl", w: 190 },
-    { src: orchid, at: "br", w: 110, flip: true, rot: -28 },
+    // cermin persis anggrek kiri Dress Code → menyatu dengan rangkaian
+    // pink kanan atas section Ucapan (cermin rangkaian kiri Live Streaming)
+    { src: orchid, at: "br", w: 118, flip: true, rot: 28 },
   ],
 };
 
