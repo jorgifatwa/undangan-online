@@ -70,3 +70,15 @@ dan komposisi bingkai hero/penutup .
 ## Foto & musik placeholder
 
 Lihat `public/placeholders/CREDITS.md` (Unsplash License & Pixabay Content License).
+
+### Surat Marun
+
+Diadaptasi dari desain referensi Jsambac (hak desain milik pemilik). Semua
+ornamen digambar ulang sebagai SVG/CSS di `surat-marun/art/` — tidak ada file
+gambar referensi, foto, atau data pasangan asli yang dipakai.
+
+| Komponen                                                                                           | File                             | Catatan                                                                                                                  |
+| -------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `EmbossOval`                                                                                       | `surat-marun/art/EmbossOval.tsx` | Bingkai oval timbul bermanik di kartu linen (cover).                                                                     |
+| `DateFrames`, `Envelope`, `Paperclip`, `House`, `Monogram`, `BevelFrame`, `quiltCard`, `paperCard` | `surat-marun/art/Ornaments.tsx`  | Bingkai tanggal emas, amplop marun acara, penjepit kertas, sketsa rumah, monogram bordir, pigura galeri, kartu berjahit. |
+| `linenBg`                                                                                          | `surat-marun/art/textures.ts`    | Tekstur linen halus. Renda oval nama memakai `LaceDoily` bersama (diputar 90°).                                          |

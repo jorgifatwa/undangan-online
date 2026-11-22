@@ -15,5 +15,6 @@ export const THEME_THUMBS: Record<string, string> = {
   "lili": "/theme-thumbs/lili.webp?v=mwqc9e8z",
   "pita-krayon": "/theme-thumbs/pita-krayon.webp?v=mwgt8gbv",
   "renda-rimba": "/theme-thumbs/renda-rimba.webp?v=mwdqaso1",
+  "surat-marun": "/theme-thumbs/surat-marun.webp?v=mwrzp1kn",
   "tirai-beludru": "/theme-thumbs/tirai-beludru.webp?v=mwdqb1lv",
 };

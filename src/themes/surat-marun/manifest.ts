@@ -21,7 +21,6 @@ export const manifest = {
     "cover",
     "ayat",
     "profil",
-    "hitungMundur",
     "acara",
     "dressCode",
     "galeri",
@@ -31,11 +30,11 @@ export const manifest = {
     "ucapan",
     "penutup",
   ],
+  // hitung mundur menyatu di section acara (seperti desain)
   sectionOrder: [
     "cover",
     "ayat",
     "profil",
-    "hitungMundur",
     "acara",
     "dressCode",
     "galeri",
