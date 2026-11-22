@@ -142,6 +142,7 @@ export function LiliWishes() {
     >
       {/* pita renda vertikal di tepi kanan */}
       <div
+        data-a="unroll"
         aria-hidden
         style={{
           position: "absolute",
@@ -154,12 +155,14 @@ export function LiliWishes() {
           backgroundSize: `${u(52)} ${u((52 * laceStrip.height) / laceStrip.width)}`,
           backgroundRepeat: "repeat-y",
           filter: "drop-shadow(-1px 0 1.5px rgb(0 0 0 / 0.25))",
+          ["--d" as string]: "0.4s",
         }}
       />
       {/* rangkaian lili kanan atas (gambar milik pemilik, dicerminkan ke kiri),
           menumpang ujung atas pita renda */}
       <div
         aria-hidden
+        data-a="hang"
         data-sway="corner"
         style={{
           transformOrigin: "100% 0",
@@ -202,7 +205,7 @@ export function LiliWishes() {
       <div style={{ position: "relative", padding: `${u(116)} ${u(66)} ${u(110)} ${u(40)}` }}>
         {/* kolom isi 40–364: tidak bertabrakan dengan pita renda (±384) */}
         <h2
-          data-a
+          data-a="write"
           style={{
             ...txt(F.serif, 25, 1.25, { italic: true, weight: 700, color: CREAM }),
             // judul ditengahkan pada area kiri renda (0–384)
@@ -212,7 +215,7 @@ export function LiliWishes() {
           Ucapkan Sesuatu
         </h2>
 
-        <form onSubmit={submit} data-a style={{ marginTop: u(48), ["--d" as string]: "0.15s" }}>
+        <form onSubmit={submit} data-a style={{ marginTop: u(48), ["--d" as string]: "0.7s" }}>
           <p style={txt(F.serif, 24, 1.2, { color: CREAM, align: "left" })}>You&rsquo;re Invited</p>
           <label htmlFor="li-name" style={label}>
             Your name

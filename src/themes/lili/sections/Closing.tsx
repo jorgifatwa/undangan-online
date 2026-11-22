@@ -64,7 +64,7 @@ export function LiliClosing() {
     >
       <div style={{ position: "relative", height: u(FRAME.t + FRAME_H + 4) }}>
         <div
-          data-a="zoom"
+          data-a="blur"
           style={{ ...box(0, 0, 430, FRAME.t + FRAME_H), ["--d" as string]: "0.1s" }}
         >
           <HeroFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto penutup" />
@@ -95,7 +95,7 @@ export function LiliClosing() {
         )}
         <p
           ref={namesRef}
-          data-a
+          data-a="write"
           style={{
             ...txt(F.script, 46, 1.4, { color: "var(--inv-sage-dark)" }),
             fontSize: `calc(${u(46)} * var(--fit, 1))`,
@@ -109,7 +109,7 @@ export function LiliClosing() {
           {b ? shortName(b) : ""}
         </p>
       </div>
-      <div data-a="fade" style={{ marginTop: u(8), ["--d" as string]: "0.3s" }}>
+      <div data-a="grow" style={{ marginTop: u(8), ["--d" as string]: "0.9s" }}>
         <FloralBed />
       </div>
     </Section>

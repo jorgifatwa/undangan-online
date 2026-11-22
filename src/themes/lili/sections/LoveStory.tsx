@@ -8,7 +8,7 @@ import doily from "../art/doily.webp";
 import lilyBouquet from "../art/lily-bouquet.webp";
 import { paperBg } from "../art/textures";
 import { SWANS_H, SWANS_W, SwanPair } from "../art/Swans";
-import { F, Section, txt, u } from "../canvas";
+import { EnterGroup, F, Section, txt, u } from "../canvas";
 
 /**
  * Love Story: latar hijau tua bertekstur, kartu renda persegi (doily milik
@@ -80,102 +80,123 @@ export function LiliLoveStory() {
   if (items.length === 0) return null;
 
   return (
-    <Section id="loveStory" bg={paperBg("var(--inv-forest)")} overflow="hidden">
-      <div
-        style={{
-          position: "relative",
-          margin: `${u(44)} ${u(DOILY_M)} 0`,
-          // kartu renda 9-slice: sudut tetap, tepi diulang, tengah krem meregang
-          borderStyle: "solid",
-          borderColor: "transparent",
-          borderWidth: `${u(DOILY.t * DK)} ${u(DOILY.r * DK)} ${u(DOILY.b * DK)} ${u(DOILY.l * DK)}`,
-          borderImage: `url(${doily.src}) ${DOILY.t} ${DOILY.r} ${DOILY.b} ${DOILY.l} fill / ${u(DOILY.t * DK)} ${u(DOILY.r * DK)} ${u(DOILY.b * DK)} ${u(DOILY.l * DK)} stretch round`,
-          padding: `${u(4)} 0 ${u(40 + PANEL_EXT)}`,
-          filter: `drop-shadow(0 ${u(3)} ${u(6)} rgb(0 0 0 / 0.3))`,
-        }}
-      >
-        <h2
-          data-a
+    <Section id="loveStory" bg={paperBg("var(--inv-forest)")} overflow="hidden" groups>
+      <EnterGroup threshold={0.12}>
+        <div
+          data-a="unroll"
           style={{
-            ...txt(F.script, 50, 1.25, { color: "var(--inv-sage-dark)" }),
+            position: "relative",
+            margin: `${u(44)} ${u(DOILY_M)} 0`,
+            // kartu renda 9-slice: sudut tetap, tepi diulang, tengah krem meregang
+            borderStyle: "solid",
+            borderColor: "transparent",
+            borderWidth: `${u(DOILY.t * DK)} ${u(DOILY.r * DK)} ${u(DOILY.b * DK)} ${u(DOILY.l * DK)}`,
+            borderImage: `url(${doily.src}) ${DOILY.t} ${DOILY.r} ${DOILY.b} ${DOILY.l} fill / ${u(DOILY.t * DK)} ${u(DOILY.r * DK)} ${u(DOILY.b * DK)} ${u(DOILY.l * DK)} stretch round`,
+            padding: `${u(4)} 0 ${u(40 + PANEL_EXT)}`,
+            ["--d" as string]: "0.05s",
+            filter: `drop-shadow(0 ${u(3)} ${u(6)} rgb(0 0 0 / 0.3))`,
           }}
         >
-          Love Story
-        </h2>
-        {items.map((it, i) => (
-          <div
-            key={`${it.title}-${i}`}
-            data-a
-            style={{ marginTop: u(i === 0 ? 8 : 26), ["--d" as string]: `${0.1 + i * 0.12}s` }}
+          <h2
+            data-a="write"
+            style={{
+              ["--d" as string]: "0.9s",
+              ...txt(F.script, 50, 1.25, { color: "var(--inv-sage-dark)" }),
+            }}
           >
-            {it.photo && (
-              <div
-                style={{
-                  position: "relative",
-                  width: u(180),
-                  height: u(130),
-                  margin: `0 auto ${u(10)}`,
-                  border: `${u(4)} solid #fffdf8`,
-                  boxShadow: "0 1px 3px rgb(0 0 0 / 0.18)",
-                }}
-              >
-                <Image
-                  src={it.photo.url}
-                  alt={it.photo.alt ?? it.title}
-                  fill
-                  sizes="200px"
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            )}
-            <h3 style={txt(F.serif, 15.5, 1.35, { italic: true, weight: 700, color: "#4f5238" })}>
-              {it.title}
-            </h3>
-            {it.date && (
-              <p style={txt(F.serif, 12, 1.4, { italic: true, color: "#7a7765" })}>{it.date}</p>
-            )}
-            {it.text && (
-              <p
-                style={{
-                  ...txt(F.serif, 14, u(20.5), { color: "#5d5b4c" }),
-                  marginTop: u(2),
-                }}
-              >
-                {it.text}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
+            Love Story
+          </h2>
+          {items.map((it, i) => (
+            <div
+              key={`${it.title}-${i}`}
+              data-a
+              style={{ marginTop: u(i === 0 ? 8 : 26), ["--d" as string]: `${1.4 + i * 0.3}s` }}
+            >
+              {it.photo && (
+                <div
+                  style={{
+                    position: "relative",
+                    width: u(180),
+                    height: u(130),
+                    margin: `0 auto ${u(10)}`,
+                    border: `${u(4)} solid #fffdf8`,
+                    boxShadow: "0 1px 3px rgb(0 0 0 / 0.18)",
+                  }}
+                >
+                  <Image
+                    src={it.photo.url}
+                    alt={it.photo.alt ?? it.title}
+                    fill
+                    sizes="200px"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              )}
+              <h3 style={txt(F.serif, 15.5, 1.35, { italic: true, weight: 700, color: "#4f5238" })}>
+                {it.title}
+              </h3>
+              {it.date && (
+                <p style={txt(F.serif, 12, 1.4, { italic: true, color: "#7a7765" })}>{it.date}</p>
+              )}
+              {it.text && (
+                <p
+                  style={{
+                    ...txt(F.serif, 14, u(20.5), { color: "#5d5b4c" }),
+                    marginTop: u(2),
+                  }}
+                >
+                  {it.text}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </EnterGroup>
       {/* angsa: kepala tepat di bawah teks terakhir, badan menumpang tepi
           bawah panel (seperti desain) */}
-      <div
-        data-a="fade"
-        style={{
-          position: "relative",
-          marginTop: u(-84 - PANEL_EXT),
-          height: u(SWANS_H + SWANS_DROP + 8),
-        }}
-      >
-        {/* rangkaian lili di belakang angsa: penuh di kiri & kanan */}
-        {BACK.map((b, i) => (
-          <Bouquet key={`b${i}`} {...b} />
-        ))}
-        <SwanPair
+      <EnterGroup threshold={0.3}>
+        <div
           style={{
-            position: "absolute",
-            left: u((430 - SWANS_W) / 2),
-            // agak ke bawah: badan angsa menutupi celah di antara lili bawah
-            top: u(SWANS_DROP),
-            width: u(SWANS_W),
-            height: u(SWANS_H),
+            position: "relative",
+            marginTop: u(-84 - PANEL_EXT),
+            height: u(SWANS_H + SWANS_DROP + 8),
           }}
-        />
-        {/* lili di depan: bawah sayap & tengah bawah */}
-        {FRONT.map((b, i) => (
-          <Bouquet key={`f${i}`} {...b} />
-        ))}
-      </div>
+        >
+          {/* rangkaian lili di belakang angsa: penuh di kiri & kanan */}
+          <div data-a="fade" style={{ position: "absolute", inset: 0, ["--d" as string]: "0.1s" }}>
+            {BACK.map((b, i) => (
+              <Bouquet key={`b${i}`} {...b} />
+            ))}
+          </div>
+          {/* angsa berenang masuk dari kiri ke tengah */}
+          <div
+            data-a="swim"
+            style={{
+              position: "absolute",
+              inset: 0,
+              ["--swim" as string]: u(-120),
+              ["--d" as string]: "0.35s",
+            }}
+          >
+            <SwanPair
+              style={{
+                position: "absolute",
+                left: u((430 - SWANS_W) / 2),
+                // agak ke bawah: badan angsa menutupi celah di antara lili bawah
+                top: u(SWANS_DROP),
+                width: u(SWANS_W),
+                height: u(SWANS_H),
+              }}
+            />
+          </div>
+          {/* lili di depan: bawah sayap & tengah bawah */}
+          <div data-a="fade" style={{ position: "absolute", inset: 0, ["--d" as string]: "0.6s" }}>
+            {FRONT.map((b, i) => (
+              <Bouquet key={`f${i}`} {...b} />
+            ))}
+          </div>
+        </div>
+      </EnterGroup>
     </Section>
   );
 }

@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useInvitation } from "../../_shared/runtime/context";
 import { Lightbox } from "../../_shared/sections";
 import type { Photo } from "@/schemas/common";
-import { F, Section, txt, u } from "../canvas";
+import { EnterGroup, F, Section, txt, u } from "../canvas";
 import { warmBg } from "./Gift";
 
 /**
@@ -35,7 +35,7 @@ function Cell({
   return (
     <button
       type="button"
-      data-a="fade"
+      data-a="develop"
       onClick={onOpen}
       aria-label={photo.alt ?? "Lihat foto"}
       style={{
@@ -76,38 +76,44 @@ export function LiliGallery() {
 
   let idx = 0;
   return (
-    <Section id="galeri" bg={warmBg}>
-      <h2
-        data-a
-        style={{
-          ...txt(F.serif, 35, 1.25, { italic: true, weight: 700, color: "var(--inv-ink)" }),
-          padding: `${u(18)} 0 ${u(16)}`,
-        }}
-      >
-        Galeri Foto
-      </h2>
+    <Section id="galeri" bg={warmBg} groups>
+      <EnterGroup>
+        <h2
+          data-a="write"
+          style={{
+            ...txt(F.serif, 35, 1.25, { italic: true, weight: 700, color: "var(--inv-ink)" }),
+            padding: `${u(18)} 0 ${u(16)}`,
+          }}
+        >
+          Galeri Foto
+        </h2>
+      </EnterGroup>
       {groups.map((g, gi) => {
         const base = idx;
         idx += g.length;
         const open = (k: number) => () => setActive(base + k);
         if (g.length === 1)
-          return <Cell key={gi} photo={g[0]} w={430} h={300} onOpen={open(0)} d={0.1} />;
+          return (
+            <EnterGroup key={gi} threshold={0.2}>
+              <Cell photo={g[0]} w={430} h={300} onOpen={open(0)} d={0.1} />
+            </EnterGroup>
+          );
         if (g.length === 2)
           return (
-            <div key={gi} style={{ display: "flex" }}>
+            <EnterGroup key={gi} threshold={0.2} style={{ display: "flex" }}>
               <Cell photo={g[0]} w={215} h={300} onOpen={open(0)} d={0.1} />
-              <Cell photo={g[1]} w={215} h={300} onOpen={open(1)} d={0.2} />
-            </div>
+              <Cell photo={g[1]} w={215} h={300} onOpen={open(1)} d={0.3} />
+            </EnterGroup>
           );
         const big = <Cell photo={g[0]} w={280} h={430} onOpen={open(0)} d={0.1} />;
         const stack = (
           <div>
-            <Cell photo={g[1]} w={150} h={215} onOpen={open(1)} d={0.2} />
-            <Cell photo={g[2]} w={150} h={215} onOpen={open(2)} d={0.3} />
+            <Cell photo={g[1]} w={150} h={215} onOpen={open(1)} d={0.35} />
+            <Cell photo={g[2]} w={150} h={215} onOpen={open(2)} d={0.6} />
           </div>
         );
         return (
-          <div key={gi} style={{ display: "flex" }}>
+          <EnterGroup key={gi} threshold={0.2} style={{ display: "flex" }}>
             {gi % 2 === 0 ? (
               <>
                 {big}
@@ -119,7 +125,7 @@ export function LiliGallery() {
                 {big}
               </>
             )}
-          </div>
+          </EnterGroup>
         );
       })}
       {photos.length > MAX && (
