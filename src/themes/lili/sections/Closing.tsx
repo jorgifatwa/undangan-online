@@ -7,7 +7,7 @@ import { useInvitation } from "../../_shared/runtime/context";
 import { HERO_FRAME } from "../art/hero-frame";
 import { HeroFrame } from "../art/HeroFrame";
 import { paperBg } from "../art/textures";
-import closingBouquet from "../art/closing-bouquet.webp";
+import closingBed from "../art/closing-bed.webp";
 import { F, Section, box, txt, u, useFit } from "../canvas";
 
 /**
@@ -23,40 +23,21 @@ const FALLBACK =
   "Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu untuk mengiringi langkah baru kami. Atas kehadiran dan doa yang diberikan, kami ucapkan terima kasih.";
 
 /**
- * Hamparan bunga bawah: rangkaian bunga milik pemilik disusun berulang
- * (ukuran, rotasi & arah berbeda) dalam dua baris selebar layar, terpotong
- * tepi bawah — penuh seperti desain. [x tengah, y tengah, sisi, rotasi, cermin]
+ * Hamparan bunga bawah: gambar milik pemilik yang sudah penuh selebar layar,
+ * ditampilkan apa adanya (lebar 430 kanvas ≤ lebar sumber → tidak pecah).
  */
-const BED: [number, number, number, number, boolean][] = [
-  // baris belakang (tinggi berselang → tepi atas bergelombang)
-  [30, 84, 130, -18, false],
-  [148, 58, 160, 10, true],
-  [278, 76, 136, -8, false],
-  [402, 60, 156, 20, true],
-  // baris depan
-  [86, 150, 176, 8, true],
-  [214, 138, 168, -14, false],
-  [350, 150, 180, 6, true],
-];
-
 function FloralBed() {
   return (
-    <div aria-hidden style={{ position: "relative", height: u(180), pointerEvents: "none" }}>
-      {BED.map(([x, y, w, rot, flip], i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            left: u(x - w / 2),
-            top: u(y - w / 2),
-            width: u(w),
-            height: u(w),
-            transform: `rotate(${rot}deg)${flip ? " scaleX(-1)" : ""}`,
-          }}
-        >
-          <Image src={closingBouquet} alt="" fill sizes="(max-width: 440px) 42vw, 190px" />
-        </div>
-      ))}
+    <div
+      aria-hidden
+      style={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: `${closingBed.width} / ${closingBed.height}`,
+        pointerEvents: "none",
+      }}
+    >
+      <Image src={closingBed} alt="" fill sizes="(max-width: 440px) 100vw, 440px" />
     </div>
   );
 }
