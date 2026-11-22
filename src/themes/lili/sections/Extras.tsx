@@ -5,7 +5,6 @@ import Image, { type StaticImageData } from "next/image";
 import { useInvitation } from "../../_shared/runtime/context";
 import { safeHref } from "@/lib/links";
 import { smoke } from "../art/FloralColumn";
-import eventTop from "../art/event-top.webp";
 import orchid from "../art/orchid.webp";
 import { TornCard } from "../art/TornCard";
 import wishesLily from "../art/wishes-lily.webp";
@@ -14,8 +13,9 @@ import { F, Section, txt, u } from "../canvas";
 /**
  * Section tambahan yang tidak ada di desain asli, tetap bergaya Lili: latar
  * sage berkabut, judul Playfair tebal miring krem, isi di kartu kertas sobek
- * (sama seperti kartu acara). Hiasan bunga milik pemilik di dua sudut
- * (bergantian per section) agar tidak polos; bergoyang pelan.
+ * (sama seperti kartu acara). Hiasan bunga milik pemilik di sisi kanan
+ * (lili kanan atas Dress Code, anggrek kanan bawah Live Streaming yang
+ * menyambung ke rangkaian Ucapan); bergoyang pelan.
  */
 
 /** Bunga sudut: gambar, sudut (tl/tr/bl/br), lebar (px kanvas), cermin, rotasi. */
@@ -27,14 +27,9 @@ type Deco = {
   rot?: number;
 };
 const DECOS: Record<"dressCode" | "liveStream", Deco[]> = {
-  dressCode: [
-    { src: wishesLily, at: "tr", w: 112 },
-    { src: orchid, at: "bl", w: 118, rot: 28 },
-  ],
+  dressCode: [{ src: wishesLily, at: "tr", w: 112 }],
   liveStream: [
-    { src: eventTop, at: "tl", w: 190 },
-    // cermin persis anggrek kiri Dress Code → menyatu dengan rangkaian
-    // pink kanan atas section Ucapan (cermin rangkaian kiri Live Streaming)
+    // anggrek menghadap kiri → menyatu dengan rangkaian pink kanan atas Ucapan
     { src: orchid, at: "br", w: 118, flip: true, rot: 28 },
   ],
 };
