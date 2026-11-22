@@ -1,16 +1,76 @@
 "use client";
 
+import Image, { type StaticImageData } from "next/image";
+
 import { useInvitation } from "../../_shared/runtime/context";
 import { safeHref } from "@/lib/links";
 import { smoke } from "../art/FloralColumn";
+import eventTop from "../art/event-top.webp";
+import orchid from "../art/orchid.webp";
 import { TornCard } from "../art/TornCard";
+import wishesLily from "../art/wishes-lily.webp";
 import { F, Section, txt, u } from "../canvas";
 
 /**
  * Section tambahan yang tidak ada di desain asli, tetap bergaya Lili: latar
  * sage berkabut, judul Playfair tebal miring krem, isi di kartu kertas sobek
- * (sama seperti kartu acara).
+ * (sama seperti kartu acara). Hiasan bunga milik pemilik di dua sudut
+ * (bergantian per section) agar tidak polos; bergoyang pelan.
  */
+
+/** Bunga sudut: gambar, sudut (tl/tr/bl/br), lebar (px kanvas), cermin, rotasi. */
+type Deco = {
+  src: StaticImageData;
+  at: "tl" | "tr" | "bl" | "br";
+  w: number;
+  flip?: boolean;
+  rot?: number;
+};
+const DECOS: Record<"dressCode" | "liveStream", Deco[]> = {
+  dressCode: [
+    { src: wishesLily, at: "tr", w: 112 },
+    { src: orchid, at: "bl", w: 118, rot: 28 },
+  ],
+  liveStream: [
+    { src: eventTop, at: "tl", w: 190 },
+    { src: orchid, at: "br", w: 110, flip: true, rot: -28 },
+  ],
+};
+
+function Corner({ d, i }: { d: Deco; i: number }) {
+  const top = d.at[0] === "t";
+  const left = d.at[1] === "l";
+  return (
+    <div
+      aria-hidden
+      data-a="fade"
+      data-sway="corner"
+      style={{
+        position: "absolute",
+        [top ? "top" : "bottom"]: u(top ? -6 : -18),
+        [left ? "left" : "right"]: u(-16),
+        width: u(d.w),
+        height: u((d.w * d.src.height) / d.src.width),
+        transformOrigin: `${left ? "0" : "100%"} ${top ? "0" : "100%"}`,
+        ["--amp" as string]: "2deg",
+        ["--sdur" as string]: `${5 + i * 0.7}s`,
+        ["--sdly" as string]: `-${i * 1.3}s`,
+        ["--d" as string]: "0.3s",
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          transform: `${d.flip ? "scaleX(-1) " : ""}rotate(${d.rot ?? 0}deg)`,
+        }}
+      >
+        <Image src={d.src} alt="" fill sizes="(max-width: 440px) 46vw, 200px" />
+      </div>
+    </div>
+  );
+}
 function Shell({
   id,
   title,
@@ -29,10 +89,14 @@ function Shell({
           { x: 85, y: 80, w: 40, h: 26, a: 0.14 },
         ])}, var(--inv-sage)`,
       }}
+      overflow="hidden"
     >
-      <div style={{ padding: `${u(44)} ${u(48)} ${u(48)}` }}>
+      {DECOS[id].map((d, i) => (
+        <Corner key={i} d={d} i={i} />
+      ))}
+      <div style={{ position: "relative", padding: `${u(56)} ${u(48)} ${u(60)}` }}>
         <h2
-          data-a
+          data-a="write"
           style={txt(F.serif, 30, 1.25, { italic: true, weight: 700, color: "var(--inv-cream)" })}
         >
           {title}
