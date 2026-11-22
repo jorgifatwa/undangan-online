@@ -261,6 +261,31 @@ const FAMILIES: Family[] = [
     license: "ofl/quattrocento/OFL.txt",
     outputs: [{ file: "quattrocento-700.woff2", chars: LATIN }],
   },
+  // ---- Surat Marun ----
+  {
+    name: "Instrument Serif",
+    src: "ofl/instrumentserif/InstrumentSerif-Regular.ttf",
+    license: "ofl/instrumentserif/OFL.txt",
+    outputs: [{ file: "instrument-serif.woff2", chars: LATIN }],
+  },
+  {
+    name: "Instrument Serif Italic",
+    src: "ofl/instrumentserif/InstrumentSerif-Italic.ttf",
+    license: "ofl/instrumentserif/OFL.txt",
+    outputs: [{ file: "instrument-serif-italic.woff2", chars: LATIN }],
+  },
+  {
+    name: "DM Sans",
+    src: "ofl/dmsans/DMSans[opsz,wght].ttf",
+    license: "ofl/dmsans/OFL.txt",
+    outputs: [
+      {
+        file: "dm-sans-400-700.woff2",
+        chars: LATIN,
+        axes: { opsz: 14, wght: { min: 400, max: 700 } },
+      },
+    ],
+  },
   // ---- Website (landing, dashboard, galeri tema) — bukan font undangan ----
   {
     name: "Plus Jakarta Sans",

@@ -1,0 +1,48 @@
+/*
+ * Surat Marun — gaya khusus tema. Selector dibatasi [data-theme="surat-marun"];
+ * animasi hanya transform/opacity. Animasi sengaja sederhana dulu.
+ */
+@keyframes sm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes sm-card {
+  from {
+    transform: translateY(18px) scale(0.97);
+  }
+}
+[data-theme="surat-marun"] .sm-c-card {
+  animation: sm-card 1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+[data-theme="surat-marun"] .sm-c-rise {
+  animation: sm-rise 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) 0.3s both;
+}
+
+[data-theme="surat-marun"] .sm-sec [data-a] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.8s ease var(--d, 0s),
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) var(--d, 0s);
+}
+[data-theme="surat-marun"] .sm-sec [data-a="fade"] {
+  transform: none;
+}
+[data-theme="surat-marun"] .sm-sec.sm-in [data-a] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="surat-marun"] .sm-c-card,
+  [data-theme="surat-marun"] .sm-c-rise {
+    animation: none;
+  }
+  [data-theme="surat-marun"] .sm-sec [data-a] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

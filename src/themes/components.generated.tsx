@@ -9,5 +9,6 @@ export const THEME_COMPONENTS: Record<string, ComponentType<ThemeProps>> = {
   "lili": dynamic(() => import("./lili")),
   "pita-krayon": dynamic(() => import("./pita-krayon")),
   "renda-rimba": dynamic(() => import("./renda-rimba")),
+  "surat-marun": dynamic(() => import("./surat-marun")),
   "tirai-beludru": dynamic(() => import("./tirai-beludru")),
 };
