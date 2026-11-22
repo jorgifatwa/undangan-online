@@ -16,7 +16,7 @@ import { F } from "../canvas";
  * Cover Lili — "A Love Letter From": amplop sage, nama skrip pink dengan "&"
  * krem, "Open The Invitation" bergaris bawah, pita renda melintang dengan
  * segel lilin lili (foto milik pemilik), lalu kotak gelap nama tamu. Pita renda = foto renda milik
- * pemilik yang dilengkungkan (`scripts/lili-lace.ts` → art/lace-band.webp).
+ * pemilik yang sudah dilengkungkan (art/lace-band.webp).
  *
  * Kanvas 430 × STAGE_H (= layar screenshot desain) diskalakan agar MUAT di
  * layar: --cu = min(100cqw/430, 100cqh/STAGE_H). Latar amplop & garis tutup

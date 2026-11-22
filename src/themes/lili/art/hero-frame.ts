@@ -1,4 +1,4 @@
-// FILE DIBUAT OTOMATIS oleh scripts/lili-hero-frame.ts — jangan diedit manual.
+// Ukuran hasil olahan gambar pemilik (diukur sekali saat aset dibuat).
 /** Rasio tinggi/lebar komposisi & elips lubang foto (pecahan lebar/tinggi). */
 export const HERO_FRAME = {
   ratio: 1.4108,

@@ -184,7 +184,7 @@ async function main() {
   await sleep(500);
   if (shots) await m.screenshot({ path: `${shots}/m-2-demo.png` });
   await m.evaluate(
-    `[...document.querySelectorAll('[role="radio"]')].find((b)=>b.textContent.includes("Confetti"))?.click()`,
+    `[...document.querySelectorAll('[role="radio"]')].find((b)=>b.textContent.includes("Pita Krayon"))?.click()`,
   );
   await sleep(500);
   check(!(await m.$("#demo-secondary")), "demo ulang tahun: hanya satu isian nama");

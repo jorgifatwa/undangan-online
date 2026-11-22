@@ -8,7 +8,7 @@ import laceFrame from "./lace-frame.webp";
 /**
  * Bingkai foto mempelai: gambar bingkai renda milik pemilik (renda hijau +
  * renda putih-pink + bunga + kupu-kupu), latar kotak-kotak dibuang oleh
- * `scripts/lili-lace-frame.ts`. Ukuran dasar 197 px kanvas; `LACE_HOLE` =
+ * saat diolah. Ukuran dasar 197 px kanvas; `LACE_HOLE` =
  * kotak foto di bawah bingkai (sedikit lebih besar agar tepinya terselip di
  * bawah renda).
  */

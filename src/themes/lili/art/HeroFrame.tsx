@@ -10,7 +10,7 @@ import frameImg from "./hero-frame.webp";
 /**
  * Komposisi bingkai hero & penutup dari gambar milik pemilik (bingkai oval
  * vintage + alas pink + lili + mutiara + kupu-kupu), diolah oleh
- * `scripts/lili-hero-frame.ts`. Foto diletakkan di bawah gambar, tepat di
+ * saat diolah. Foto diletakkan di bawah gambar, tepat di
  * lubang elipsnya. `w` = lebar komposisi (px kanvas).
  */
 export function HeroFrame({

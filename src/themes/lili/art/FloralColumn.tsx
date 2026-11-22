@@ -13,7 +13,7 @@ import column from "./floral-column.webp";
  */
 /**
  * Tinggi satu ubin (satu ulangan alstroemeria → lili → anggrek) dalam px
- * kanvas. Ubin dibuat mulus oleh `scripts/lili-floral-column.ts` (sambungan di
+ * kanvas. Ubin sudah dibuat mulus dari gambar pemilik (sambungan di
  * tengah anggrek), jadi berulang tanpa bunga terpotong. Sengaja kecil agar
  * sumber beresolusi rendah tetap tajam.
  */

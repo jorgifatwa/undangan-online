@@ -149,7 +149,7 @@ export function LiliWishes() {
           top: u(96), // mulai di balik rangkaian lili (tanpa celah)
           bottom: 0,
           width: u(52),
-          // foto renda lurus milik pemilik, ubin mulus (scripts/lili-lace-strip.ts)
+          // foto renda lurus milik pemilik, ubin mulus (art/lace-strip.webp)
           backgroundImage: `url(${laceStrip.src})`,
           backgroundSize: `${u(52)} ${u((52 * laceStrip.height) / laceStrip.width)}`,
           backgroundRepeat: "repeat-y",
