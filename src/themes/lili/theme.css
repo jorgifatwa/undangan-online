@@ -41,6 +41,166 @@
   animation: li-seal 0.8s cubic-bezier(0.3, 1.4, 0.5, 1) 0.45s both;
 }
 
+/* ---------- Cover: membuka surat (kelas li-opening, durasi × --k) ---------- */
+[data-theme="lili"] .li-cover .li-letter {
+  transform-origin: 50% 0;
+  /* tersembunyi di kantong: puncak surat ±y 300 kanvas, lebar 86 % */
+  transform: translateY(calc(50% - var(--cu) * 49)) scale(0.86);
+  box-shadow: 0 0 calc(var(--cu) * 18) rgb(0 0 0 / 0.25);
+}
+[data-theme="lili"] .li-cover .li-flap {
+  transform-origin: 50% 0;
+  backface-visibility: hidden;
+}
+[data-theme="lili"] .li-cover .li-crack,
+[data-theme="lili"] .li-cover .li-shard {
+  opacity: 0;
+}
+[data-theme="lili"] .li-cover .li-shard {
+  transform: translate(-50%, -50%);
+}
+
+@keyframes li-crack {
+  0% {
+    opacity: 0;
+  }
+  40%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes li-seal-l {
+  0%,
+  22% {
+    transform: none;
+    opacity: 1;
+  }
+  45% {
+    transform: translate(calc(var(--cu) * -14), calc(var(--cu) * -4)) rotate(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--cu) * -46), calc(var(--cu) * 300)) rotate(-38deg);
+    opacity: 0;
+  }
+}
+@keyframes li-seal-r {
+  0%,
+  22% {
+    transform: none;
+    opacity: 1;
+  }
+  45% {
+    transform: translate(calc(var(--cu) * 14), calc(var(--cu) * -2)) rotate(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--cu) * 50), calc(var(--cu) * 310)) rotate(34deg);
+    opacity: 0;
+  }
+}
+@keyframes li-shard {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy) + var(--cu) * 60))
+      rotate(160deg);
+  }
+}
+@keyframes li-lace-l {
+  to {
+    transform: translateX(calc(var(--cu) * -330)) rotate(-7deg);
+    opacity: 0;
+  }
+}
+@keyframes li-lace-r {
+  to {
+    transform: translateX(calc(var(--cu) * 330)) rotate(7deg);
+    opacity: 0;
+  }
+}
+@keyframes li-flap {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(178deg);
+  }
+}
+@keyframes li-letter {
+  0% {
+    transform: translateY(calc(50% - var(--cu) * 49)) scale(0.86);
+  }
+  /* naik keluar dari kantong */
+  58% {
+    transform: translateY(calc(50% - var(--cu) * 330)) scale(0.86);
+  }
+  /* membesar memenuhi layar */
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 rgb(0 0 0 / 0);
+  }
+}
+@keyframes li-pocket {
+  to {
+    transform: translateY(70%);
+    opacity: 0;
+  }
+}
+
+[data-theme="lili"] .li-opening {
+  cursor: default;
+}
+[data-theme="lili"] .li-opening .li-crack {
+  animation:
+    li-crack calc(0.18s * var(--k)) ease-out forwards,
+    li-crack calc(0.2s * var(--k)) ease-in calc(0.3s * var(--k)) reverse forwards;
+}
+[data-theme="lili"] .li-opening .li-seal-l {
+  animation: li-seal-l calc(0.9s * var(--k)) cubic-bezier(0.45, 0, 0.7, 0.4) forwards;
+}
+[data-theme="lili"] .li-opening .li-seal-r {
+  animation: li-seal-r calc(0.9s * var(--k)) cubic-bezier(0.45, 0, 0.7, 0.4) forwards;
+}
+[data-theme="lili"] .li-opening .li-shard {
+  animation: li-shard calc(0.55s * var(--k)) cubic-bezier(0.2, 0.6, 0.4, 1) calc(0.18s * var(--k))
+    forwards;
+}
+[data-theme="lili"] .li-opening .li-lace-l {
+  animation: li-lace-l calc(0.65s * var(--k)) cubic-bezier(0.5, 0, 0.75, 0.3) calc(0.32s * var(--k))
+    forwards;
+}
+[data-theme="lili"] .li-opening .li-lace-r {
+  animation: li-lace-r calc(0.65s * var(--k)) cubic-bezier(0.5, 0, 0.75, 0.3) calc(0.32s * var(--k))
+    forwards;
+}
+[data-theme="lili"] .li-opening .li-flap {
+  animation: li-flap calc(0.75s * var(--k)) cubic-bezier(0.55, 0.05, 0.4, 1) calc(0.62s * var(--k))
+    forwards;
+}
+[data-theme="lili"] .li-opening .li-letter {
+  animation: li-letter calc(1.25s * var(--k)) cubic-bezier(0.45, 0.05, 0.3, 1) calc(1.1s * var(--k))
+    forwards;
+}
+[data-theme="lili"] .li-opening .li-pocket {
+  animation: li-pocket calc(0.6s * var(--k)) cubic-bezier(0.5, 0, 0.75, 0.4) calc(1.6s * var(--k))
+    forwards;
+}
+
+/* ---------- Hero: "The Wedding" seperti ditulis (kiri → kanan) ---------- */
+[data-theme="lili"] .li-sec [data-a][data-a="write"] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.1s cubic-bezier(0.45, 0.05, 0.4, 1) var(--d, 0s);
+}
+[data-theme="lili"] .li-sec.li-in [data-a][data-a="write"] {
+  clip-path: inset(0 0 0 0);
+}
+
 /* ---------- Section: animasi masuk sekali saat terlihat ---------- */
 [data-theme="lili"] .li-sec [data-a] {
   opacity: 0;
@@ -76,6 +236,7 @@
   [data-theme="lili"] .li-sec [data-a] {
     opacity: 1;
     transform: none;
+    clip-path: none;
     transition: none;
   }
 }

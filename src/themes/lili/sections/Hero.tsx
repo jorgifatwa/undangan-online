@@ -53,18 +53,18 @@ export function LiliHero() {
       />
 
       <p
-        data-a="fade"
+        data-a="write"
         style={{
           ...box(0, 12, 430),
           ...txt(F.hand, 37, 1.3, { color: "var(--inv-ink)", ls: 1.2 }),
-          ["--d" as string]: "0.1s",
+          ["--d" as string]: "0.15s",
         }}
       >
         The Wedding
       </p>
 
       {/* foto + bingkai */}
-      <div data-a="zoom" style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.2s" }}>
+      <div data-a="zoom" style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.6s" }}>
         <HeroFrame l={FRAME.l} t={FRAME.t} w={FRAME_W} photo={photo} alt="Foto pasangan" priority />
       </div>
 
@@ -81,7 +81,7 @@ export function LiliHero() {
           fontSize: `calc(${u(46)} * var(--fit, 1))`,
           lineHeight: 1.45,
           color: "var(--inv-ink)",
-          ["--d" as string]: "0.3s",
+          ["--d" as string]: "0.95s",
         }}
       >
         {a ? shortName(a) : ""} <span style={{ fontFamily: F.amp, fontSize: "0.92em" }}>&amp;</span>{" "}
@@ -92,14 +92,14 @@ export function LiliHero() {
         style={{
           ...box(15, 581, 400),
           ...txt(F.serif, 12.8, 1.35, { color: "var(--inv-ink)" }),
-          ["--d" as string]: "0.4s",
+          ["--d" as string]: "1.1s",
         }}
       >
         Your presence will make our special day even more meaningful
       </p>
 
       {/* hitung mundur */}
-      <div data-a style={{ ...box(0, 0, 430, 763), ["--d" as string]: "0.5s" }}>
+      <div data-a style={{ ...box(0, 0, 430, 763), ["--d" as string]: "1.25s" }}>
         <BrushBox style={{ ...box(55, 612, 335, 47) }} />
         {passed ? (
           <p

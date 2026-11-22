@@ -29,6 +29,8 @@ const definition: ThemeDefinition = {
   fontClassName,
   assets: THEME_ASSETS,
   Cover: LiliCover,
+  // isi disiapkan di balik amplop → saat surat terbuka hanya animasi yang berjalan
+  prepareBehindCover: true,
   sections: {
     hitungMundur: LiliHero,
     salam: LiliSalam,
