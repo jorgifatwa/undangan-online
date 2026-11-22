@@ -4,9 +4,9 @@ import Image from "next/image";
 
 import type { Photo } from "@/schemas/common";
 import { box, u } from "../canvas";
-import { Butterfly } from "./Butterfly";
 import { HERO_FRAME } from "./hero-frame";
 import frameImg from "./hero-frame.webp";
+import butterflyImg from "./hero-butterfly.webp";
 import lilyImg from "./hero-lily.webp";
 
 /**
@@ -86,18 +86,13 @@ export function HeroFrame({
             priority={priority}
           />
         </div>
-        {/* kupu-kupu (lapisan sendiri) hinggap di kiri bawah bingkai, hanya mengepak */}
-        <Butterfly
-          style={{
-            position: "absolute",
-            // pose tampak samping seperti referensi: sayap kanan terlipat rapat
-            // di belakang sayap kiri, badan di kanan
-            // badan (pusat kotak) di ±(35 %, 89 %) bingkai, sayap ke kiri atas
-            left: "13%",
-            top: "77%",
-            width: "44%",
-            transform: "perspective(500px) rotate(-28deg)",
-          }}
+        {/* kupu-kupu bawaan bingkai, diam */}
+        <Image
+          src={butterflyImg}
+          alt=""
+          fill
+          sizes="(max-width: 440px) 72vw, 320px"
+          priority={priority}
         />
       </div>
     </>

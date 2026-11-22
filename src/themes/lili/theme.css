@@ -355,50 +355,6 @@
     translate: 0 -0.8cqw;
   }
 }
-/* kepak sayap kupu-kupu hinggap (natural): sayap membuka (V) dengan tempo
-   melambat di ujung, tertahan sebentar, menutup, lalu diam; kadang membuka
-   setengah pelan. Pose diam "tampak samping": sayap kiri datar (--b 6°),
-   sayap kanan terlipat rapat di belakangnya (--b −172°); membuka = sudut kedua
-   sayap bertambah. Tiap langkah memakai easing halus (bukan linear). */
-@keyframes li-wing {
-  0% {
-    transform: rotateY(var(--b));
-    animation-timing-function: cubic-bezier(0.3, 0, 0.35, 1);
-  }
-  9% {
-    transform: rotateY(calc(var(--b) + 58deg * var(--k, 1)));
-    animation-timing-function: cubic-bezier(0.55, 0, 0.6, 1);
-  }
-  12% {
-    transform: rotateY(calc(var(--b) + 60deg * var(--k, 1)));
-    animation-timing-function: cubic-bezier(0.45, 0, 0.7, 1);
-  }
-  19% {
-    transform: rotateY(calc(var(--b) + 3deg));
-    animation-timing-function: cubic-bezier(0.3, 0, 0.35, 1);
-  }
-  28% {
-    transform: rotateY(calc(var(--b) + 52deg * var(--k, 1)));
-    animation-timing-function: cubic-bezier(0.45, 0, 0.7, 1);
-  }
-  36% {
-    transform: rotateY(var(--b));
-  }
-  /* diam tertutup */
-  56% {
-    transform: rotateY(var(--b));
-    animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1);
-  }
-  /* membuka setengah, pelan */
-  68% {
-    transform: rotateY(calc(var(--b) + 26deg * var(--k, 1)));
-    animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1);
-  }
-  80%,
-  100% {
-    transform: rotateY(var(--b));
-  }
-}
 /* lili di bingkai: berporos di pangkal (dekat mutiara kiri atas rangkaian) */
 [data-theme="lili"] .li-sway-lily {
   transform-origin: 54% 17.5%;
@@ -406,24 +362,6 @@
   animation: li-sway 4.6s ease-in-out infinite alternate;
 }
 /* kupu-kupu: melayang + mengepak (sayap menyempit ke arah badan) */
-/* kupu-kupu diam di tempat (hinggap), hanya sayap yang mengepak */
-[data-theme="lili"] .li-bfly {
-  transform-style: preserve-3d;
-}
-[data-theme="lili"] .li-wing-l {
-  --b: 6deg;
-  transform: rotateY(var(--b));
-  transform-origin: 100% 50%;
-  animation: li-wing 4.4s infinite;
-}
-[data-theme="lili"] .li-wing-r {
-  --b: -172deg;
-  /* sayap kanan sedikit tertinggal & membuka sedikit lebih sempit */
-  --k: 0.9;
-  transform: rotateY(var(--b));
-  transform-origin: 0 50%;
-  animation: li-wing 4.4s 0.06s infinite;
-}
 /* bunga gantung/tegak umum (data-sway="hang|stand|corner") */
 [data-theme="lili"] [data-sway] {
   animation: li-sway var(--sdur, 5s) ease-in-out var(--sdly, 0s) infinite alternate;
@@ -487,14 +425,12 @@
 }
 
 [data-theme="lili"][data-lite] .li-sway-lily,
-[data-theme="lili"][data-lite] .li-bfly,
 [data-theme="lili"][data-lite] [data-sway],
 [data-theme="lili"][data-lite] .li-column,
 [data-theme="lili"][data-lite] .li-float,
 [data-theme="lili"][data-lite] .li-shadow {
   animation: none;
 }
-/* mode ringan: tetap kepak sayap kupu-kupu (li-wing-*) */
 
 @media (prefers-reduced-motion: reduce) {
   [data-theme="lili"] .li-c-rise,
@@ -502,9 +438,6 @@
   [data-theme="lili"] .li-c-lace,
   [data-theme="lili"] .li-c-seal,
   [data-theme="lili"] .li-sway-lily,
-  [data-theme="lili"] .li-bfly,
-  [data-theme="lili"] .li-wing-l,
-  [data-theme="lili"] .li-wing-r,
   [data-theme="lili"] [data-sway],
   [data-theme="lili"] .li-column,
   [data-theme="lili"] .li-float,
