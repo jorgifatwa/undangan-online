@@ -44,4 +44,4 @@ nama di kolom pertama). Selama file belum ada, player menampilkan "Musik belum t
 |---|---|---|---|
 | `music/tirai-beludru.m4a` | Tirai Beludru | "Wedding Music" — ikoliks | [Pixabay](https://pixabay.com/music/wedding-wedding-music-329295/) |
 | `music/renda-rimba.m4a` | Renda Rimba | "Romantic Wedding Acoustic Guitar" — Tunetank | [Pixabay](https://pixabay.com/music/small-emotions-romantic-wedding-acoustic-guitar-347266/) |
-| `music/confetti-party.m4a` | Confetti Party | "Kids School - Happy Birthday Music" — SigmaMusicArt | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/) |
+| `music/confetti-party.m4a` | Pita Krayon (lagu ulang tahun bawaan) | "Kids School - Happy Birthday Music" — SigmaMusicArt | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/) |

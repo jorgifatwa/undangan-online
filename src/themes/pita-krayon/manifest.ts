@@ -59,7 +59,7 @@ export const manifest = {
     background: "linear-gradient(160deg, #f5f2f0 0%, #ead9d4 100%)",
     foreground: "#9e0e00",
   },
-  // Sementara memakai lagu ulang tahun Confetti Party (sudah AAC 96 kbps);
+  // Sementara memakai lagu ulang tahun bawaan (sudah AAC 96 kbps);
   // ganti dengan lagu khusus tema lewat `pnpm music:optimize`.
   defaultMusic: {
     url: "/placeholders/music/confetti-party.m4a",

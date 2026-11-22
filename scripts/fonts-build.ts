@@ -260,28 +260,6 @@ const FAMILIES: Family[] = [
     src: "ofl/quattrocento/Quattrocento-Bold.ttf",
     license: "ofl/quattrocento/OFL.txt",
     outputs: [{ file: "quattrocento-700.woff2", chars: LATIN }],
-  }, // ---- Confetti Party ----
-  {
-    name: "Fredoka",
-    src: "ofl/fredoka/Fredoka[wdth,wght].ttf",
-    license: "ofl/fredoka/OFL.txt",
-    outputs: [
-      {
-        file: "fredoka-500-700.woff2",
-        chars: LATIN,
-        axes: { wdth: 100, wght: { min: 500, max: 700 } },
-      },
-      { file: "fredoka-600.ttf", chars: LATIN, axes: { wdth: 100, wght: 600 }, og: true },
-    ],
-  },
-  {
-    name: "Nunito",
-    src: "ofl/nunito/Nunito[wght].ttf",
-    license: "ofl/nunito/OFL.txt",
-    outputs: [
-      { file: "nunito-400-700.woff2", chars: LATIN, axes: { wght: { min: 400, max: 700 } } },
-      { file: "nunito-700.ttf", chars: LATIN, axes: { wght: 700 }, og: true },
-    ],
   },
   // ---- Website (landing, dashboard, galeri tema) — bukan font undangan ----
   {

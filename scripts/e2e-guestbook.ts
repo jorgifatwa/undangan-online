@@ -127,7 +127,7 @@ async function main() {
     create: { email: "e2e-a@test.local", name: "Uji A" },
   });
   const inv = await invitation(owner.id, "nadia-fajar-uji", "WEDDING", "renda-rimba");
-  const bday = await invitation(owner.id, "aira-ultah-uji", "BIRTHDAY", "confetti-party");
+  const bday = await invitation(owner.id, "aira-ultah-uji", "BIRTHDAY", "pita-krayon");
   const draft = await invitation(owner.id, "uji-bukutamu-draf", "WEDDING", "renda-rimba", "DRAFT");
   void draft;
 
@@ -437,7 +437,7 @@ async function main() {
   await sleep(1500);
   check(!(await db.wish.findUnique({ where: { id: target!.id } })), "hapus ucapan");
 
-  console.log("Section bawaan (Confetti Party)");
+  console.log("Section ulang tahun (Pita Krayon)");
   const kid = await ctxA.newPage();
   await kid.setViewport({
     width: 390,

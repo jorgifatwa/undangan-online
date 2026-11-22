@@ -30,11 +30,9 @@ const check = (ok: boolean, label: string) => {
   if (!ok) failed++;
 };
 const THEMES = (
-  process.env.ONLY
-    ? [process.env.ONLY]
-    : ["pita-krayon", "confetti-party", "tirai-beludru", "renda-rimba"]
+  process.env.ONLY ? [process.env.ONLY] : ["pita-krayon", "tirai-beludru", "renda-rimba", "lili"]
 ) as string[];
-const BDAY = new Set(["pita-krayon", "confetti-party"]);
+const BDAY = new Set(["pita-krayon"]);
 
 async function groupButtons(p: Page) {
   return p.$$("button[aria-expanded]");

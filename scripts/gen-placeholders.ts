@@ -196,7 +196,7 @@ const MUSIC = [
     title: "Kids School - Happy Birthday Music",
     artist: "SigmaMusicArt",
     page: "https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/",
-    theme: "Confetti Party",
+    theme: "Pita Krayon",
   },
 ];
 

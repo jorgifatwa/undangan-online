@@ -194,8 +194,8 @@ async function main() {
   await m.type("#demo-primary", "Aira");
   await sleep(1500);
   check(
-    !!f && f.url().includes("confetti-party") && (await text(f)).includes("Aira"),
-    "demo: ganti tema (Confetti) + nama tampil",
+    !!f && f.url().includes("pita-krayon") && (await text(f)).includes("Aira"),
+    "demo: ganti tema (Pita Krayon) + nama tampil",
   );
 
   // Showcase filter
@@ -213,7 +213,7 @@ async function main() {
     all.length === THEME_MANIFESTS.length && bday.join() === BDAY.join(),
     `filter tema: ${all.length} → ulang tahun ${bday.join(",")}`,
   );
-  check(!!(await m.$('a[href="/preview/confetti-party"]')), "tombol “Coba tema ini” ke /preview");
+  check(!!(await m.$('a[href="/preview/pita-krayon"]')), "tombol “Coba tema ini” ke /preview");
 
   // Harga
   await m.evaluate(`document.getElementById("harga").scrollIntoView()`);

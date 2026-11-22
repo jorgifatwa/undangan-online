@@ -39,10 +39,6 @@ const STYLES: Record<string, OgStyle> = {
     names: { file: "great-vibes.ttf", family: "Great Vibes", size: 124 },
     text: { file: "lora-500.ttf", family: "Lora" },
   },
-  "confetti-party": {
-    names: { file: "fredoka-600.ttf", family: "Fredoka", size: 112 },
-    text: { file: "nunito-700.ttf", family: "Nunito" },
-  },
   "pita-krayon": {
     names: { file: "gaegu-700.ttf", family: "Gaegu", size: 116 },
     text: { file: "gaegu-700.ttf", family: "Gaegu" },

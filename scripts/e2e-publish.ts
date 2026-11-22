@@ -334,9 +334,8 @@ async function main() {
     "Tirai (Rp149.000): bayar selisih Rp50.000",
   );
   check(
-    (await opt("confetti-party").catch(() => "")) === "" ||
-      (await opt("confetti-party")).includes("Gratis"),
-    "tema lebih murah: gratis (atau tidak tersedia untuk jenis acara ini)",
+    (await opt("lili").catch(() => "")) === "" || (await opt("lili")).includes("Gratis"),
+    "tema seharga yang dibeli (Lili Rp99.000): gratis",
   );
   await page.click('[data-theme-option="tirai-beludru"] button');
   check(await waitText(page, "Sedang mempratinjau"), "klik tema lebih mahal → hanya pratinjau");

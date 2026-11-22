@@ -80,7 +80,7 @@ async function main() {
   assertSafeDatabase("e2e-pricing");
 
   console.log("Harga dari manifest");
-  check(themePrice("confetti-party") === 49_000, "Confetti Party Rp49.000");
+  check(themePrice("lili") === 99_000, "Lili Rp99.000");
   check(themePrice("renda-rimba") === 99_000, "Renda Rimba Rp99.000");
   check(themePrice("tirai-beludru") === 149_000, "Tirai Beludru Rp149.000");
 
@@ -140,14 +140,14 @@ async function main() {
   check(quoteTheme(bought, "renda-rimba")?.kind === "owned", "tema yang dibeli: dimiliki");
   const up = quoteTheme(bought, "tirai-beludru");
   check(up?.kind === "upgrade" && up.amount === 50_000, "ke tema lebih mahal: selisih Rp50.000");
-  const birthdayBought = {
-    themeId: "renda-rimba",
+  const pricierBought = {
+    themeId: "tirai-beludru",
     purchasedAt: new Date(),
-    themeCredit: 99_000,
-    ownedThemeIds: ["renda-rimba"],
+    themeCredit: 149_000,
+    ownedThemeIds: ["tirai-beludru"],
   };
   check(
-    quoteTheme(birthdayBought, "confetti-party")?.kind === "owned",
+    quoteTheme(pricierBought, "renda-rimba")?.kind === "owned",
     "ke tema lebih murah: gratis (tanpa pengembalian dana)",
   );
   check(

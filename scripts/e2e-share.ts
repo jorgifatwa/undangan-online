@@ -246,7 +246,7 @@ async function main() {
     for (const [themeId, eventType] of [
       ["renda-rimba", "WEDDING"],
       ["tirai-beludru", "WEDDING"],
-      ["confetti-party", "BIRTHDAY"],
+      ["pita-krayon", "BIRTHDAY"],
     ] as const) {
       const pi = await photoInv(themeId, eventType);
       const r = await get(`/${pi.slug}/og`);

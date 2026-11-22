@@ -10,7 +10,7 @@ import localFont from "next/font/local";
  *   VerseSerif → Noto Serif          Quattrocento → Quattrocento (OFL asli)
  *   teks Arab → Amiri
  * Cormorant & Amiri memakai FILE YANG SAMA dengan Renda Rimba (cache bersama).
- * Semua `display: swap` + `preload: false` — lihat catatan di confetti-party/fonts.ts.
+ * Semua `display: swap` + `preload: false` — lihat README tema §8.
  * Nama konstanta = nama font-family → wajib berawalan tema (tb…).
  */
 const tbScript = localFont({

@@ -155,7 +155,7 @@ async function main() {
   }
 
   {
-    // Confetti Party (ulang tahun): teks bebas + wishlist (toko tepercaya saja)
+    // Pita Krayon (ulang tahun): teks bebas + wishlist (toko tepercaya saja)
     const bd = buildInitialData({
       eventType: "BIRTHDAY",
       name: "Aira Salsabila",
@@ -164,7 +164,7 @@ async function main() {
       date: new Date(Date.now() + 40 * DAY).toISOString().slice(0, 10),
       timezone: "WIB",
       city: "Depok",
-      themeId: "confetti-party",
+      themeId: "pita-krayon",
     }).data as Record<string, unknown>;
     const data = {
       ...bd,
@@ -181,10 +181,10 @@ async function main() {
         userId: u0.id,
         slug: "uji-aman-confetti",
         eventType: "BIRTHDAY",
-        themeId: "confetti-party",
+        themeId: "pita-krayon",
         status: "PUBLISHED",
         publishedAt: new Date(),
-        ...purchased("confetti-party"),
+        ...purchased("pita-krayon"),
         data: data as Prisma.InputJsonValue,
       },
     });
@@ -196,11 +196,11 @@ async function main() {
     check(
       !hrefs.some((h) => BAD_HOSTS.some((b) => h.includes(b))) &&
         ((await p.evaluate("document.body.textContent")) as string).includes("transfer-hadiah.xyz"),
-      "confetti-party: URL di teks bebas tampil sebagai teks, bukan link",
+      "pita-krayon: URL di teks bebas tampil sebagai teks, bukan link",
     );
     check(
       hrefs.some((h) => h.startsWith("https://www.tokopedia.com/")),
-      "confetti-party: link toko tepercaya tetap berfungsi",
+      "pita-krayon: link toko tepercaya tetap berfungsi",
     );
     await ctx.close();
     const wl = parseInvitationData(
