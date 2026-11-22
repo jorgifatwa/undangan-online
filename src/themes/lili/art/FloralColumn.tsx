@@ -61,13 +61,22 @@ export function FloralColumn({
         height: u(height),
         pointerEvents: "none",
         zIndex: z,
-        backgroundImage: `url(${column.src})`,
-        backgroundSize: `${u(TILE_W)} ${u(TILE_H)}`,
-        backgroundRepeat: "repeat-y",
-        backgroundPosition: `0 ${u(-from)}`,
-        transform: side === "left" ? "scaleX(-1)" : undefined,
       }}
-    />
+    >
+      {/* cermin di lapisan dalam: poros goyangan (tepi layar) di lapisan luar
+          tidak boleh ikut memindahkan cermin keluar layar */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url(${column.src})`,
+          backgroundSize: `${u(TILE_W)} ${u(TILE_H)}`,
+          backgroundRepeat: "repeat-y",
+          backgroundPosition: `0 ${u(-from)}`,
+          transform: side === "left" ? "scaleX(-1)" : undefined,
+        }}
+      />
+    </div>
   );
 }
 
