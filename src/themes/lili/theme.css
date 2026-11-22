@@ -355,37 +355,67 @@
     translate: 0 -0.8cqw;
   }
 }
-/* kepak sayap 3D: sayap berputar di sumbu badan (badan miring di tepi kanan
-   kupu-kupu, arah ±(0.41, 0.91)); tiga kepakan cepat lalu meluncur */
-@keyframes li-flutter {
+/* kepak sayap 3D: tiap sayap berputar di sumbu badan (arah ±(0.41, 0.91))
+   dengan sudut & waktu sendiri — sayap atas memimpin, sayap kiri menyusul;
+   tiga kepakan cepat lalu meluncur */
+@keyframes li-wing-a {
   0%,
   100% {
     transform: rotate3d(0.41, 0.91, 0, 0deg);
   }
   6% {
-    transform: rotate3d(0.41, 0.91, 0, 68deg);
+    transform: rotate3d(0.41, 0.91, 0, 74deg);
   }
   12% {
-    transform: rotate3d(0.41, 0.91, 0, 4deg);
+    transform: rotate3d(0.41, 0.91, 0, 2deg);
   }
   18% {
-    transform: rotate3d(0.41, 0.91, 0, 70deg);
+    transform: rotate3d(0.41, 0.91, 0, 76deg);
   }
   24% {
-    transform: rotate3d(0.41, 0.91, 0, 6deg);
+    transform: rotate3d(0.41, 0.91, 0, 4deg);
   }
   30% {
-    transform: rotate3d(0.41, 0.91, 0, 66deg);
+    transform: rotate3d(0.41, 0.91, 0, 72deg);
   }
   37% {
-    transform: rotate3d(0.41, 0.91, 0, 10deg);
+    transform: rotate3d(0.41, 0.91, 0, 8deg);
   }
-  /* meluncur: sayap setengah terbuka bergetar halus */
   60% {
-    transform: rotate3d(0.41, 0.91, 0, 22deg);
+    transform: rotate3d(0.41, 0.91, 0, 24deg);
   }
   80% {
-    transform: rotate3d(0.41, 0.91, 0, 8deg);
+    transform: rotate3d(0.41, 0.91, 0, 6deg);
+  }
+}
+@keyframes li-wing-b {
+  0%,
+  100% {
+    transform: rotate3d(0.35, 0.94, 0, 0deg);
+  }
+  8% {
+    transform: rotate3d(0.35, 0.94, 0, 58deg);
+  }
+  14% {
+    transform: rotate3d(0.35, 0.94, 0, -6deg);
+  }
+  20% {
+    transform: rotate3d(0.35, 0.94, 0, 60deg);
+  }
+  26% {
+    transform: rotate3d(0.35, 0.94, 0, -4deg);
+  }
+  32% {
+    transform: rotate3d(0.35, 0.94, 0, 56deg);
+  }
+  40% {
+    transform: rotate3d(0.35, 0.94, 0, 4deg);
+  }
+  64% {
+    transform: rotate3d(0.35, 0.94, 0, 16deg);
+  }
+  84% {
+    transform: rotate3d(0.35, 0.94, 0, 2deg);
   }
 }
 /* jalur terbang kecil di sekitar bingkai: naik saat mengepak, turun meluncur */
@@ -420,10 +450,14 @@
   perspective: 600px;
   animation: li-hover 3s ease-in-out infinite;
 }
-[data-theme="lili"] .li-bfly-wing {
-  /* poros = titik di badan (x 120, y 445 dari gambar 353 × 498) */
-  transform-origin: 34% 89.4%;
-  animation: li-flutter 3s linear infinite;
+/* poros = pangkal sayap di badan (px gambar 353 × 498) */
+[data-theme="lili"] .li-wing-a {
+  transform-origin: 33.4% 88.4%; /* (118, 440) */
+  animation: li-wing-a 3s linear infinite;
+}
+[data-theme="lili"] .li-wing-b {
+  transform-origin: 27% 90.8%; /* (95, 452) */
+  animation: li-wing-b 3s linear infinite;
 }
 /* bunga gantung/tegak umum (data-sway="hang|stand|corner") */
 [data-theme="lili"] [data-sway] {
@@ -495,7 +529,7 @@
 [data-theme="lili"][data-lite] .li-shadow {
   animation: none;
 }
-/* mode ringan: tetap satu gerakan kecil (kepak kupu-kupu) */
+/* mode ringan: tetap kepak sayap kupu-kupu (li-wing-*) */
 
 @media (prefers-reduced-motion: reduce) {
   [data-theme="lili"] .li-c-rise,
@@ -504,7 +538,8 @@
   [data-theme="lili"] .li-c-seal,
   [data-theme="lili"] .li-sway-lily,
   [data-theme="lili"] .li-bfly,
-  [data-theme="lili"] .li-bfly-wing,
+  [data-theme="lili"] .li-wing-a,
+  [data-theme="lili"] .li-wing-b,
   [data-theme="lili"] [data-sway],
   [data-theme="lili"] .li-column,
   [data-theme="lili"] .li-float,
