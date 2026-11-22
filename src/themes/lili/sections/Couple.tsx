@@ -7,9 +7,9 @@ import { useInvitation } from "../../_shared/runtime/context";
 import type { Person } from "@/schemas/wedding";
 import { instagramUrl } from "@/lib/links";
 import { Ampersand } from "../art/Ampersand";
-import { FloralColumn } from "../art/FloralColumn";
+import { FloralColumn, smoke } from "../art/FloralColumn";
 import { LACE_H, LACE_HOLE, LACE_W, LaceFrame } from "../art/LaceFrame";
-import { paperBg, greenBg } from "../art/textures";
+import { paperBg } from "../art/textures";
 import { F, Section, box, txt, u, useFit } from "../canvas";
 import { SAGE_BLOCK, SALAM_H } from "./Salam";
 
@@ -210,7 +210,12 @@ export function LiliCouple() {
         style={{
           position: "relative",
           height: u(SAGE_H),
-          ...greenBg(SALAM_H),
+          background: `${smoke([
+            { x: 14, y: 70, w: 48, h: 24, a: 0.26 },
+            { x: 50, y: 86, w: 55, h: 18, a: 0.2 },
+            { x: 70, y: 60, w: 30, h: 20, a: 0.14 },
+            { x: 85, y: 30, w: 30, h: 22, a: 0.12 },
+          ])}, var(--inv-sage)`,
         }}
       >
         <FloralColumn from={SALAM_H} height={SAGE_H} />

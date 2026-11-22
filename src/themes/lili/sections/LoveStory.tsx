@@ -6,7 +6,7 @@ import { useInvitation } from "../../_shared/runtime/context";
 import { DOILY } from "../art/doily";
 import doily from "../art/doily.webp";
 import lilyBouquet from "../art/lily-bouquet.webp";
-import { greenBg } from "../art/textures";
+import { paperBg } from "../art/textures";
 import { SWANS_H, SWANS_W, SwanPair } from "../art/Swans";
 import { F, Section, txt, u } from "../canvas";
 
@@ -67,7 +67,7 @@ export function LiliLoveStory() {
   if (items.length === 0) return null;
 
   return (
-    <Section id="loveStory" bg={greenBg()} overflow="hidden">
+    <Section id="loveStory" bg={paperBg("var(--inv-forest)")} overflow="hidden">
       <div
         style={{
           position: "relative",

@@ -56,3 +56,13 @@ export function FloralColumn({
     />
   );
 }
+
+/** Kabut/asap putih lembut di latar sage (gradasi radial, tanpa gambar). */
+export function smoke(spots: { x: number; y: number; w: number; h: number; a?: number }[]) {
+  return spots
+    .map(
+      (s) =>
+        `radial-gradient(ellipse ${s.w}% ${s.h}% at ${s.x}% ${s.y}%, rgb(236 232 220 / ${s.a ?? 0.22}), transparent 72%)`,
+    )
+    .join(", ");
+}

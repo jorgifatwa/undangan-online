@@ -2,8 +2,8 @@
 
 import { useInvitation } from "../../_shared/runtime/context";
 import { safeHref } from "@/lib/links";
+import { smoke } from "../art/FloralColumn";
 import { TornCard } from "../art/TornCard";
-import { greenBg } from "../art/textures";
 import { F, Section, txt, u } from "../canvas";
 
 /**
@@ -21,7 +21,15 @@ function Shell({
   children: React.ReactNode;
 }) {
   return (
-    <Section id={id} bg={greenBg()}>
+    <Section
+      id={id}
+      bg={{
+        background: `${smoke([
+          { x: 15, y: 30, w: 45, h: 30, a: 0.18 },
+          { x: 85, y: 80, w: 40, h: 26, a: 0.14 },
+        ])}, var(--inv-sage)`,
+      }}
+    >
       <div style={{ padding: `${u(44)} ${u(48)} ${u(48)}` }}>
         <h2
           data-a
