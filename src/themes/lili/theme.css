@@ -388,26 +388,6 @@
     transform: rotateY(calc(var(--s) * 8deg));
   }
 }
-/* jalur terbang kecil di sekitar bingkai: naik saat mengepak, turun meluncur */
-@keyframes li-hover {
-  0%,
-  100% {
-    translate: 0 0;
-    rotate: 0deg;
-  }
-  30% {
-    translate: 0.8cqw -2.4cqw;
-    rotate: -6deg;
-  }
-  55% {
-    translate: 1.4cqw -1.6cqw;
-    rotate: -2deg;
-  }
-  80% {
-    translate: 0.4cqw -0.4cqw;
-    rotate: 2deg;
-  }
-}
 /* lili di bingkai: berporos di pangkal (dekat mutiara kiri atas rangkaian) */
 [data-theme="lili"] .li-sway-lily {
   transform-origin: 54% 17.5%;
@@ -415,9 +395,9 @@
   animation: li-sway 4.6s ease-in-out infinite alternate;
 }
 /* kupu-kupu: melayang + mengepak (sayap menyempit ke arah badan) */
+/* kupu-kupu diam di tempat (hinggap), hanya sayap yang mengepak */
 [data-theme="lili"] .li-bfly {
   perspective: 300px;
-  animation: li-hover 2.6s ease-in-out infinite;
 }
 [data-theme="lili"] .li-wing-l {
   --s: 1;

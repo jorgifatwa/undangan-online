@@ -86,14 +86,15 @@ export function HeroFrame({
             priority={priority}
           />
         </div>
-        {/* kupu-kupu (lapisan sendiri) hinggap di kiri bawah bingkai, sayap mengepak */}
+        {/* kupu-kupu (lapisan sendiri) hinggap di kiri bawah bingkai, hanya mengepak */}
         <Butterfly
           style={{
             position: "absolute",
-            left: "8%",
-            top: "81.5%",
-            width: "30%",
-            rotate: "-24deg",
+            // kepala menghadap kanan (agak ke atas) seperti referensi
+            left: "7%",
+            top: "80%",
+            width: "28%",
+            rotate: "72deg",
           }}
         />
       </div>
