@@ -23,6 +23,14 @@ export function PreviewToolbar({ themeName, variants, eventTypes, current }: Pro
   const [guest, setGuest] = useState(current.guest);
   const [pending, startTransition] = useTransition();
 
+  /** Kembali ke halaman sebelumnya di situs ini (mis. /tema, landing, pesan);
+   * bila preview dibuka langsung (tanpa riwayat situs), ke galeri /tema. */
+  const back = () => {
+    const sameSite = document.referrer && new URL(document.referrer).origin === location.origin;
+    if (sameSite && window.history.length > 1) router.back();
+    else router.push("/tema");
+  };
+
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params.toString());
     for (const [k, v] of Object.entries(patch)) {
@@ -34,16 +42,27 @@ export function PreviewToolbar({ themeName, variants, eventTypes, current }: Pro
 
   return (
     <div className="fixed top-3 left-3 z-[200] font-sans text-sm">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="bg-background/90 text-foreground flex items-center gap-2 rounded-full border px-3.5 py-2 shadow-lg backdrop-blur"
-      >
-        <span aria-hidden>🎨</span>
-        <span className="font-medium">{open ? "Tutup" : "Preview"}</span>
-        {pending && <span className="text-muted-foreground text-xs">…</span>}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={back}
+          aria-label="Kembali"
+          className="bg-background/90 text-foreground flex items-center gap-1.5 rounded-full border px-3.5 py-2 shadow-lg backdrop-blur"
+        >
+          <span aria-hidden>←</span>
+          <span className="font-medium">Kembali</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="bg-background/90 text-foreground flex items-center gap-2 rounded-full border px-3.5 py-2 shadow-lg backdrop-blur"
+        >
+          <span aria-hidden>🎨</span>
+          <span className="font-medium">{open ? "Tutup" : "Preview"}</span>
+          {pending && <span className="text-muted-foreground text-xs">…</span>}
+        </button>
+      </div>
 
       {open && (
         <div className="bg-background text-foreground mt-2 w-72 rounded-2xl border p-4 shadow-xl">
