@@ -160,7 +160,11 @@ export function LiliWishes() {
           menumpang ujung atas pita renda */}
       <div
         aria-hidden
+        data-sway="corner"
         style={{
+          transformOrigin: "100% 0",
+          ["--amp" as string]: "2deg",
+          ["--sdur" as string]: "5.2s",
           position: "absolute",
           right: u(-20),
           top: u(-4),
@@ -176,6 +180,7 @@ export function LiliWishes() {
           tepi kiri-bawah seperti desain */}
       <div
         aria-hidden
+        data-sway="corner"
         style={{
           position: "absolute",
           left: u(-30),
@@ -183,6 +188,10 @@ export function LiliWishes() {
           width: u(140),
           height: u((140 * orchid.height) / orchid.width),
           transform: "rotate(32deg)",
+          transformOrigin: "0 100%",
+          ["--amp" as string]: "2.2deg",
+          ["--sdur" as string]: "4.6s",
+          ["--sdly" as string]: "-1.5s",
           pointerEvents: "none",
         }}
       >

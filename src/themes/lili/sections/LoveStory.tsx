@@ -42,10 +42,16 @@ const FRONT: B[] = [...both(SIDE_FRONT), ...both(BOTTOM), { x: 150, y: 236, s: 1
 
 function Bouquet({ x, y, s, rot = 0, flip, mirror }: B) {
   const scaleX = (flip ? -1 : 1) * (mirror ? -1 : 1);
+  // tempo & fase berbeda per buket agar tidak bergoyang serempak
+  const seed = Math.abs(x * 7 + y * 3 + (mirror ? 11 : 0));
   return (
     <div
       aria-hidden
+      data-sway="stand"
       style={{
+        ["--amp" as string]: "1.5deg",
+        ["--sdur" as string]: `${(4.4 + (seed % 17) / 10).toFixed(1)}s`,
+        ["--sdly" as string]: `${(-(seed % 30) / 10).toFixed(1)}s`,
         position: "absolute",
         left: mirror ? undefined : u(x),
         right: mirror ? u(x) : undefined,

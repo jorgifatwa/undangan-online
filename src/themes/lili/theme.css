@@ -226,11 +226,123 @@
   transform: none;
 }
 
+/* ---------- Gerakan hidup (berjalan selama section terlihat; dijeda runtime
+   di luar layar). Memakai properti rotate/translate/scale terpisah agar tidak
+   menimpa transform inline (cermin/rotasi posisi). ---------- */
+@keyframes li-sway {
+  from {
+    rotate: calc(var(--amp, 1.6deg) * -1);
+  }
+  to {
+    rotate: var(--amp, 1.6deg);
+  }
+}
+@keyframes li-breeze {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  50% {
+    translate: calc(var(--dir, 1) * 0.7cqw) 0;
+    rotate: calc(var(--dir, 1) * 0.35deg);
+  }
+}
+@keyframes li-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -0.8cqw;
+  }
+}
+@keyframes li-flutter {
+  0%,
+  62%,
+  100% {
+    scale: 1 1;
+  }
+  70% {
+    scale: 0.55 1;
+  }
+  78% {
+    scale: 1 1;
+  }
+  86% {
+    scale: 0.62 1;
+  }
+}
+@keyframes li-hover {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  50% {
+    translate: 0.4cqw -1cqw;
+    rotate: -3deg;
+  }
+}
+/* lili di bingkai: berporos di pangkal (dekat mutiara kiri atas rangkaian) */
+[data-theme="lili"] .li-sway-lily {
+  transform-origin: 54% 17.5%;
+  --amp: 1.8deg;
+  animation: li-sway 4.6s ease-in-out infinite alternate;
+}
+/* kupu-kupu: melayang + mengepak (sayap menyempit ke arah badan) */
+[data-theme="lili"] .li-bfly {
+  transform-origin: 34% 88%;
+  animation: li-hover 5.2s ease-in-out infinite;
+}
+[data-theme="lili"] .li-bfly-wing {
+  transform-origin: 34% 88%;
+  animation: li-flutter 3.2s ease-in-out infinite;
+}
+/* bunga gantung/tegak umum (data-sway="hang|stand|corner") */
+[data-theme="lili"] [data-sway] {
+  animation: li-sway var(--sdur, 5s) ease-in-out var(--sdly, 0s) infinite alternate;
+}
+[data-theme="lili"] [data-sway="hang"] {
+  transform-origin: 50% 0;
+}
+[data-theme="lili"] [data-sway="stand"] {
+  transform-origin: 50% 100%;
+}
+/* kolom bunga tepi: angin pelan, poros di tepi layar */
+[data-theme="lili"] .li-column {
+  animation: li-breeze 7s ease-in-out infinite;
+}
+/* kolom tidak dijeda di luar layar: harus serempak antarsection (murah,
+   hanya transform di compositor) */
+[data-theme="lili"] [data-inv-section]:not([data-inview]) .li-column {
+  animation-play-state: running !important;
+}
+/* angsa mengapung */
+[data-theme="lili"] .li-float {
+  animation: li-bob 4.8s ease-in-out infinite;
+}
+
+[data-theme="lili"][data-lite] .li-sway-lily,
+[data-theme="lili"][data-lite] .li-bfly,
+[data-theme="lili"][data-lite] [data-sway],
+[data-theme="lili"][data-lite] .li-column,
+[data-theme="lili"][data-lite] .li-float {
+  animation: none;
+}
+/* mode ringan: tetap satu gerakan kecil (kepak kupu-kupu) */
+
 @media (prefers-reduced-motion: reduce) {
   [data-theme="lili"] .li-c-rise,
   [data-theme="lili"] .li-c-names,
   [data-theme="lili"] .li-c-lace,
-  [data-theme="lili"] .li-c-seal {
+  [data-theme="lili"] .li-c-seal,
+  [data-theme="lili"] .li-sway-lily,
+  [data-theme="lili"] .li-bfly,
+  [data-theme="lili"] .li-bfly-wing,
+  [data-theme="lili"] [data-sway],
+  [data-theme="lili"] .li-column,
+  [data-theme="lili"] .li-float {
     animation: none;
   }
   [data-theme="lili"] .li-sec [data-a] {

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { u } from "../canvas";
 import column from "./floral-column.webp";
 
@@ -21,6 +23,8 @@ const TILE_H = 140;
 const TILE_W = (TILE_H * column.width) / column.height;
 /** Bagian kolom yang keluar tepi layar (px kanvas). */
 const BLEED = 26;
+/** Periode goyangan kolom (sama dengan li-breeze di theme.css). */
+const BREEZE_MS = 7000;
 
 export function FloralColumn({
   from,
@@ -35,12 +39,22 @@ export function FloralColumn({
   side?: "left" | "right";
   z?: number;
 }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  // fase goyangan diambil dari jam bersama → kolom di section bersebelahan
+  // bergerak serempak (tanpa sambungan), berapa pun waktu pasangnya
+  useEffect(() => {
+    if (ref.current) ref.current.style.animationDelay = `${-(performance.now() % BREEZE_MS)}ms`;
+  }, []);
   return (
     <div
+      ref={ref}
       aria-hidden
+      className="li-column"
       style={{
         position: "absolute",
         top: 0,
+        transformOrigin: side === "right" ? "100% 50%" : "0 50%",
+        ["--dir" as string]: side === "right" ? -1 : 1,
         right: side === "right" ? u(-BLEED) : undefined,
         left: side === "left" ? u(-BLEED) : undefined,
         width: u(TILE_W),

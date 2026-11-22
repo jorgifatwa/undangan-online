@@ -172,11 +172,15 @@ export function LiliEvent() {
       <div
         aria-hidden
         data-a="fade"
+        data-sway="corner"
         style={{
           position: "absolute",
           right: 0,
           top: 0,
           transform: "scaleX(-1)",
+          transformOrigin: "100% 0",
+          ["--amp" as string]: "2.6deg",
+          ["--sdur" as string]: "5.4s",
           width: u(363 * K),
           height: u(255 * K),
           pointerEvents: "none",
@@ -187,11 +191,16 @@ export function LiliEvent() {
       <div
         aria-hidden
         data-a="fade"
+        data-sway="corner"
         style={{
           position: "absolute",
           left: 0,
           bottom: 0,
           transform: "scaleX(-1)",
+          transformOrigin: "0 100%",
+          ["--amp" as string]: "2.8deg",
+          ["--sdur" as string]: "4.8s",
+          ["--sdly" as string]: "-2s",
           width: u(256 * K),
           height: u(590 * K),
           pointerEvents: "none",

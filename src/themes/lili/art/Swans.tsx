@@ -22,7 +22,9 @@ export function SwanPair({
 }) {
   return (
     <div className={className} style={style} aria-hidden>
-      <Image src={swans} alt="" fill sizes="(max-width: 440px) 64vw, 280px" />
+      <div className="li-float" style={{ position: "absolute", inset: 0 }}>
+        <Image src={swans} alt="" fill sizes="(max-width: 440px) 64vw, 280px" />
+      </div>
     </div>
   );
 }

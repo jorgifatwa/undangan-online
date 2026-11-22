@@ -6,11 +6,12 @@ import type { Photo } from "@/schemas/common";
 import { box, u } from "../canvas";
 import { HERO_FRAME } from "./hero-frame";
 import frameImg from "./hero-frame.webp";
+import butterflyImg from "./hero-butterfly.webp";
+import lilyImg from "./hero-lily.webp";
 
 /**
  * Komposisi bingkai hero & penutup dari gambar milik pemilik (bingkai oval
- * vintage + alas pink + lili + mutiara + kupu-kupu), diolah oleh
- * saat diolah. Foto diletakkan di bawah gambar, tepat di
+ * vintage + lili + mutiara + kupu-kupu), dipisah jadi tiga lapisan. Foto diletakkan di bawah gambar, tepat di
  * lubang elipsnya. `w` = lebar komposisi (px kanvas).
  */
 export function HeroFrame({
@@ -67,6 +68,8 @@ export function HeroFrame({
           filter: `var(--inv-filter-frame, saturate(1)) drop-shadow(0 ${u(2)} ${u(3)} rgb(60 60 40 / 0.25))`,
         }}
       >
+        {/* bingkai bersih; lili & kupu-kupu lapisan sendiri (sama ukuran) agar
+            bisa bergerak: lili bergoyang di pangkalnya, kupu-kupu mengepak */}
         <Image
           src={frameImg}
           alt=""
@@ -74,6 +77,26 @@ export function HeroFrame({
           sizes="(max-width: 440px) 72vw, 320px"
           priority={priority}
         />
+        <div className="li-sway-lily" style={{ position: "absolute", inset: 0 }}>
+          <Image
+            src={lilyImg}
+            alt=""
+            fill
+            sizes="(max-width: 440px) 72vw, 320px"
+            priority={priority}
+          />
+        </div>
+        <div className="li-bfly" style={{ position: "absolute", inset: 0 }}>
+          <div className="li-bfly-wing" style={{ position: "absolute", inset: 0 }}>
+            <Image
+              src={butterflyImg}
+              alt=""
+              fill
+              sizes="(max-width: 440px) 72vw, 320px"
+              priority={priority}
+            />
+          </div>
+        </div>
       </div>
     </>
   );
