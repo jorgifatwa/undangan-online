@@ -1,13 +1,13 @@
 "use client";
 
-import { useId } from "react";
+import Image from "next/image";
 
 import { couple, shortName } from "../../_shared/format";
 import { useInvitation } from "../../_shared/runtime/context";
 import { HERO_FRAME } from "../art/hero-frame";
 import { HeroFrame } from "../art/HeroFrame";
 import { paperBg } from "../art/textures";
-import { Alstroemeria, FlowerDefs, GreenOrchid, PinkLily } from "../art/Flowers";
+import closingBouquet from "../art/closing-bouquet.webp";
 import { F, Section, box, txt, u, useFit } from "../canvas";
 
 /**
@@ -22,27 +22,42 @@ const FRAME_H = Math.round(FRAME_W * HERO_FRAME.ratio);
 const FALLBACK =
   "Merupakan suatu kebahagiaan dan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu untuk mengiringi langkah baru kami. Atas kehadiran dan doa yang diberikan, kami ucapkan terima kasih.";
 
+/**
+ * Hamparan bunga bawah: rangkaian bunga milik pemilik disusun berulang
+ * (ukuran, rotasi & arah berbeda) dalam dua baris selebar layar, terpotong
+ * tepi bawah — penuh seperti desain. [x tengah, y tengah, sisi, rotasi, cermin]
+ */
+const BED: [number, number, number, number, boolean][] = [
+  // baris belakang (tinggi berselang → tepi atas bergelombang)
+  [30, 84, 130, -18, false],
+  [148, 58, 160, 10, true],
+  [278, 76, 136, -8, false],
+  [402, 60, 156, 20, true],
+  // baris depan
+  [86, 150, 176, 8, true],
+  [214, 138, 168, -14, false],
+  [350, 150, 180, 6, true],
+];
+
 function FloralBed() {
-  const id = useId().replace(/:/g, "");
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 430 180"
-      style={{ display: "block", width: "100%", height: u(180), overflow: "visible" }}
-    >
-      <defs>
-        <FlowerDefs id={id} />
-      </defs>
-      <GreenOrchid id={id} x={178} y={70} s={1.25} rot={-6} />
-      <GreenOrchid id={id} x={20} y={150} s={1.1} rot={20} />
-      <PinkLily id={id} x={330} y={78} s={1.15} rot={18} white />
-      <PinkLily id={id} x={52} y={88} s={1.1} rot={-20} white />
-      <Alstroemeria id={id} x={250} y={118} s={1.25} rot={8} />
-      <Alstroemeria id={id} x={118} y={150} s={1.15} rot={-16} />
-      <PinkLily id={id} x={400} y={160} s={1.1} rot={-8} />
-      <PinkLily id={id} x={200} y={176} s={1.05} rot={14} white />
-      <Alstroemeria id={id} x={312} y={186} s={1.1} rot={30} />
-    </svg>
+    <div aria-hidden style={{ position: "relative", height: u(180), pointerEvents: "none" }}>
+      {BED.map(([x, y, w, rot, flip], i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: u(x - w / 2),
+            top: u(y - w / 2),
+            width: u(w),
+            height: u(w),
+            transform: `rotate(${rot}deg)${flip ? " scaleX(-1)" : ""}`,
+          }}
+        >
+          <Image src={closingBouquet} alt="" fill sizes="(max-width: 440px) 42vw, 190px" />
+        </div>
+      ))}
+    </div>
   );
 }
 
