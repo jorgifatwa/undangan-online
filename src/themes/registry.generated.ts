@@ -12,9 +12,9 @@ export type ThemeId = "lili" | "pita-krayon" | "renda-rimba" | "surat-marun" | "
 
 /** Thumbnail screenshot cover (pnpm themes:thumbs); tema tanpa file memakai gradien manifest. */
 export const THEME_THUMBS: Record<string, string> = {
-  "lili": "/theme-thumbs/lili.webp?v=mwqc9e8z",
-  "pita-krayon": "/theme-thumbs/pita-krayon.webp?v=mwgt8gbv",
-  "renda-rimba": "/theme-thumbs/renda-rimba.webp?v=mwdqaso1",
-  "surat-marun": "/theme-thumbs/surat-marun.webp?v=mwrzp1kn",
-  "tirai-beludru": "/theme-thumbs/tirai-beludru.webp?v=mwdqb1lv",
+  "lili": "/theme-thumbs/lili.webp?v=mwxx9kbb",
+  "pita-krayon": "/theme-thumbs/pita-krayon.webp?v=mwxx8jxr",
+  "renda-rimba": "/theme-thumbs/renda-rimba.webp?v=mwxx9ax3",
+  "surat-marun": "/theme-thumbs/surat-marun.webp?v=mwxx8ovx",
+  "tirai-beludru": "/theme-thumbs/tirai-beludru.webp?v=mwxx9mij",
 };

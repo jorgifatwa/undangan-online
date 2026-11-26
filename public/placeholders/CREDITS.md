@@ -2,34 +2,42 @@
 
 File ini DIBUAT OTOMATIS oleh `scripts/gen-placeholders.ts` — ubah daftarnya di sana.
 
-## Foto (Unsplash License — boleh dipakai komersial, atribusi tidak wajib)
+## Foto pernikahan — milik pemilik
+
+Foto pernikahan pribadi pemilik (proyek undangan-jorgi-estetik). Pemilik, pasangan,
+dan fotografer telah mengizinkan dipakai sebagai foto contoh publik di website ini
+(dikonfirmasi 2026-11-27). Jangan dipakai di luar website ini.
+
+| File | Dipakai untuk | Sumber (undangan-jorgi-estetik/public/images) |
+|---|---|---|
+| `photos/wedding-cover.webp` | Foto cover pasangan | `gallery/web/0K0A0785-Edit.webp` |
+| `photos/wedding-bride.webp` | Potret mempelai wanita | `catin-wanita-oval.webp` |
+| `photos/wedding-groom.webp` | Potret mempelai pria | `catin-pria-oval.webp` |
+| `photos/wedding-g1.webp` | Galeri | `gallery/web/0K0A0739-Edit.webp` |
+| `photos/wedding-g2.webp` | Galeri | `gallery/web/0K0A0741-Edit.webp` |
+| `photos/wedding-g3.webp` | Galeri | `gallery/web/0K0A0763-Edit.webp` |
+| `photos/wedding-g4.webp` | Galeri | `gallery/web/0K0A0757-Edit.webp` |
+| `photos/wedding-g5.webp` | Galeri | `gallery/web/0K0A0771-Edit.webp` |
+| `photos/wedding-g6.webp` | Galeri | `gallery/web/0K0A0776-Edit.webp` |
+| `photos/wedding-g7.webp` | Galeri | `gallery/web/0K0A0777-Edit.webp` |
+| `photos/wedding-g8.webp` | Galeri | `gallery/web/0K0A0790-Edit.webp` |
+| `photos/wedding-strip1.webp` | Photo strip | `gallery/web/0K0A0758-Edit.webp` |
+| `photos/wedding-strip2.webp` | Photo strip | `gallery/web/0K0A0775-Edit.webp` |
+| `photos/wedding-strip3.webp` | Photo strip | `gallery/web/0K0A0779-Edit.webp` |
+| `photos/wedding-closing.webp` | Foto penutup / polaroid | `gallery/web/0K0A0797-Edit.webp` |
+
+## Foto ulang tahun (Unsplash License — boleh dipakai komersial, atribusi tidak wajib)
 
 Lisensi: https://unsplash.com/license
 
 | File | Dipakai untuk | Fotografer | Sumber |
 |---|---|---|---|
-| `photos/wedding-cover.webp` | Foto cover pasangan | Galuh hari setiawan | [Unsplash](https://unsplash.com/photos/Lr834aonJ70) |
-| `photos/wedding-bride.webp` | Potret mempelai wanita | Galuh hari setiawan | [Unsplash](https://unsplash.com/photos/qVtjqnWYka8) |
-| `photos/wedding-groom.webp` | Potret mempelai pria (dipotong close-up dari foto berdua) | Davin Naziel | [Unsplash](https://unsplash.com/photos/nXmt5zQ7l0c) |
-| `photos/wedding-g1.webp` | Galeri | Fahmi Ramadhan | [Unsplash](https://unsplash.com/photos/bqFZznf6eVc) |
-| `photos/wedding-g2.webp` | Galeri | Galuh hari setiawan | [Unsplash](https://unsplash.com/photos/1cyUquII5Zg) |
-| `photos/wedding-g3.webp` | Galeri | Ahmad Syarif Maulana | [Unsplash](https://unsplash.com/photos/JYPPOBUG2M0) |
-| `photos/wedding-g4.webp` | Galeri | Salman Mukti | [Unsplash](https://unsplash.com/photos/RHfYB_USSEc) |
-| `photos/wedding-g5.webp` | Galeri | Ainur Iman | [Unsplash](https://unsplash.com/photos/IiGkUvXXbig) |
-| `photos/wedding-g6.webp` | Galeri | Fery Abdurrahman | [Unsplash](https://unsplash.com/photos/iVFDSZqXDAc) |
-| `photos/wedding-g7.webp` | Galeri | Ahmad Syarif Maulana | [Unsplash](https://unsplash.com/photos/0QL68R5wGRU) |
-| `photos/wedding-g8.webp` | Galeri | Jeremy Wong Weddings | [Unsplash](https://unsplash.com/photos/464ps_nOflw) |
-| `photos/wedding-strip1.webp` | Photo strip | Eugenia Pan'kiv | [Unsplash](https://unsplash.com/photos/1Bs2sZ9fD2Q) |
-| `photos/wedding-strip2.webp` | Photo strip | Jonathan Borba | [Unsplash](https://unsplash.com/photos/aC5_EFhq7Fs) |
-| `photos/wedding-strip3.webp` | Photo strip | Jakob Owens | [Unsplash](https://unsplash.com/photos/mLIurLmSRAY) |
-| `photos/wedding-closing.webp` | Foto penutup / polaroid | Jakob Owens | [Unsplash](https://unsplash.com/photos/SiniLJkXhMc) |
 | `photos/birthday-celebrant.webp` | Foto yang berulang tahun | Keisha Kim | [Unsplash](https://unsplash.com/photos/0KdRK5C-xbs) |
 | `photos/birthday-g1.webp` | Galeri | Keisha Kim | [Unsplash](https://unsplash.com/photos/MH_tFKLWJXM) |
 | `photos/birthday-g2.webp` | Galeri | Nathan Dumlao | [Unsplash](https://unsplash.com/photos/As8zq82LBpw) |
 | `photos/birthday-g3.webp` | Galeri | Jorge Ibanez | [Unsplash](https://unsplash.com/photos/cK6ixOQx1fI) |
 | `photos/birthday-g4.webp` | Galeri | behrouz sasani | [Unsplash](https://unsplash.com/photos/iSiP73IHgng) |
 | `photos/birthday-g5.webp` | Galeri | Alexander Mass | [Unsplash](https://unsplash.com/photos/KzrfaMQSsP4) |
-| `photos/birthday-child-cutout.webp` | Foto masa kecil tanpa latar (contoh efek stiker Pita Krayon) — latar dihapus dari `birthday-g4.webp` dengan Apple Vision (di perangkat) | behrouz sasani | [Unsplash](https://unsplash.com/photos/iSiP73IHgng) |
 
 ## Musik (Pixabay Content License)
 
@@ -44,4 +52,4 @@ nama di kolom pertama). Selama file belum ada, player menampilkan "Musik belum t
 |---|---|---|---|
 | `music/tirai-beludru.m4a` | Tirai Beludru | "Wedding Music" — ikoliks | [Pixabay](https://pixabay.com/music/wedding-wedding-music-329295/) |
 | `music/renda-rimba.m4a` | Renda Rimba | "Romantic Wedding Acoustic Guitar" — Tunetank | [Pixabay](https://pixabay.com/music/small-emotions-romantic-wedding-acoustic-guitar-347266/) |
-| `music/confetti-party.m4a` | Pita Krayon (lagu ulang tahun bawaan) | "Kids School - Happy Birthday Music" — SigmaMusicArt | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/) |
+| `music/confetti-party.m4a` | Pita Krayon | "Kids School - Happy Birthday Music" — SigmaMusicArt | [Pixabay](https://pixabay.com/music/happy-childrens-tunes-kids-school-happy-birthday-music-246840/) |

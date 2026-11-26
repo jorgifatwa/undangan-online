@@ -1,6 +1,7 @@
 /**
- * Unduh foto placeholder dari Unsplash (Unsplash License: boleh komersial,
- * atribusi tidak wajib tapi kita tetap mencatatnya), ubah ke WebP, lalu tulis
+ * Buat foto placeholder: pernikahan dari foto milik pemilik (lokal,
+ * undangan-jorgi-estetik — dengan izin), ulang tahun dari Unsplash (Unsplash
+ * License: boleh komersial, atribusi tetap dicatat); ubah ke WebP, lalu tulis
  * public/placeholders/CREDITS.md dari daftar yang sama agar kredit selalu sinkron.
  *
  * Jalankan: pnpm placeholders  [--only=wedding-groom]
@@ -12,125 +13,103 @@ import sharp from "sharp";
 interface PhotoSource {
   /** Nama file output (tanpa ekstensi). */
   file: string;
-  /** Id gambar di images.unsplash.com/photo-{id} */
-  id: string;
-  page: string;
-  photographer: string;
+  /** Id gambar di images.unsplash.com/photo-{id} (sumber Unsplash). */
+  id?: string;
+  page?: string;
+  photographer?: string;
+  /** Berkas lokal relatif ke JORGI_PHOTOS (foto milik pemilik). */
+  local?: string;
   /** Potong bagian tertentu (fraksi 0–1) sebelum resize, mis. memisahkan satu orang dari foto berdua. */
   crop?: { left: number; top: number; width: number; height: number };
   usage: string;
 }
 
 const PHOTOS: PhotoSource[] = [
-  // --- Wedding -----------------------------------------------------------------
+  // --- Wedding: foto pernikahan MILIK PEMILIK (undangan-jorgi-estetik) --------
+  // Izin: pemilik, pasangan & fotografer setuju dipakai sebagai contoh publik
+  // (dikonfirmasi 2026-11-27). Slot lanskap dipotong kepala–lutut dari foto potret.
   {
     file: "wedding-cover",
-    id: "1650377509454-1bbd8392e122",
-    page: "https://unsplash.com/photos/Lr834aonJ70",
-    photographer: "Galuh hari setiawan",
+    local: "gallery/web/0K0A0785-Edit.webp",
     usage: "Foto cover pasangan",
   },
   {
     file: "wedding-bride",
-    id: "1650377509428-11e7fe8614a9",
-    page: "https://unsplash.com/photos/qVtjqnWYka8",
-    photographer: "Galuh hari setiawan",
+    local: "catin-wanita-oval.webp",
     usage: "Potret mempelai wanita",
   },
   {
     file: "wedding-groom",
-    id: "1771257717271-a0b50e3d9885",
-    page: "https://unsplash.com/photos/nXmt5zQ7l0c",
-    photographer: "Davin Naziel",
-    // close-up kepala–dada (rasio 2:3 seperti potret mempelai wanita), wajah di sepertiga atas
-    crop: { left: 0.44, top: 0.33, width: 0.31, height: 0.31 },
-    usage: "Potret mempelai pria (dipotong close-up dari foto berdua)",
+    local: "catin-pria-oval.webp",
+    usage: "Potret mempelai pria",
   },
   {
     file: "wedding-g1",
-    id: "1541700513212-79f419c0221d",
-    page: "https://unsplash.com/photos/bqFZznf6eVc",
-    photographer: "Fahmi Ramadhan",
+    local: "gallery/web/0K0A0739-Edit.webp",
     usage: "Galeri",
+    crop: { left: 0, top: 0.28, width: 1, height: 0.444 },
   },
   {
     file: "wedding-g2",
-    id: "1650472185090-a8cfdd9a38d3",
-    page: "https://unsplash.com/photos/1cyUquII5Zg",
-    photographer: "Galuh hari setiawan",
+    local: "gallery/web/0K0A0741-Edit.webp",
     usage: "Galeri",
   },
   {
     file: "wedding-g3",
-    id: "1673073180049-9ef7846f28dd",
-    page: "https://unsplash.com/photos/JYPPOBUG2M0",
-    photographer: "Ahmad Syarif Maulana",
+    local: "gallery/web/0K0A0763-Edit.webp",
     usage: "Galeri",
+    crop: { left: 0, top: 0.28, width: 1, height: 0.444 },
   },
   {
     file: "wedding-g4",
-    id: "1678782086537-0cefd87257b6",
-    page: "https://unsplash.com/photos/RHfYB_USSEc",
-    photographer: "Salman Mukti",
+    local: "gallery/web/0K0A0757-Edit.webp",
     usage: "Galeri",
   },
   {
     file: "wedding-g5",
-    id: "1764641697973-1e55796073bf",
-    page: "https://unsplash.com/photos/IiGkUvXXbig",
-    photographer: "Ainur Iman",
+    local: "gallery/web/0K0A0771-Edit.webp",
     usage: "Galeri",
   },
   {
     file: "wedding-g6",
-    id: "1667353931393-7cf46f3d0649",
-    page: "https://unsplash.com/photos/iVFDSZqXDAc",
-    photographer: "Fery Abdurrahman",
+    local: "gallery/web/0K0A0776-Edit.webp",
     usage: "Galeri",
   },
   {
     file: "wedding-g7",
-    id: "1673073220743-ee78b02eb029",
-    page: "https://unsplash.com/photos/0QL68R5wGRU",
-    photographer: "Ahmad Syarif Maulana",
+    local: "gallery/web/0K0A0777-Edit.webp",
     usage: "Galeri",
+    crop: { left: 0, top: 0.28, width: 1, height: 0.444 },
   },
   {
     file: "wedding-g8",
-    id: "1520854221256-17451cc331bf",
-    page: "https://unsplash.com/photos/464ps_nOflw",
-    photographer: "Jeremy Wong Weddings",
+    local: "gallery/web/0K0A0790-Edit.webp",
     usage: "Galeri",
+    crop: { left: 0, top: 0.28, width: 1, height: 0.444 },
   },
   {
     file: "wedding-strip1",
-    id: "1591604466107-ec97de577aff",
-    page: "https://unsplash.com/photos/1Bs2sZ9fD2Q",
-    photographer: "Eugenia Pan'kiv",
+    local: "gallery/web/0K0A0758-Edit.webp",
     usage: "Photo strip",
+    crop: { left: 0, top: 0.28, width: 1, height: 0.444 },
   },
   {
     file: "wedding-strip2",
-    id: "1621621667797-e06afc217fb0",
-    page: "https://unsplash.com/photos/aC5_EFhq7Fs",
-    photographer: "Jonathan Borba",
+    local: "gallery/web/0K0A0775-Edit.webp",
     usage: "Photo strip",
+    crop: { left: 0, top: 0.28, width: 1, height: 0.444 },
   },
   {
     file: "wedding-strip3",
-    id: "1606216794079-73f85bbd57d5",
-    page: "https://unsplash.com/photos/mLIurLmSRAY",
-    photographer: "Jakob Owens",
+    local: "gallery/web/0K0A0779-Edit.webp",
     usage: "Photo strip",
   },
   {
     file: "wedding-closing",
-    id: "1606216794074-735e91aa2c92",
-    page: "https://unsplash.com/photos/SiniLJkXhMc",
-    photographer: "Jakob Owens",
+    local: "gallery/web/0K0A0797-Edit.webp",
     usage: "Foto penutup / polaroid",
   },
-  // --- Ulang tahun -------------------------------------------------------------
+  // --- Birthday (Unsplash) ------------------------------------------------------
   {
     file: "birthday-celebrant",
     id: "1660234396406-9ff37a83e7b3",
@@ -201,13 +180,21 @@ const MUSIC = [
 ];
 
 const OUT = path.join(process.cwd(), "public/placeholders");
+/** Foto pernikahan milik pemilik (proyek undangan-jorgi-estetik). */
+const JORGI_PHOTOS =
+  process.env.JORGI_PHOTOS ?? path.join(process.cwd(), "../undangan-jorgi-estetik/public/images");
 const MAX_SIDE = 1200;
 
 async function processPhoto(p: PhotoSource): Promise<void> {
   const target = path.join(OUT, "photos", `${p.file}.webp`);
-  const res = await fetch(`https://images.unsplash.com/photo-${p.id}?w=1600&q=85&fm=jpg`);
-  if (!res.ok) throw new Error(`Gagal unduh ${p.file}: HTTP ${res.status}`);
-  const input = Buffer.from(await res.arrayBuffer());
+  let input: Buffer;
+  if (p.local) {
+    input = await fs.readFile(path.join(JORGI_PHOTOS, p.local));
+  } else {
+    const res = await fetch(`https://images.unsplash.com/photo-${p.id}?w=1600&q=85&fm=jpg`);
+    if (!res.ok) throw new Error(`Gagal unduh ${p.file}: HTTP ${res.status}`);
+    input = Buffer.from(await res.arrayBuffer());
+  }
 
   let img = sharp(input).rotate();
   if (p.crop) {
@@ -229,9 +216,16 @@ async function processPhoto(p: PhotoSource): Promise<void> {
 }
 
 function credits(): string {
-  const photoRows = PHOTOS.map(
-    (p) => `| \`photos/${p.file}.webp\` | ${p.usage} | ${p.photographer} | [Unsplash](${p.page}) |`,
-  ).join("\n");
+  const own = PHOTOS.filter((p) => p.local);
+  const ownRows = own
+    .map((p) => `| \`photos/${p.file}.webp\` | ${p.usage} | \`${p.local}\` |`)
+    .join("\n");
+  const photoRows = PHOTOS.filter((p) => !p.local)
+    .map(
+      (p) =>
+        `| \`photos/${p.file}.webp\` | ${p.usage} | ${p.photographer} | [Unsplash](${p.page}) |`,
+    )
+    .join("\n");
   const musicRows = MUSIC.map(
     (m) =>
       `| \`music/${m.file}\` | ${m.theme} | "${m.title}" — ${m.artist} | [Pixabay](${m.page}) |`,
@@ -240,7 +234,17 @@ function credits(): string {
 
 File ini DIBUAT OTOMATIS oleh \`scripts/gen-placeholders.ts\` — ubah daftarnya di sana.
 
-## Foto (Unsplash License — boleh dipakai komersial, atribusi tidak wajib)
+## Foto pernikahan — milik pemilik
+
+Foto pernikahan pribadi pemilik (proyek undangan-jorgi-estetik). Pemilik, pasangan,
+dan fotografer telah mengizinkan dipakai sebagai foto contoh publik di website ini
+(dikonfirmasi 2026-11-27). Jangan dipakai di luar website ini.
+
+| File | Dipakai untuk | Sumber (undangan-jorgi-estetik/public/images) |
+|---|---|---|
+${ownRows}
+
+## Foto ulang tahun (Unsplash License — boleh dipakai komersial, atribusi tidak wajib)
 
 Lisensi: https://unsplash.com/license
 
