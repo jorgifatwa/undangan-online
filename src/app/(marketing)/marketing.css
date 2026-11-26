@@ -87,3 +87,36 @@
 .legal-body ul > li + li {
   margin-top: 0.35rem;
 }
+
+/* Strip bergulir (sampul tema) — berhenti bila gerak dikurangi. */
+.marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track {
+    animation: marquee 45s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+@keyframes marquee {
+  to {
+    translate: -50% 0;
+  }
+}
+
+/* Panel "foto" bertekstur: lapisan hangat agar ornamen & teks terbaca. */
+.photo-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 110%, rgb(20 10 5 / 0.55), transparent 60%),
+    linear-gradient(180deg, rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.25));
+}

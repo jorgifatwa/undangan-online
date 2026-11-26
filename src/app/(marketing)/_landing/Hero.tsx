@@ -1,68 +1,94 @@
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { business } from "@/config/business";
+import { THEME_MANIFESTS } from "@/themes/registry";
 
+import { bouquetHanging, velvetBg, waxSeal } from "./art";
 import { HeroVideo } from "./HeroVideo";
+import { PhoneThumb } from "./PhoneThumb";
 
+const LABELS = ["Pernikahan", "Ulang tahun", "Kirim lewat WhatsApp"];
+
+/**
+ * Hero editorial: label kecil, judul serif sangat besar, lalu panel "foto"
+ * bertekstur daun berisi tiga HP (tengah = video tema asli) & ornamen.
+ */
 export function Hero() {
+  const words = business.tagline.split(" ");
+  // tengah = Tirai Beludru (tema andalan, video asli); samping = dua tema lain
+  const sideThemes = ["lili", "renda-rimba"]
+    .map((id) => THEME_MANIFESTS.find((m) => m.id === id))
+    .filter((m): m is (typeof THEME_MANIFESTS)[number] => !!m);
   return (
-    <section className="paper relative overflow-hidden">
-      {/* lengkung lembut di belakang HP */}
-      <div
-        aria-hidden
-        className="bg-sand absolute top-24 -right-24 bottom-0 hidden w-[520px] rounded-t-full md:block lg:right-[6%]"
-      />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-8 pb-14 sm:px-6 md:grid-cols-[1.15fr_1fr] md:gap-12 md:pt-16 md:pb-24">
-        <div>
-          <p className="text-muted-foreground flex items-center gap-3 text-[11px] font-semibold tracking-[0.22em] uppercase">
-            <span className="bg-gold h-px w-8" aria-hidden />
-            <span className="sm:hidden">Pernikahan & ulang tahun</span>
-            <span className="hidden sm:inline">Undangan pernikahan & ulang tahun online</span>
-          </p>
-          <h1 className="font-heading mt-5 text-[2.6rem] leading-[1.05] tracking-tight text-balance sm:text-6xl lg:text-7xl">
-            {business.tagline.split(" ").slice(0, -2).join(" ")}{" "}
-            <span className="text-primary">{business.tagline.split(" ").slice(-2).join(" ")}</span>
+    <section className="relative">
+      <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 md:pt-16">
+        <ul className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-[11px] font-semibold tracking-[0.22em] uppercase">
+          {LABELS.map((l) => (
+            <li key={l}>
+              <span className="text-gold">+</span> {l}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-6 grid items-end gap-8 lg:grid-cols-[1.5fr_1fr]">
+          <h1 className="font-heading text-[2.9rem] leading-[0.98] tracking-tight text-balance sm:text-7xl lg:text-[5.6rem]">
+            {words.slice(0, -2).join(" ")}{" "}
+            <em className="text-primary font-normal italic">{words.slice(-2).join(" ")}</em>
           </h1>
-          <p className="text-muted-foreground mt-5 max-w-lg text-[17px] text-pretty sm:mt-6 sm:text-lg">
-            Undangan digital pernikahan & ulang tahun dengan tema yang hangat. Pilih tema, isi
-            sendiri sambil melihat hasilnya, lalu sapa setiap tamu dengan namanya lewat WhatsApp.
-          </p>
-          <div className="mt-7 flex gap-2.5 sm:mt-8 sm:gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="h-12 rounded-full px-6 text-[15px] shadow-[0_12px_30px_-12px_rgb(120_50_25/0.6)] transition-transform hover:-translate-y-0.5 sm:text-base"
-            >
-              <Link href="/tema">
-                Pilih tema <ArrowRight className="hidden sm:block" aria-hidden />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="h-12 rounded-full bg-transparent px-6 text-[15px] sm:text-base"
-            >
-              <Link href="/#demo">Coba dengan namamu</Link>
-            </Button>
+          <div className="space-y-6 lg:pb-3">
+            <p className="text-muted-foreground text-[17px] leading-relaxed text-pretty">
+              Undangan digital pernikahan & ulang tahun dengan tema yang hangat. Pilih tema, isi
+              sendiri sambil melihat hasilnya, lalu sapa setiap tamu dengan namanya.
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              <Button
+                asChild
+                size="lg"
+                className="h-12 rounded-full px-6 text-[15px] shadow-[0_12px_30px_-12px_rgb(120_50_25/0.6)]"
+              >
+                <Link href="/tema">
+                  Pilih tema <ArrowRight aria-hidden />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 rounded-full bg-transparent px-6 text-[15px]"
+              >
+                <Link href="/#demo">Coba dengan namamu</Link>
+              </Button>
+            </div>
           </div>
-          <ul className="text-muted-foreground mt-6 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] sm:mt-8 sm:gap-x-5 sm:text-sm">
-            <li>✦ Coba semua tema gratis</li>
-            <li>✦ Tanpa daftar akun</li>
-            <li>✦ Sekali bayar, tanpa langganan</li>
-          </ul>
         </div>
+      </div>
 
-        <div className="relative mx-auto w-[min(78vw,300px)] md:w-[320px]">
-          <div className="float-slow">
-            <div className="phone rotate-[-2.5deg]">
+      {/* Panel "foto": tekstur beludru (Tirai Beludru) + tiga HP + ornamen */}
+      <div className="mx-auto mt-10 max-w-[1320px] px-2 sm:px-4 md:mt-14">
+        <div className="photo-panel relative h-[460px] overflow-hidden rounded-[32px] sm:h-[540px] lg:h-[600px]">
+          <Image
+            src={velvetBg}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="scale-110 object-cover"
+          />
+          <div className="relative z-[1] flex h-full items-end justify-center gap-4 pb-0 sm:gap-8">
+            {sideThemes[0] && (
+              <PhoneThumb
+                theme={sideThemes[0]}
+                className="mb-[-40px] hidden w-[200px] -rotate-6 sm:block lg:w-[230px]"
+              />
+            )}
+            <div className="phone mb-[-60px] w-[250px] sm:w-[280px] lg:w-[300px]">
               <div className="screen aspect-[540/1168]">
                 {/* eslint-disable-next-line @next/next/no-img-element -- gambar diam statis, ukuran tetap */}
                 <img
                   src="/landing/hero.webp"
-                  alt="Contoh undangan pernikahan digital tema Renda Rimba di layar HP"
+                  alt="Contoh undangan pernikahan digital tema Tirai Beludru di layar HP"
                   width={540}
                   height={1168}
                   fetchPriority="high"
@@ -72,11 +98,31 @@ export function Hero() {
                 <HeroVideo />
               </div>
             </div>
+            {sideThemes[1] && (
+              <PhoneThumb
+                theme={sideThemes[1]}
+                className="mb-[-40px] hidden w-[200px] rotate-6 sm:block lg:w-[230px]"
+              />
+            )}
           </div>
-          <div
-            aria-hidden
-            className="border-gold/60 absolute -bottom-6 -left-10 size-28 rounded-full border"
+          <Image
+            src={bouquetHanging}
+            alt=""
+            width={300}
+            className="pointer-events-none absolute -top-4 -left-6 z-[2] w-44 drop-shadow-2xl sm:w-64"
           />
+          <Image
+            src={waxSeal}
+            alt=""
+            width={120}
+            className="pointer-events-none absolute right-6 bottom-10 z-[2] w-16 drop-shadow-xl sm:right-14 sm:w-24"
+          />
+          <p className="absolute top-6 right-6 z-[2] hidden max-w-[240px] text-right text-sm leading-snug text-white/85 md:block">
+            <span className="text-gold block text-[11px] font-semibold tracking-[0.22em] uppercase">
+              Tema andalan
+            </span>
+            Tirai Beludru — tirai beludru yang tersibak, amplop bersegel lilin, dan buket bunga.
+          </p>
         </div>
       </div>
     </section>

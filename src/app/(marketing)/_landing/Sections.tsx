@@ -1,19 +1,5 @@
-import {
-  CalendarCheck,
-  Clock,
-  EyeOff,
-  Gift,
-  ImageIcon,
-  Link2,
-  MapPin,
-  MessagesSquare,
-  Music,
-  Palette,
-  PenLine,
-  Quote,
-  Send,
-  Share2,
-} from "lucide-react";
+import { Palette, PenLine, Send } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { WhatsAppIcon } from "@/components/marketing/BrandIcons";
@@ -23,12 +9,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { business } from "@/config/business";
-import { COMING_SOON, FAQ } from "@/lib/marketing/content";
-import { LIMITS } from "@/lib/pricing";
+import { FAQ } from "@/lib/marketing/content";
+
+import { bouquetHanging, velvetBg, waxSeal } from "./art";
 
 /** Judul section: label kecil emas + H2 Fraunces. */
 export function SectionHead({
@@ -98,141 +84,12 @@ export function Steps() {
   );
 }
 
-// --------------------------------- Fitur ----------------------------------
-
-const GROUPS = [
-  {
-    title: "Membuat undangan",
-    lead: "Semua yang membuat undangan terasa milikmu.",
-    items: [
-      {
-        icon: Palette,
-        t: "Tema hangat & beranimasi",
-        d: "Tema pernikahan dan ulang tahun dengan pilihan warna; ganti kapan saja tanpa kehilangan isian.",
-      },
-      {
-        icon: ImageIcon,
-        t: "Foto tanpa ribet",
-        d: `Galeri hingga ${LIMITS.galleryPhotos} foto. Unggah dari HP (termasuk foto iPhone), atur bagian yang ditonjolkan, ukuran dioptimalkan otomatis.`,
-      },
-      {
-        icon: Music,
-        t: "Musik latar",
-        d: `Pilih dari koleksi bawaan, atau unggah hingga ${LIMITS.customMusicTracks} lagu sendiri.`,
-      },
-      {
-        icon: Quote,
-        t: "Kutipan siap pakai",
-        d: "Ayat Al-Qur'an, ayat Alkitab, dan kutipan umum lengkap dengan sumbernya.",
-      },
-    ],
-  },
-  {
-    title: "Mengelola tamu",
-    lead: "Tahu siapa yang datang, tanpa menghitung manual.",
-    items: [
-      {
-        icon: Link2,
-        t: "Link personal",
-        d: 'Nama tamu tampil di cover undangan — "Kepada Yth. Bapak Hadi & Keluarga".',
-      },
-      {
-        icon: CalendarCheck,
-        t: "Daftar tamu & RSVP",
-        d: "Tempel daftar tamu sekaligus, tandai yang sudah dikirimi, dan lihat rekap hadir, ragu, serta jumlah orang — bisa diunduh CSV.",
-      },
-      {
-        icon: MessagesSquare,
-        t: "Ucapan & doa",
-        d: "Ucapan baru muncul langsung; sembunyikan atau hapus yang tidak pantas.",
-      },
-      {
-        icon: Gift,
-        t: "Amplop digital & hadiah",
-        d: "Rekening, QRIS, dan alamat kirim hadiah dalam satu kartu (tampil di halaman tamu setelah tema dibeli).",
-      },
-    ],
-  },
-  {
-    title: "Berbagi",
-    lead: "Sampai ke tamu dengan rapi.",
-    items: [
-      {
-        icon: Share2,
-        t: "Kirim lewat WhatsApp",
-        d: "Template pesan sopan yang bisa diubah, lengkap dengan link personal tiap tamu.",
-      },
-      {
-        icon: ImageIcon,
-        t: "Pratinjau link yang cantik",
-        d: "Saat link dibagikan, muncul gambar berisi foto, nama, dan tanggal acara.",
-      },
-      {
-        icon: MapPin,
-        t: "Peta lokasi",
-        d: "Tamu langsung membuka Google Maps menuju lokasi acara.",
-      },
-      {
-        icon: EyeOff,
-        t: "Tidak muncul di Google",
-        d: "Halaman undangan tidak diindeks mesin pencari; data tamu hanya untukmu.",
-      },
-    ],
-  },
-];
-
-export function Features() {
-  return (
-    <div className="mt-12 space-y-12">
-      {GROUPS.map((g) => (
-        <div key={g.title} className="grid gap-6 lg:grid-cols-[260px_1fr]">
-          <div data-reveal>
-            <h3 className="font-heading text-2xl">{g.title}</h3>
-            <p className="text-muted-foreground mt-1 text-sm">{g.lead}</p>
-          </div>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {g.items.map((it, i) => (
-              <li key={it.t} data-reveal style={{ ["--reveal-delay" as string]: `${i * 60}ms` }}>
-                <Card className="h-full flex-row gap-4 rounded-2xl p-5 shadow-none transition-shadow hover:shadow-md">
-                  <span className="bg-sand text-primary grid size-10 shrink-0 place-items-center rounded-xl">
-                    <it.icon className="size-5" aria-hidden />
-                  </span>
-                  <div>
-                    <p className="font-medium">{it.t}</p>
-                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{it.d}</p>
-                  </div>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      <div className="rounded-3xl border border-dashed p-6" data-reveal>
-        <p className="text-sm font-semibold">Segera hadir</p>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {COMING_SOON.map((t) => (
-            <li key={t}>
-              <Badge
-                variant="outline"
-                className="text-muted-foreground h-8 gap-2 px-3 text-sm font-normal"
-              >
-                <Clock aria-hidden /> {t}
-                <span className="sr-only"> (segera hadir)</span>
-              </Badge>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
 // ---------------------------------- FAQ -----------------------------------
 
-/** FAQ (shadcn Accordion). */
+/** FAQ (shadcn Accordion) — kolom kanan; judul di kolom kiri (page.tsx). */
 export function Faq() {
   return (
-    <Accordion type="single" collapsible className="mx-auto mt-10 max-w-3xl border-y" data-reveal>
+    <Accordion type="single" collapsible className="border-y" data-reveal>
       {FAQ.map((f, i) => (
         <AccordionItem key={f.q} value={`faq-${i}`}>
           <AccordionTrigger className="py-5 text-base">{f.q}</AccordionTrigger>
@@ -274,44 +131,55 @@ export function Testimonials() {
 
 export function FinalCta({ waHref }: { waHref: string | null }) {
   return (
-    <section className="bg-clay text-primary-foreground relative overflow-hidden">
-      <div
-        aria-hidden
-        className="border-gold/40 absolute -top-32 -right-24 size-96 rounded-full border"
-      />
-      <div
-        className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-24"
-        data-reveal
-      >
-        <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">
-          Mulai hari ini
-        </p>
-        <h2 className="font-heading mt-4 text-3xl leading-tight text-balance sm:text-5xl">
-          Undangan digital pertamamu bisa siap sebelum teh hangatmu dingin.
-        </h2>
-        <p className="mt-4 text-white/75">
-          Coba tema apa pun tanpa bayar. Bayar sekali saat memesan — tanpa langganan.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button
-            asChild
-            size="lg"
-            className="bg-background text-clay hover:bg-background/90 h-12 rounded-full px-7 text-base transition-transform hover:-translate-y-0.5"
-          >
-            <Link href="/tema">Pilih tema</Link>
-          </Button>
-          {waHref && (
+    <section className="mx-auto max-w-[1320px] px-2 pb-6 sm:px-4">
+      <div className="photo-panel text-primary-foreground relative overflow-hidden rounded-[32px]">
+        <Image src={velvetBg} alt="" fill sizes="100vw" className="object-cover" />
+        <Image
+          src={bouquetHanging}
+          alt=""
+          width={300}
+          className="pointer-events-none absolute -top-4 -right-6 z-[1] hidden w-56 drop-shadow-2xl md:block lg:w-72"
+        />
+        <Image
+          src={waxSeal}
+          alt=""
+          width={110}
+          className="pointer-events-none absolute bottom-8 left-8 z-[1] hidden w-20 drop-shadow-xl sm:block"
+        />
+        <div
+          className="relative z-[2] mx-auto max-w-3xl px-6 py-20 text-center sm:py-28"
+          data-reveal
+        >
+          <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">
+            Mulai hari ini
+          </p>
+          <h2 className="font-heading mt-4 text-4xl leading-tight text-balance sm:text-6xl">
+            Undangan digital pertamamu bisa siap sebelum teh hangatmu dingin.
+          </h2>
+          <p className="mt-5 text-white/75">
+            Coba tema apa pun tanpa bayar. Bayar sekali saat memesan — tanpa langganan.
+          </p>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
             <Button
               asChild
               size="lg"
-              variant="outline"
-              className="h-12 rounded-full border-white/30 bg-transparent px-6 text-base text-white hover:bg-white/10 hover:text-white"
+              className="bg-background text-clay hover:bg-background/90 h-12 rounded-full px-7 text-base"
             >
-              <a href={waHref} target="_blank" rel="noopener">
-                <WhatsAppIcon className="size-4" /> Tanya lewat WhatsApp
-              </a>
+              <Link href="/tema">Pilih tema</Link>
             </Button>
-          )}
+            {waHref && (
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 rounded-full border-white/30 bg-transparent px-6 text-base text-white hover:bg-white/10 hover:text-white"
+              >
+                <a href={waHref} target="_blank" rel="noopener">
+                  <WhatsAppIcon className="size-4" /> Tanya lewat WhatsApp
+                </a>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </section>

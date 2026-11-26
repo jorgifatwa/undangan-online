@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ThemePricing } from "@/components/marketing/ThemePricing";
+import { Button } from "@/components/ui/button";
 import { business, waLink } from "@/config/business";
 import { INCLUDED, PAYMENT_TEXT } from "@/lib/marketing/content";
 import { landingJsonLd } from "@/lib/marketing/jsonld";
@@ -12,8 +12,12 @@ import { THEME_MANIFESTS, themeThumb } from "@/themes/registry";
 
 import { Demo, type DemoTheme } from "./_landing/Demo";
 import { Hero } from "./_landing/Hero";
-import { Faq, Features, FinalCta, SectionHead, Steps, Testimonials } from "./_landing/Sections";
-import { Showcase } from "./_landing/Showcase";
+import { About } from "./_landing/About";
+import { ThemeMarquee } from "./_landing/Marquee";
+import { Numbered } from "./_landing/Numbered";
+import { PriceList } from "./_landing/PriceList";
+import { Faq, FinalCta, SectionHead, Steps, Testimonials } from "./_landing/Sections";
+import { SelectedThemes } from "./_landing/SelectedThemes";
 import { StickyCta } from "./_landing/StickyCta";
 
 const TITLE = `${business.name} — Undangan Pernikahan Online & Undangan Digital Ulang Tahun`;
@@ -72,6 +76,10 @@ export default function HomePage() {
       thumb: themeThumb(m.id) ?? null,
       background: m.thumbnail.background,
     }));
+  // Tirai Beludru = tema andalan → tampil paling depan & lebar
+  const featuredFirst = [...THEME_MANIFESTS].sort(
+    (a, b) => Number(b.id === "tirai-beludru") - Number(a.id === "tirai-beludru"),
+  );
   const wa = waLink(`Halo ${business.name}, saya ingin bertanya tentang undangan digital.`);
   return (
     <main>
@@ -85,6 +93,50 @@ export default function HomePage() {
       <div id="hero">
         <Hero />
       </div>
+
+      <ThemeMarquee />
+
+      <div className="bg-sand paper border-y">
+        <About />
+      </div>
+
+      <section id="tema" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-28">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <SectionHead
+            center={false}
+            eyebrow="Tema pilihan"
+            title="Dirancang utuh, dari cover sampai ucapan"
+            lead="Setiap tema bisa dicoba gratis dengan data contoh — atau dengan namamu sendiri."
+          />
+          <Button asChild variant="outline" className="rounded-full bg-transparent">
+            <Link href="/tema">Semua tema ({THEME_MANIFESTS.length})</Link>
+          </Button>
+        </div>
+        <div className="mt-12">
+          <SelectedThemes themes={featuredFirst} />
+        </div>
+      </section>
+
+      <section id="cara-kerja" className="bg-sand paper scroll-mt-16 border-y">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+          <SectionHead
+            eyebrow="Cara kerja"
+            title="Tiga langkah, dari HP saja"
+            lead="Tidak perlu aplikasi atau keahlian desain."
+          />
+          <Steps />
+        </div>
+      </section>
+
+      <section id="fitur" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-28">
+        <SectionHead
+          center={false}
+          eyebrow="Fitur"
+          title="Semua yang dibutuhkan undanganmu"
+          lead="Dari membuat, mengelola tamu, sampai membagikannya — di satu tempat."
+        />
+        <Numbered />
+      </section>
 
       <section id="demo" className="bg-sand paper scroll-mt-16 border-y">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
@@ -100,65 +152,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="tema" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-24">
+      <section id="harga" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-28">
         <SectionHead
-          eyebrow="Tema"
-          title="Tema undangan pernikahan & ulang tahun"
-          lead="Setiap tema dirancang utuh — dari cover, animasi pembuka, sampai kartu ucapan. Semua bisa dicoba gratis."
+          eyebrow="Harga"
+          title="Harga per tema, semua fitur termasuk"
+          lead={`Mulai ${formatRupiah(priceRange().min)}, sekali bayar per undangan — tanpa paket, tanpa langganan.`}
         />
-        <div className="mt-10">
-          <Showcase themes={[...THEME_MANIFESTS]} />
+        <div className="mt-12">
+          <PriceList themes={[...THEME_MANIFESTS]} included={INCLUDED} />
         </div>
+        <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-sm">
+          {PAYMENT_TEXT}{" "}
+          <Link href="/harga" className="text-foreground underline underline-offset-4">
+            Lihat ketentuan harga & ganti tema
+          </Link>
+        </p>
       </section>
 
-      <section id="cara-kerja" className="bg-sand paper scroll-mt-16 border-y">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <SectionHead
-            eyebrow="Cara kerja"
-            title="Tiga langkah, dari HP saja"
-            lead="Tidak perlu aplikasi atau keahlian desain."
-          />
-          <Steps />
-        </div>
-      </section>
-
-      <section id="fitur" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-24">
-        <SectionHead
-          center={false}
-          eyebrow="Fitur"
-          title="Lebih dari sekadar undangan digital"
-          lead="Dari membuat, mengelola tamu, sampai membagikannya — semuanya di satu tempat."
-        />
-        <Features />
-      </section>
-
-      <section id="harga" className="bg-sand paper scroll-mt-16 border-y">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <SectionHead
-            eyebrow="Harga"
-            title="Harga per tema, semua fitur termasuk"
-            lead={`Mulai ${formatRupiah(priceRange().min)}, sekali bayar per undangan — tanpa paket, tanpa langganan. Buat & pratinjau gratis, bayar saat siap disebar.`}
-          />
-          <div className="mt-10">
-            <ThemePricing themes={[...THEME_MANIFESTS]} included={INCLUDED} />
+      <section id="faq" className="bg-sand paper scroll-mt-16 border-y">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-[1fr_1.4fr]">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <SectionHead
+              center={false}
+              eyebrow="FAQ"
+              title="Pertanyaan yang sering diajukan"
+              lead="Belum terjawab? Tanya langsung lewat WhatsApp."
+            />
           </div>
-          <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-sm">
-            {PAYMENT_TEXT}{" "}
-            <Link href="/harga" className="text-foreground underline underline-offset-4">
-              Lihat ketentuan harga & ganti tema
-            </Link>
-          </p>
+          <Faq />
         </div>
-      </section>
-
-      <section id="faq" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-24">
-        <SectionHead eyebrow="FAQ" title="Pertanyaan yang sering diajukan" />
-        <Faq />
       </section>
 
       <Testimonials />
 
-      <div id="cta-akhir">
+      <div id="cta-akhir" className="pt-16">
         <FinalCta waHref={wa} />
       </div>
       <StickyCta />

@@ -92,6 +92,12 @@ export function SiteFooter() {
           </div>
         )}
       </div>
+      <div className="mx-auto max-w-6xl overflow-hidden px-4 sm:px-6" aria-hidden>
+        <p className="font-heading text-foreground/[0.07] -mb-[0.18em] text-[17vw] leading-none tracking-tight whitespace-nowrap lg:text-[11rem]">
+          {business.name}
+          <span className="text-gold/30">.</span>
+        </p>
+      </div>
       <Separator />
       <div>
         <p className="text-muted-foreground mx-auto max-w-6xl px-4 py-5 text-xs sm:px-6">
