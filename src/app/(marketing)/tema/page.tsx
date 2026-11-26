@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 import { ThemeCard } from "@/components/themes/ThemeCard";
 import { listThemes, usedCategories } from "@/themes/registry";
 import { CATEGORY_LABELS, type ThemeCategory } from "@/themes/types";
@@ -39,34 +41,33 @@ export default async function TemaPage({
     : undefined;
   const themes = listThemes({ eventType, category });
 
-  const chip = (active: boolean) =>
-    `rounded-full border px-4 py-1.5 text-sm transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`;
+  const chip = (active: boolean, href: string, label: string) => (
+    <Button
+      key={href}
+      asChild
+      size="sm"
+      variant={active ? "default" : "outline"}
+      className={active ? "rounded-full px-4" : "rounded-full bg-transparent px-4"}
+    >
+      <Link href={href}>{label}</Link>
+    </Button>
+  );
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
       <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">Tema</p>
       <h1 className="font-heading mt-3 text-4xl sm:text-5xl">Pilih tema undanganmu</h1>
       <p className="text-muted-foreground mt-3 max-w-xl">
-        Semua tema bisa dicoba gratis. Beli tema saat undangan siap disebar — aktif 12 bulan setelah
-        acara.
+        Semua tema bisa dicoba gratis. Suka? Tekan &ldquo;Pesan tema ini&rdquo;, isi undanganmu,
+        lalu bayar sekali.
       </p>
 
       <div className="mt-8 flex flex-wrap gap-2">
-        {EVENT_FILTERS.map((f) => (
-          <Link key={f.key} href={href(f.key, kategori)} className={chip(acara === f.key)}>
-            {f.label}
-          </Link>
-        ))}
+        {EVENT_FILTERS.map((f) => chip(acara === f.key, href(f.key, kategori), f.label))}
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Link href={href(acara, "")} className={chip(!category)}>
-          Semua gaya
-        </Link>
-        {categories.map((c) => (
-          <Link key={c} href={href(acara, c)} className={chip(category === c)}>
-            {CATEGORY_LABELS[c]}
-          </Link>
-        ))}
+        {chip(!category, href(acara, ""), "Semua gaya")}
+        {categories.map((c) => chip(category === c, href(acara, c), CATEGORY_LABELS[c]))}
       </div>
 
       {themes.length === 0 ? (
@@ -74,10 +75,27 @@ export default async function TemaPage({
       ) : (
         <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
           {themes.map((t) => (
-            <li key={t.id}>
-              <Link href={`/preview/${t.id}`} className="group block">
+            <li key={t.id} className="group">
+              <Link href={`/preview/${t.id}`} className="block">
                 <ThemeCard theme={t} />
               </Link>
+              <div className="mt-3 flex gap-2">
+                <Button asChild size="sm" className="h-9 flex-1 rounded-full">
+                  <Link
+                    href={`/pesan/${t.id}${t.eventTypes.includes("WEDDING") ? "" : "?acara=ultah"}`}
+                  >
+                    Pesan
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-9 rounded-full bg-transparent"
+                >
+                  <Link href={`/preview/${t.id}`}>Coba</Link>
+                </Button>
+              </div>
             </li>
           ))}
         </ul>

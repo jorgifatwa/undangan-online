@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
 import { GoogleIcon } from "@/components/layout/google-icon";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { business } from "@/config/business";
 import { NOT_ADMIN_ERROR, canUseDashboard } from "@/lib/admin-access";
 import { safeCallback } from "@/lib/auth/callback";
@@ -47,11 +49,11 @@ export default async function MasukPage({
   const adminOnly = !business.selfService;
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4 py-12">
-      <div className="bg-card w-full max-w-sm rounded-2xl border p-8 shadow-sm">
+    <main className="bg-sand paper flex min-h-dvh items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-sm gap-0 rounded-[28px] p-8 shadow-[0_30px_80px_-40px_rgb(80_40_20/0.35)]">
         <Link
           href="/"
-          className="text-muted-foreground block text-center text-xs tracking-[0.2em] uppercase"
+          className="text-gold block text-center text-[11px] font-semibold tracking-[0.24em] uppercase"
         >
           {siteConfig.name}
         </Link>
@@ -65,12 +67,9 @@ export default async function MasukPage({
         </p>
 
         {errorMessage && (
-          <p
-            role="alert"
-            className="bg-destructive/10 text-destructive mt-6 rounded-lg px-3 py-2 text-center text-sm"
-          >
-            {errorMessage}
-          </p>
+          <Alert variant="destructive" className="mt-6">
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
         )}
 
         {errorKey === NOT_ADMIN_ERROR && (
@@ -116,7 +115,7 @@ export default async function MasukPage({
         <p className="text-muted-foreground mt-8 text-center text-xs leading-relaxed">
           Dengan masuk, kamu menyetujui Syarat & Ketentuan serta Kebijakan Privasi kami.
         </p>
-      </div>
+      </Card>
     </main>
   );
 }

@@ -1,7 +1,17 @@
 "use client";
 
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { GuestbookPanel } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/GuestbookPanel";
 import { guestbookAction } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/guestbook-actions";
 
@@ -39,24 +49,24 @@ export function GuestbookTab({ invitationId, slug }: { invitationId: string; slu
       ]);
   };
   return (
-    <div className="bg-card space-y-4 rounded-2xl border p-4">
-      <div className="flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => void exportCsv("ucapan")}
-          className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm"
-        >
-          Unduh ucapan (CSV)
-        </button>
-        <button
-          type="button"
-          onClick={() => void exportCsv("rsvp")}
-          className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm"
-        >
-          Unduh RSVP (CSV)
-        </button>
-      </div>
-      <GuestbookPanel invitationId={invitationId} />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-heading text-xl font-normal">Ucapan &amp; RSVP</CardTitle>
+        <CardDescription>
+          Rekap kehadiran dan ucapan tamu; sembunyikan yang tidak pantas.
+        </CardDescription>
+        <CardAction className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => void exportCsv("ucapan")}>
+            <Download /> Unduh ucapan (CSV)
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => void exportCsv("rsvp")}>
+            <Download /> Unduh RSVP (CSV)
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <GuestbookPanel invitationId={invitationId} />
+      </CardContent>
+    </Card>
   );
 }

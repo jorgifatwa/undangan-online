@@ -13,7 +13,39 @@ import {
   type ShareInfo,
 } from "@/lib/invitations/share";
 import { guestLink } from "@/lib/site";
-import { cn } from "@/lib/utils";
+import {
+  Copy,
+  Download,
+  Link2,
+  MessageCircle,
+  PenLine,
+  Search,
+  Trash2,
+  UserPlus,
+} from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 import {
   addGuestAction,
@@ -33,9 +65,6 @@ type Guest = {
   createdAt: string;
 };
 type Filter = "semua" | "belum" | "terkirim";
-
-const inputCls =
-  "h-9 rounded-lg border bg-white px-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30";
 
 function csvCell(v: string) {
   return /[",\n;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
@@ -159,375 +188,364 @@ export function GuestManager({
   return (
     <div className="space-y-6">
       {!active && (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950">
-          Undangan belum tayang — link baru bisa dibuka tamu setelah dikonfirmasi.
-        </p>
+        <Alert>
+          <AlertDescription>
+            Undangan belum tayang — link baru bisa dibuka tamu setelah dikonfirmasi.
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Tambah tamu */}
-      <section className="bg-card rounded-2xl border p-4">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-medium">Tambah tamu</h2>
-          <div className="flex gap-1 text-xs" role="tablist">
-            {(["satu", "massal"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="tab"
-                aria-selected={mode === m}
-                onClick={() => setMode(m)}
-                className={cn(
-                  "rounded-full border px-2.5 py-1",
-                  mode === m ? "border-primary bg-primary/5 text-primary" : "hover:bg-muted",
-                )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading text-xl font-normal">Tambah tamu</CardTitle>
+          <CardDescription>Satu per satu, atau tempel daftar dari catatan/Excel.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as "satu" | "massal")}>
+            <TabsList>
+              <TabsTrigger value="satu">Satu per satu</TabsTrigger>
+              <TabsTrigger value="massal">Tempel banyak</TabsTrigger>
+            </TabsList>
+            <TabsContent value="satu" className="pt-3">
+              <form
+                className="grid gap-2 sm:grid-cols-[1fr_11rem_10rem_auto]"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  start(async () => {
+                    const r = await addGuestAction(invitationId, { name, phone, group });
+                    if (!r.ok) return void toast.error(r.error);
+                    if (r.errors.length) return void toast.error(r.errors[0]);
+                    setName("");
+                    setPhone("");
+                    await reload();
+                  });
+                }}
               >
-                {m === "satu" ? "Satu per satu" : "Tempel banyak"}
-              </button>
+                <Input
+                  placeholder="Nama tamu"
+                  aria-label="Nama tamu"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  maxLength={80}
+                />
+                <Input
+                  placeholder="No. WA (opsional)"
+                  aria-label="Nomor WhatsApp"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <Input
+                  placeholder="Grup (opsional)"
+                  aria-label="Grup"
+                  list="guest-groups"
+                  value={group}
+                  onChange={(e) => setGroup(e.target.value)}
+                  maxLength={40}
+                />
+                <Button type="submit" disabled={pending}>
+                  <UserPlus /> Tambah
+                </Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="massal" className="space-y-2 pt-3">
+              <form
+                className="space-y-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  start(async () => {
+                    const r = await addGuestsBulkAction(invitationId, bulk, group);
+                    if (!r.ok) return void toast.error(r.error);
+                    toast.success(`${r.added} tamu ditambahkan`, {
+                      description: r.errors.slice(0, 3).join("\n") || undefined,
+                    });
+                    if (!r.errors.length) setBulk("");
+                    await reload();
+                  });
+                }}
+              >
+                <Textarea
+                  className="font-mono"
+                  rows={6}
+                  value={bulk}
+                  onChange={(e) => setBulk(e.target.value)}
+                  placeholder={
+                    "Satu tamu per baris, contoh:\nBudi Santoso, 0812 3456 7890\nKeluarga Pak RT\nSiti, 0857…, Teman kantor"
+                  }
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="w-56"
+                    placeholder="Grup untuk semua (opsional)"
+                    list="guest-groups"
+                    value={group}
+                    onChange={(e) => setGroup(e.target.value)}
+                    maxLength={40}
+                  />
+                  <Button type="submit" disabled={pending || !bulk.trim()}>
+                    Tambahkan semua
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
+          <datalist id="guest-groups">
+            {groups.map((g) => (
+              <option key={g} value={g} />
             ))}
-          </div>
-        </div>
-        {mode === "satu" ? (
-          <form
-            className="mt-3 grid gap-2 sm:grid-cols-[1fr_10rem_9rem_auto]"
-            onSubmit={(e) => {
-              e.preventDefault();
-              start(async () => {
-                const r = await addGuestAction(invitationId, { name, phone, group });
-                if (!r.ok) return void toast.error(r.error);
-                if (r.errors.length) return void toast.error(r.errors[0]);
-                setName("");
-                setPhone("");
-                await reload();
-              });
-            }}
-          >
-            <input
-              className={inputCls}
-              placeholder="Nama tamu"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              maxLength={80}
-            />
-            <input
-              className={inputCls}
-              placeholder="No. WA (opsional)"
-              inputMode="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-            <input
-              className={inputCls}
-              placeholder="Grup (opsional)"
-              list="guest-groups"
-              value={group}
-              onChange={(e) => setGroup(e.target.value)}
-              maxLength={40}
-            />
-            <button
-              type="submit"
-              disabled={pending}
-              className="bg-primary text-primary-foreground h-9 rounded-lg px-4 text-sm font-medium disabled:opacity-60"
-            >
-              Tambah
-            </button>
-          </form>
-        ) : (
-          <form
-            className="mt-3 space-y-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              start(async () => {
-                const r = await addGuestsBulkAction(invitationId, bulk, group);
-                if (!r.ok) return void toast.error(r.error);
-                toast.success(`${r.added} tamu ditambahkan`, {
-                  description: r.errors.slice(0, 3).join("\n") || undefined,
-                });
-                if (!r.errors.length) setBulk("");
-                await reload();
-              });
-            }}
-          >
-            <textarea
-              className="w-full rounded-lg border bg-white p-2.5 font-mono text-sm"
-              rows={6}
-              value={bulk}
-              onChange={(e) => setBulk(e.target.value)}
-              placeholder={
-                "Satu tamu per baris, contoh:\nBudi Santoso, 0812 3456 7890\nKeluarga Pak RT\nSiti, 0857…, Teman kantor"
-              }
-            />
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                className={inputCls}
-                placeholder="Grup untuk semua (opsional)"
-                list="guest-groups"
-                value={group}
-                onChange={(e) => setGroup(e.target.value)}
-                maxLength={40}
-              />
-              <button
-                type="submit"
-                disabled={pending || !bulk.trim()}
-                className="bg-primary text-primary-foreground h-9 rounded-lg px-4 text-sm font-medium disabled:opacity-60"
-              >
-                Tambahkan semua
-              </button>
-            </div>
-          </form>
-        )}
-        <datalist id="guest-groups">
-          {groups.map((g) => (
-            <option key={g} value={g} />
-          ))}
-        </datalist>
-      </section>
+          </datalist>
+        </CardContent>
+      </Card>
 
       {/* Template pesan + kirim ke grup */}
-      <section className="bg-card rounded-2xl border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-medium">Pesan undangan</h2>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setShowTemplate((v) => !v)}
-              className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm"
-            >
-              {showTemplate ? "Tutup template" : "Ubah template"}
-            </button>
-            <a
-              href={waLink(message(null))}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-md bg-[#1f9d55] px-3 py-1.5 text-sm font-medium text-white"
-            >
-              Kirim ke grup WA
-            </a>
-          </div>
-        </div>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Kirim ke grup memakai sapaan umum tanpa nama. Untuk link personal, kirim per tamu di
-          daftar bawah.
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading text-xl font-normal">Pesan undangan</CardTitle>
+          <CardDescription>
+            Kirim ke grup memakai sapaan umum tanpa nama. Untuk link personal, kirim per tamu di
+            daftar bawah.
+          </CardDescription>
+          <CardAction className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowTemplate((v) => !v)}>
+              <PenLine /> {showTemplate ? "Tutup template" : "Ubah template"}
+            </Button>
+            <Button asChild size="sm" className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90">
+              <a href={waLink(message(null))} target="_blank" rel="noreferrer">
+                <MessageCircle /> Kirim ke grup WA
+              </a>
+            </Button>
+          </CardAction>
+        </CardHeader>
         {showTemplate && (
-          <div className="mt-3 space-y-2">
-            <div className="flex flex-wrap gap-1">
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-1.5">
               {PLACEHOLDERS.map((p) => (
-                <button
+                <Badge
                   key={p.key}
-                  type="button"
+                  asChild
+                  variant="outline"
+                  className="cursor-pointer font-mono"
                   title={p.label}
-                  onClick={() => setTemplate((t) => `${t}${p.key}`)}
-                  className="rounded-full border bg-white px-2 py-0.5 font-mono text-[11px]"
                 >
-                  {p.key}
-                </button>
+                  <button type="button" onClick={() => setTemplate((t) => `${t}${p.key}`)}>
+                    {p.key}
+                  </button>
+                </Badge>
               ))}
-              <button
-                type="button"
-                onClick={() => setTemplate(fallback)}
-                className="text-muted-foreground px-2 text-[11px] underline"
-              >
+              <Button variant="link" size="xs" onClick={() => setTemplate(fallback)}>
                 Kembalikan bawaan
-              </button>
+              </Button>
             </div>
-            <textarea
-              className="w-full rounded-lg border bg-white p-2.5 text-sm"
+            <Textarea
               rows={8}
               maxLength={MAX_TEMPLATE}
               value={template}
               onChange={(e) => setTemplate(e.target.value)}
             />
             <p className="text-muted-foreground text-xs">Pratinjau (tamu contoh “Budi”):</p>
-            <pre className="rounded-lg bg-neutral-50 p-2.5 text-xs whitespace-pre-wrap">
+            <pre className="bg-muted/60 rounded-lg p-3 text-xs whitespace-pre-wrap">
               {message({ name: "Budi" })}
             </pre>
-          </div>
+          </CardContent>
         )}
-      </section>
+      </Card>
 
       {/* Daftar tamu */}
-      <section className="bg-card rounded-2xl border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-medium">
-            Daftar tamu{" "}
-            <span className="text-muted-foreground text-sm font-normal">
-              ({guests?.length ?? 0} · {sentCount} terkirim)
-            </span>
-          </h2>
-          <button
-            type="button"
-            disabled={!guests?.length}
-            onClick={() =>
-              download(`tamu-${slug}.csv`, [
-                ["Nama", "WhatsApp", "Grup", "Link", "Terkirim"],
-                ...(guests ?? []).map((g) => [
-                  g.name,
-                  g.phone ?? "",
-                  g.group ?? "",
-                  guestLink(slug, g.name),
-                  g.sentAt ? new Date(g.sentAt).toLocaleString("id-ID") : "",
-                ]),
-              ])
-            }
-            className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
-          >
-            Unduh CSV
-          </button>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <input
-            className={cn(inputCls, "min-w-0 flex-1")}
-            placeholder="Cari nama / nomor"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          <select
-            className={inputCls}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as Filter)}
-          >
-            <option value="semua">Semua</option>
-            <option value="belum">Belum dikirim</option>
-            <option value="terkirim">Sudah dikirim</option>
-          </select>
-          {groups.length > 0 && (
-            <select
-              className={inputCls}
-              value={groupFilter}
-              onChange={(e) => setGroupFilter(e.target.value)}
-            >
-              <option value="">Semua grup</option>
-              {groups.map((g) => (
-                <option key={g}>{g}</option>
-              ))}
-            </select>
-          )}
-        </div>
-        {selected.size > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-sm">
-            {selected.size} dipilih:
-            <button
-              type="button"
-              className="underline"
-              onClick={() => markSent([...selected], true)}
-            >
-              Tandai terkirim
-            </button>
-            <button
-              type="button"
-              className="underline"
-              onClick={() => markSent([...selected], false)}
-            >
-              Reset status
-            </button>
-            <button
-              type="button"
-              className="text-destructive underline"
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading text-xl font-normal">Daftar tamu</CardTitle>
+          <CardDescription>
+            {guests?.length ?? 0} tamu · {sentCount} terkirim
+          </CardDescription>
+          <CardAction>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!guests?.length}
               onClick={() =>
-                confirm(`Hapus ${selected.size} tamu?`) &&
-                start(async () => {
-                  const r = await deleteGuestsAction(invitationId, [...selected]);
-                  if (!r.ok) return void toast.error(r.error);
-                  setSelected(new Set());
-                  await reload();
-                })
+                download(`tamu-${slug}.csv`, [
+                  ["Nama", "WhatsApp", "Grup", "Link", "Terkirim"],
+                  ...(guests ?? []).map((g) => [
+                    g.name,
+                    g.phone ?? "",
+                    g.group ?? "",
+                    guestLink(slug, g.name),
+                    g.sentAt ? new Date(g.sentAt).toLocaleString("id-ID") : "",
+                  ]),
+                ])
               }
             >
-              Hapus
-            </button>
-            <button
-              type="button"
-              className="ml-auto text-xs underline"
-              onClick={() => setSelected(new Set())}
-            >
-              Batal
-            </button>
-          </div>
-        )}
-
-        {guests === null ? (
-          <p className="text-muted-foreground mt-4 text-sm">Memuat…</p>
-        ) : shown.length === 0 ? (
-          <p className="text-muted-foreground mt-4 text-sm">
-            {guests.length === 0 ? "Belum ada tamu. Tambahkan di atas." : "Tidak ada yang cocok."}
-          </p>
-        ) : (
-          <ul className="mt-3 divide-y">
-            <li className="text-muted-foreground flex items-center gap-2 py-2 text-xs">
-              <input
-                type="checkbox"
-                aria-label="Pilih semua yang tampil"
-                checked={shown.every((g) => selected.has(g.id))}
-                onChange={(e) =>
-                  setSelected(e.target.checked ? new Set(shown.map((g) => g.id)) : new Set())
-                }
+              <Download /> Unduh CSV
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+              <Input
+                className="pl-8"
+                placeholder="Cari nama / nomor"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
               />
-              Pilih semua ({shown.length})
-            </li>
-            {shown.map((g) => {
-              const msg = message(g);
-              return (
-                <li
-                  key={g.id}
-                  className="flex flex-wrap items-center gap-2 py-2.5"
-                  data-testid="guest-row"
-                >
-                  <input
-                    type="checkbox"
-                    aria-label={`Pilih ${g.name}`}
-                    checked={selected.has(g.id)}
-                    onChange={() => toggle(g.id)}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {g.name}
-                      {g.group && (
-                        <span className="text-muted-foreground ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-normal">
-                          {g.group}
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {g.phone ? `+${g.phone}` : "tanpa nomor"} ·{" "}
-                      {g.sentAt ? (
-                        <span className="text-emerald-700">
-                          terkirim {new Date(g.sentAt).toLocaleDateString("id-ID")}
-                        </span>
-                      ) : (
-                        "belum dikirim"
-                      )}
-                    </p>
-                  </div>
-                  <a
-                    href={waLink(msg, g.phone)}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => !g.sentAt && markSent([g.id], true)}
-                    className="rounded-md bg-[#1f9d55] px-2.5 py-1 text-xs font-medium text-white"
+            </div>
+            <Select value={filter} onValueChange={(v) => setFilter(v as Filter)}>
+              <SelectTrigger className="w-40" aria-label="Status kirim">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="semua">Semua</SelectItem>
+                <SelectItem value="belum">Belum dikirim</SelectItem>
+                <SelectItem value="terkirim">Sudah dikirim</SelectItem>
+              </SelectContent>
+            </Select>
+            {groups.length > 0 && (
+              <Select
+                value={groupFilter || "__all"}
+                onValueChange={(v) => setGroupFilter(v === "__all" ? "" : v)}
+              >
+                <SelectTrigger className="w-40" aria-label="Grup">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all">Semua grup</SelectItem>
+                  {groups.map((g) => (
+                    <SelectItem key={g} value={g}>
+                      {g}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          {selected.size > 0 && (
+            <div className="bg-muted/60 flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 text-sm">
+              {selected.size} dipilih:
+              <Button variant="ghost" size="sm" onClick={() => markSent([...selected], true)}>
+                Tandai terkirim
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => markSent([...selected], false)}>
+                Reset status
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive"
+                onClick={() =>
+                  confirm(`Hapus ${selected.size} tamu?`) &&
+                  start(async () => {
+                    const r = await deleteGuestsAction(invitationId, [...selected]);
+                    if (!r.ok) return void toast.error(r.error);
+                    setSelected(new Set());
+                    await reload();
+                  })
+                }
+              >
+                <Trash2 /> Hapus
+              </Button>
+              <Button
+                variant="link"
+                size="xs"
+                className="ml-auto"
+                onClick={() => setSelected(new Set())}
+              >
+                Batal
+              </Button>
+            </div>
+          )}
+
+          {guests === null ? (
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : shown.length === 0 ? (
+            <p className="text-muted-foreground py-6 text-center text-sm">
+              {guests.length === 0 ? "Belum ada tamu. Tambahkan di atas." : "Tidak ada yang cocok."}
+            </p>
+          ) : (
+            <ul className="divide-y">
+              <li className="text-muted-foreground flex items-center gap-2 py-2 text-xs">
+                <input
+                  type="checkbox"
+                  className="accent-primary size-4"
+                  aria-label="Pilih semua yang tampil"
+                  checked={shown.every((g) => selected.has(g.id))}
+                  onChange={(e) =>
+                    setSelected(e.target.checked ? new Set(shown.map((g) => g.id)) : new Set())
+                  }
+                />
+                Pilih semua ({shown.length})
+              </li>
+              {shown.map((g) => {
+                const msg = message(g);
+                return (
+                  <li
+                    key={g.id}
+                    className="flex flex-wrap items-center gap-2 py-3"
+                    data-testid="guest-row"
                   >
-                    WhatsApp
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => void copy(msg, "Pesan disalin")}
-                    className="hover:bg-muted rounded-md border px-2.5 py-1 text-xs"
-                  >
-                    Salin pesan
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void copy(guestLink(slug, g.name), "Link disalin")}
-                    className="hover:bg-muted rounded-md border px-2.5 py-1 text-xs"
-                  >
-                    Link
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+                    <input
+                      type="checkbox"
+                      className="accent-primary size-4"
+                      aria-label={`Pilih ${g.name}`}
+                      checked={selected.has(g.id)}
+                      onChange={() => toggle(g.id)}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-2 truncate text-sm font-medium">
+                        {g.name}
+                        {g.group && <Badge variant="secondary">{g.group}</Badge>}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {g.phone ? `+${g.phone}` : "tanpa nomor"} ·{" "}
+                        {g.sentAt ? (
+                          <span className="text-emerald-700">
+                            terkirim {new Date(g.sentAt).toLocaleDateString("id-ID")}
+                          </span>
+                        ) : (
+                          "belum dikirim"
+                        )}
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90"
+                    >
+                      <a
+                        href={waLink(msg, g.phone)}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => !g.sentAt && markSent([g.id], true)}
+                      >
+                        <MessageCircle /> WhatsApp
+                      </a>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void copy(msg, "Pesan disalin")}
+                    >
+                      <Copy /> Pesan
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void copy(guestLink(slug, g.name), "Link disalin")}
+                    >
+                      <Link2 /> Link
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { Card } from "@/components/ui/card";
+
 import { OrderResult } from "./OrderResult";
 
 export const metadata: Metadata = {
@@ -12,12 +14,15 @@ export const metadata: Metadata = {
 /** Kembali dari Midtrans (?order_id=…). Detail hanya untuk browser pemesan (kunci di localStorage). */
 export default function SelesaiPage() {
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4 py-12">
-      <div className="bg-card w-full max-w-md rounded-2xl border p-8 text-center shadow-sm">
+    <main className="bg-sand paper flex min-h-dvh items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-md rounded-[28px] px-8 py-10 text-center shadow-[0_30px_80px_-40px_rgb(80_40_20/0.35)]">
+        <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">
+          Status pesanan
+        </p>
         <Suspense fallback={<p className="text-muted-foreground text-sm">Memuat…</p>}>
           <OrderResult />
         </Suspense>
-      </div>
+      </Card>
     </main>
   );
 }

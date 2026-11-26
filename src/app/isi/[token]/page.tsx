@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { CenterCard } from "@/components/site/CenterCard";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { loadEditorProps } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/editor-props";
 import { findClaimByToken } from "@/lib/claims/service";
 import { formatRupiah, formatTanggal } from "@/lib/format";
 import { themePrice } from "@/lib/pricing";
-import { invitationUrl, siteConfig } from "@/lib/site";
+import { invitationUrl } from "@/lib/site";
 import { getManifest } from "@/themes/registry";
 
 import { ClaimEditor } from "./ClaimEditor";
@@ -18,17 +21,7 @@ export const metadata: Metadata = {
 };
 
 function Notice({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <main className="flex min-h-dvh items-center justify-center px-4 py-12">
-      <div className="bg-card w-full max-w-md rounded-2xl border p-8 text-center shadow-sm">
-        <p className="text-muted-foreground text-xs tracking-[0.2em] uppercase">
-          {siteConfig.name}
-        </p>
-        <h1 className="font-heading mt-4 text-2xl">{title}</h1>
-        <div className="text-muted-foreground mt-3 space-y-3 text-sm">{children}</div>
-      </div>
-    </main>
-  );
+  return <CenterCard title={title}>{children}</CenterCard>;
 }
 
 /**
@@ -93,17 +86,16 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
           </>
         )}
         {session?.user && (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-950">
-            Kamu sedang masuk sebagai akun lain. Melanjutkan akan mengganti sesi di browser ini.
-          </p>
+          <Alert className="text-left">
+            <AlertDescription>
+              Kamu sedang masuk sebagai akun lain. Melanjutkan akan mengganti sesi di browser ini.
+            </AlertDescription>
+          </Alert>
         )}
         <form method="post" action={`/isi/${token}/masuk`} className="pt-2">
-          <button
-            type="submit"
-            className="bg-primary text-primary-foreground w-full rounded-md px-4 py-2.5 text-sm font-medium"
-          >
+          <Button type="submit" size="lg" className="h-11 w-full">
             {state === "confirmed" ? "Kelola undangan" : "Mulai isi undangan"}
-          </button>
+          </Button>
         </form>
       </Notice>
     );
@@ -127,12 +119,9 @@ export default async function ClaimPage({ params }: { params: Promise<{ token: s
           {inv.activeUntil ? ` sampai ${formatTanggal(inv.activeUntil)}` : ""}, dan kamu bisa
           melihat ucapan, RSVP, serta mengirim undangan ke tamu.
         </p>
-        <Link
-          href="/akun"
-          className="bg-primary text-primary-foreground block rounded-md px-4 py-2.5 text-sm font-medium"
-        >
-          Kelola undangan
-        </Link>
+        <Button asChild size="lg" className="h-11 w-full">
+          <Link href="/akun">Kelola undangan</Link>
+        </Button>
       </Notice>
     );
 

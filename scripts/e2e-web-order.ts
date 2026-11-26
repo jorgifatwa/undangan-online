@@ -109,19 +109,16 @@ async function main() {
     await shot(page, "01-form");
 
     console.log("2. Isi + simpan di browser");
-    const fotoIdx = steps.findIndex((s) => s.includes("Foto sampul"));
-    if (fotoIdx >= 0) {
-      await clickText(page, "ol[aria-label='Langkah pengisian'] button", "Foto sampul");
-      await waitText(page, `Langkah ${fotoIdx + 1}/`);
-      check(
-        (await bodyText(page)).includes("diunggah setelah pembayaran") &&
-          !(await page.$("input[type=file]")),
-        "unggah foto dimatikan (catatan: setelah pembayaran)",
-      );
-    }
     const profilIdx = steps.findIndex((s) => s.includes("Mempelai"));
     await clickText(page, "ol[aria-label='Langkah pengisian'] button", "Mempelai");
     await waitText(page, `Langkah ${profilIdx + 1}/`);
+    // foto ada di langkah Mempelai; unggah baru bisa setelah bayar
+    check(
+      (await bodyText(page)).includes("diunggah setelah pembayaran") &&
+        !(await page.$("input[type=file]")),
+      "unggah foto dimatikan (catatan: setelah pembayaran)",
+    );
+    await shot(page, "01b-mempelai");
     const names = await page.$$("input[name$='fullName']");
     await fill(page, names[0], "Anindya Kirana");
     await fill(page, names[1], "Dimas Saputra");
@@ -259,7 +256,7 @@ async function main() {
       page.waitForNavigation({ waitUntil: "networkidle0" }),
       clickText(page, "button", "Mulai isi undangan"),
     ]);
-    await waitText(page, "Konfirmasi & tayangkan");
+    await page.waitForSelector("#claim-slug", { timeout: 20000 });
     const label = await bodyText(page);
     check(/Langkah (\d+)\/\1/.test(label), "dibuka langsung di langkah Konfirmasi");
     check(label.includes("Anin & Dimas"), "judul memakai isian pemesan");

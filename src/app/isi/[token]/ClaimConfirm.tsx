@@ -4,6 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { siteConfig } from "@/lib/site";
 
 import { checkSlugAction, confirmClaimAction } from "../actions";
@@ -102,28 +112,22 @@ export function ClaimConfirm({
   };
 
   return (
-    <section className="bg-card space-y-4 rounded-2xl border p-4">
-      <div>
-        <h2 className="font-medium">Konfirmasi & tayangkan</h2>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Semua isian sudah tersimpan. Periksa pratinjau, lalu pilih alamat undangan. Link ini
-          berlaku sampai {deadline}; bila belum dikonfirmasi sampai tanggal itu, data dihapus
-          otomatis.
-        </p>
-      </div>
-      <div className="space-y-1.5">
-        <label htmlFor="claim-slug" className="text-sm font-medium">
-          Alamat undangan
-        </label>
-        <div className="flex items-center overflow-hidden rounded-lg border bg-white text-sm">
-          <span className="text-muted-foreground border-r bg-neutral-50 px-2 py-2">{host}/</span>
+    <section className="space-y-6">
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        Semua isian sudah tersimpan. Periksa pratinjau, lalu pilih alamat undangan. Link ini berlaku
+        sampai {deadline}; bila belum dikonfirmasi sampai tanggal itu, data dihapus otomatis.
+      </p>
+      <div className="grid gap-2">
+        <Label htmlFor="claim-slug">Alamat undangan</Label>
+        <div className="border-input focus-within:ring-ring/40 flex items-center overflow-hidden rounded-lg border bg-transparent text-sm focus-within:ring-[3px]">
+          <span className="text-muted-foreground bg-muted/60 border-r px-3 py-2">{host}/</span>
           <input
             id="claim-slug"
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
             placeholder="nama-kalian"
             maxLength={40}
-            className="min-w-0 flex-1 px-2 py-2 outline-none"
+            className="min-w-0 flex-1 bg-transparent px-3 py-2 outline-none"
             autoComplete="off"
           />
         </div>
@@ -143,67 +147,53 @@ export function ClaimConfirm({
           {check.kind === "bad" && check.message}
         </p>
       </div>
-      <button
+      <Button
         type="button"
+        size="lg"
+        className="h-11 w-full"
         disabled={check.kind !== "ok"}
         onClick={() => setModal(true)}
-        className="bg-primary text-primary-foreground w-full rounded-md px-4 py-2.5 text-sm font-medium disabled:opacity-50"
       >
         Konfirmasi undangan
-      </button>
+      </Button>
 
-      {modal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="claim-confirm-title"
-          className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
-        >
-          <div className="bg-background w-full max-w-md rounded-2xl p-5 shadow-xl">
-            <h3 id="claim-confirm-title" className="font-heading text-xl">
+      <Dialog open={modal} onOpenChange={(o) => !busy && setModal(o)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-2xl font-normal">
               Tayangkan undangan?
-            </h3>
-            <ul className="text-muted-foreground mt-3 list-disc space-y-1 pl-5 text-sm">
-              <li>
-                Undangan langsung bisa dibuka di{" "}
-                <strong className="text-foreground">
-                  {host}/{check.kind === "ok" ? check.slug : ""}
-                </strong>
-                .
-              </li>
-              <li>
-                <strong className="text-foreground">Tema terkunci</strong> — tidak bisa diganti
-                lagi.
-              </li>
-              <li>Isi undangan masih bisa diubah selama masa aktif.</li>
-              <li>Admin akan mengirim data login untuk mengelola tamu & ucapan.</li>
-            </ul>
-            {error && (
-              <p role="alert" className="text-destructive mt-3 text-sm">
-                {error}
-              </p>
-            )}
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setModal(false)}
-                className="hover:bg-muted rounded-md border px-3 py-2 text-sm"
-              >
-                Periksa lagi
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void confirm()}
-                className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60"
-              >
-                {busy ? "Menayangkan…" : "Ya, tayangkan"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogTitle>
+            <DialogDescription>Periksa sekali lagi sebelum melanjutkan.</DialogDescription>
+          </DialogHeader>
+          <ul className="text-muted-foreground list-disc space-y-1.5 pl-5 text-sm">
+            <li>
+              Undangan langsung bisa dibuka di{" "}
+              <strong className="text-foreground">
+                {host}/{check.kind === "ok" ? check.slug : ""}
+              </strong>
+              .
+            </li>
+            <li>
+              <strong className="text-foreground">Tema terkunci</strong> — tidak bisa diganti lagi.
+            </li>
+            <li>Isi undangan masih bisa diubah selama masa aktif.</li>
+            <li>Admin akan mengirim data login untuk mengelola tamu & ucapan.</li>
+          </ul>
+          {error && (
+            <p role="alert" className="text-destructive text-sm">
+              {error}
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" disabled={busy} onClick={() => setModal(false)}>
+              Periksa lagi
+            </Button>
+            <Button disabled={busy} onClick={() => void confirm()}>
+              {busy ? "Menayangkan…" : "Ya, tayangkan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

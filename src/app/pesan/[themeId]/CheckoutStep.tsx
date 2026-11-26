@@ -2,14 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { formatRupiah } from "@/lib/format";
 import type { ThemeManifest } from "@/themes/types";
 
 import { createWebOrderAction } from "../actions";
 import { readOrderDraft, rememberOrder } from "./order-storage";
-
-const input =
-  "h-10 w-full rounded-lg border bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary/30";
 
 /**
  * Langkah terakhir pemesanan website: ringkasan tema + harga, data pemesan,
@@ -83,24 +84,23 @@ export function CheckoutStep({
   };
 
   return (
-    <section className="bg-card space-y-4 rounded-2xl border p-4">
-      <div>
-        <h2 className="font-medium">Pesan & bayar</h2>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Periksa pratinjau di samping. Setelah pembayaran berhasil, kami kirim{" "}
-          <strong>link khusus</strong> ke email Anda untuk mengunggah foto, memilih alamat undangan,
-          dan menayangkannya.
-        </p>
-      </div>
-      <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2.5 text-sm">
+    <section className="space-y-6">
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        Periksa pratinjau undangan. Setelah pembayaran berhasil, kami kirim{" "}
+        <strong className="text-foreground">link khusus</strong> ke email Anda untuk mengunggah
+        foto, memilih alamat undangan, dan menayangkannya.
+      </p>
+      <div className="bg-muted/60 flex items-center justify-between rounded-xl px-4 py-3 text-sm">
         <span>Undangan tema {theme?.name ?? "…"}</span>
-        <strong data-testid="order-price">{theme ? formatRupiah(theme.price) : "…"}</strong>
+        <strong className="font-heading text-xl font-normal" data-testid="order-price">
+          {theme ? formatRupiah(theme.price) : "…"}
+        </strong>
       </div>
-      <div ref={box} className="space-y-3">
-        <label className="block space-y-1 text-sm">
-          <span className="font-medium">Nama pemesan</span>
-          <input
-            className={input}
+      <div ref={box} className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="buyer-name">Nama pemesan</Label>
+          <Input
+            id="buyer-name"
             name="name"
             required
             minLength={2}
@@ -109,11 +109,11 @@ export function CheckoutStep({
             onChange={(e) => setName(e.target.value)}
             autoComplete="name"
           />
-        </label>
-        <label className="block space-y-1 text-sm">
-          <span className="font-medium">Email</span>
-          <input
-            className={input}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="buyer-email">Email</Label>
+          <Input
+            id="buyer-email"
             name="email"
             type="email"
             required
@@ -121,14 +121,14 @@ export function CheckoutStep({
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           />
-          <span className="text-muted-foreground block text-xs">
+          <p className="text-muted-foreground text-xs">
             Link khusus & bukti pesanan dikirim ke email ini.
-          </span>
-        </label>
-        <label className="block space-y-1 text-sm">
-          <span className="font-medium">No. WhatsApp (opsional)</span>
-          <input
-            className={input}
+          </p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="buyer-phone">No. WhatsApp (opsional)</Label>
+          <Input
+            id="buyer-phone"
             name="phone"
             inputMode="tel"
             placeholder="08…"
@@ -136,26 +136,29 @@ export function CheckoutStep({
             onChange={(e) => setPhone(e.target.value)}
             autoComplete="tel"
           />
-        </label>
+        </div>
         {error && (
           <p role="alert" className="text-destructive text-sm">
             {error}
           </p>
         )}
         {!paymentReady && (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-950">
-            Pembayaran online belum aktif. Silakan hubungi kami lewat WhatsApp.
-          </p>
+          <Alert>
+            <AlertDescription>
+              Pembayaran online belum aktif. Silakan hubungi kami lewat WhatsApp.
+            </AlertDescription>
+          </Alert>
         )}
-        <button
+        <Button
           type="button"
+          size="lg"
+          className="h-11"
           onClick={() => void submit()}
           data-testid="order-submit"
           disabled={busy || !paymentReady || !theme}
-          className="bg-primary text-primary-foreground w-full rounded-md px-4 py-2.5 text-sm font-medium disabled:opacity-50"
         >
           {busy ? "Memproses…" : `Pesan & bayar${theme ? ` ${formatRupiah(theme.price)}` : ""}`}
-        </button>
+        </Button>
         {simulation && (
           <p className="text-muted-foreground text-center text-[11px]">
             Mode development tanpa Midtrans: pembayaran bisa disimulasikan di halaman berikutnya.

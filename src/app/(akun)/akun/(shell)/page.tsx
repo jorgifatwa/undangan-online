@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { PageHeader } from "@/components/admin/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCustomer } from "@/lib/auth-guard";
 import { claimPhase } from "@/lib/claims/guard";
 import { db } from "@/lib/db";
@@ -23,36 +26,41 @@ export default async function AkunPage() {
   if (invitations.length === 1) redirect(`/akun/undangan/${invitations[0].id}`);
 
   return (
-    <section>
-      <h1 className="font-heading text-3xl">Undangan saya</h1>
+    <>
+      <PageHeader title="Undangan saya" />
       {invitations.length === 0 ? (
-        <p className="text-muted-foreground mt-2 text-sm">
-          Belum ada undangan di akun ini. Hubungi admin bila ini keliru.
-        </p>
+        <Card>
+          <CardContent className="text-muted-foreground py-6 text-center text-sm">
+            Belum ada undangan di akun ini. Hubungi admin bila ini keliru.
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {invitations.map((inv) => {
             const s = summarize(inv.eventType, inv.data);
             const phase = claimPhase(inv.claim, inv);
             return (
-              <li key={inv.id} className="bg-card rounded-2xl border p-4">
-                <p className="font-medium">{s.title}</p>
-                <p className="text-muted-foreground text-xs">
-                  Tema {getManifest(inv.themeId)?.name ?? inv.themeId} ·{" "}
-                  {inv.status === "PUBLISHED" ? invitationUrl(inv.slug) : "belum tayang"}
-                  {inv.activeUntil && ` · aktif s.d. ${formatTanggal(inv.activeUntil)}`}
-                </p>
-                <Link
-                  href={`/akun/undangan/${inv.id}`}
-                  className="mt-3 inline-block text-sm font-medium underline"
-                >
-                  {phase === "locked" ? "Lihat" : "Kelola"} →
-                </Link>
-              </li>
+              <Card key={inv.id}>
+                <CardHeader>
+                  <CardTitle className="font-heading text-xl font-normal">{s.title}</CardTitle>
+                  <CardDescription>
+                    Tema {getManifest(inv.themeId)?.name ?? inv.themeId} ·{" "}
+                    {inv.status === "PUBLISHED" ? invitationUrl(inv.slug) : "belum tayang"}
+                    {inv.activeUntil && ` · aktif s.d. ${formatTanggal(inv.activeUntil)}`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild size="sm">
+                    <Link href={`/akun/undangan/${inv.id}`}>
+                      {phase === "locked" ? "Lihat" : "Kelola"}
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
             );
           })}
-        </ul>
+        </div>
       )}
-    </section>
+    </>
   );
 }

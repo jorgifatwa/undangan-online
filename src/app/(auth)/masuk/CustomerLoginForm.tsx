@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,14 +15,11 @@ export function CustomerLoginForm() {
   return (
     <form action={action} className="mt-6 grid gap-3">
       {state.error && (
-        <p
-          role="alert"
-          className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-center text-sm"
-        >
-          {state.error}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{state.error}</AlertDescription>
+        </Alert>
       )}
-      <div className="grid gap-1">
+      <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
@@ -33,7 +31,7 @@ export function CustomerLoginForm() {
           key={state.email}
         />
       </div>
-      <div className="grid gap-1">
+      <div className="grid gap-2">
         <Label htmlFor="password">Kata sandi</Label>
         <Input
           id="password"
@@ -44,7 +42,7 @@ export function CustomerLoginForm() {
           minLength={8}
         />
       </div>
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button type="submit" size="lg" className="h-11" disabled={pending}>
         {pending ? "Masuk…" : "Masuk"}
       </Button>
     </form>

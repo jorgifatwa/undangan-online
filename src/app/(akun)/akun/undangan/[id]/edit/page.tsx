@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 
 import { Editor } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/Editor";
 import { loadEditorProps } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/editor-props";
+import { CenterCard } from "@/components/site/CenterCard";
+import { Button } from "@/components/ui/button";
 import { requireCustomer } from "@/lib/auth-guard";
 import { claimPhase } from "@/lib/claims/guard";
 import { db } from "@/lib/db";
@@ -24,17 +26,16 @@ export default async function CustomerEditPage({ params }: { params: Promise<{ i
   const props = phase === "live" ? await loadEditorProps(inv) : null;
   if (!props)
     return (
-      <main className="mx-auto max-w-md px-4 py-16 text-center">
-        <h1 className="font-heading text-2xl">Undangan tidak bisa diubah</h1>
-        <p className="text-muted-foreground mt-2 text-sm">
+      <CenterCard title="Undangan tidak bisa diubah">
+        <p>
           {phase === "open"
             ? "Undangan belum dikonfirmasi — lanjutkan pengisian lewat link khusus dari admin."
             : "Masa ubah data sudah berakhir. Hubungi admin bila perlu perubahan."}
         </p>
-        <Link href={`/akun/undangan/${inv.id}`} className="mt-4 inline-block text-sm underline">
-          Kembali
-        </Link>
-      </main>
+        <Button asChild variant="outline">
+          <Link href={`/akun/undangan/${inv.id}`}>Kembali</Link>
+        </Button>
+      </CenterCard>
     );
   // tema terkunci: hanya tema yang sedang dipakai (warna tetap bisa diganti)
   props.themes = props.themes.filter((t) => t.id === inv.themeId);

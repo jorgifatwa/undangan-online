@@ -1,6 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleDot,
+  ListOrdered,
+  Save,
+  Smartphone,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch, type FieldValues, type Resolver } from "react-hook-form";
@@ -10,6 +19,17 @@ import { shareInfo } from "@/lib/invitations/share";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
 import type { Entitlements } from "@/lib/pricing";
 import { SuspendedNotice } from "@/components/dashboard/SuspendedNotice";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
@@ -987,19 +1007,77 @@ export function Editor(p: EditorProps) {
     return list;
   })();
 
-  // ── Mode claim: form bertahap (satu grup per langkah + langkah konfirmasi) ──
+  // ── Mode claim/local: form bertahap — ±6 langkah, tiap langkah berisi
+  //    beberapa grup; langkah terakhir = finalStep (konfirmasi / pesan & bayar) ──
   const stepped = mode === "claim" || mode === "local";
-  const stepCount = shownGroups.length + (p.finalStep ? 1 : 0);
+  const stepDefs = [
+    { key: "tema", title: "Tema & warna", hint: "Pilih tema dan warna favorit.", groups: ["tema"] },
+    {
+      key: "profil",
+      title: wedding ? "Mempelai" : "Yang berulang tahun",
+      hint: wedding ? "Nama dan foto kedua mempelai." : "Nama, usia, dan foto.",
+      groups: ["foto", "profil"],
+    },
+    {
+      key: "acara",
+      title: "Acara",
+      hint: "Waktu, lokasi, dress code, dan siaran langsung.",
+      groups: ["acara", "dressCode", "liveStream"],
+    },
+    {
+      key: "kata",
+      title: "Kata-kata",
+      hint: "Salam pembuka, kutipan, cerita, dan penutup.",
+      groups: ["salam", "ayat", "cerita", "loveStory", "penutup"],
+    },
+    {
+      key: "pelengkap",
+      title: "Pelengkap",
+      hint: "Galeri, musik, hadiah, dan urutan bagian undangan.",
+      groups: ["galeri", "stripFoto", "musik", "amplop", "urutan"],
+    },
+  ]
+    .map((d) => ({ ...d, items: shownGroups.filter((g) => d.groups.includes(g.key)) }))
+    .filter((d) => d.items.length > 0);
+  const finalTitle = p.finalStepTitle ?? "Konfirmasi";
+  const stepTitles = [...stepDefs.map((d) => d.title), ...(p.finalStep ? [finalTitle] : [])];
+  const stepCount = stepTitles.length;
   const [step, setStep] = useState(() =>
     Math.min(Math.max(0, p.steps?.initial ?? 0), Math.max(0, stepCount - 1)),
   );
   const [stepBusy, setStepBusy] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
-  const isFinal = stepped && !!p.finalStep && step >= shownGroups.length;
+  const [savedNote, setSavedNote] = useState<string | null>(null);
+  const [stepsSheet, setStepsSheet] = useState(false);
+  const [previewSheet, setPreviewSheet] = useState(false);
+  /** Layar lebar (≥1280px): pratinjau HP tampil di samping kartu form. */
+  const [wide, setWide] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1280px)");
+    const on = () => setWide(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const isFinal = stepped && !!p.finalStep && step >= stepDefs.length;
+  const lastFocus = useRef<string | null>(null);
+  const focusPreview = (target: SectionId | undefined) => {
+    if (!target || lastFocus.current === target) return;
+    lastFocus.current = target;
+    post({
+      ns: "undangku",
+      type: "focus",
+      section: target,
+      order: ((o) => (o.includes(target) ? o : [...manifest.sections]))(
+        defaultOrderFor(p.eventType, manifest.sectionOrder),
+      ),
+    });
+  };
   const goStep = async (n: number) => {
     if (stepBusy || n === step || n < 0 || n >= stepCount) return;
     setStepBusy(true);
     setStepError(null);
+    setSavedNote(null);
     // simpan SETIAP pindah langkah; isian belum valid → tetap di langkah ini
     const ok = state.kind === "saved" ? true : await flushSave();
     setStepBusy(false);
@@ -1012,28 +1090,337 @@ export function Editor(p: EditorProps) {
       return;
     }
     setStep(n);
+    setStepsSheet(false);
     p.steps?.onStep(n);
     formRef.current?.scrollTo({ top: 0 });
-    const g = shownGroups[n];
-    if (g) {
-      setOpenGroup(g.key);
-      const target = focusOf(g);
-      if (target)
-        post({
-          ns: "undangku",
-          type: "focus",
-          section: target,
-          order: ((o) => (o.includes(target) ? o : [...manifest.sections]))(
-            defaultOrderFor(p.eventType, manifest.sectionOrder),
-          ),
-        });
-    }
+    const first = stepDefs[n]?.items[0];
+    if (first) focusPreview(focusOf(first));
   };
-  useEffect(() => {
-    if (stepped && shownGroups[step]) setOpenGroup(shownGroups[step].key);
-    // hanya saat mount: sinkronkan grup terbuka dengan langkah tersimpan
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const saveAndClose = async () => {
+    setStepError(null);
+    const ok = await flushSave();
+    setSavedNote(
+      ok
+        ? mode === "claim"
+          ? "Tersimpan. Lanjutkan kapan saja lewat link khusus ini."
+          : "Tersimpan di browser ini. Buka halaman ini lagi untuk melanjutkan."
+        : "Belum tersimpan — periksa isian bertanda merah.",
+    );
+  };
+
+  const banners = (
+    <>
+      {state.kind === "conflict" && (
+        <div className="flex flex-wrap items-center gap-3 bg-rose-50 px-4 py-2 text-sm text-rose-900">
+          Undangan ini diubah di tab atau perangkat lain. Perubahan Anda di sini tersimpan sebagai
+          draf di browser.
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="font-semibold underline"
+          >
+            Muat ulang data terbaru
+          </button>
+        </div>
+      )}
+      {restore && (
+        <div className="flex flex-wrap items-center gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-950">
+          Ada perubahan yang belum tersimpan dari{" "}
+          {new Date(restore.savedAt).toLocaleString("id-ID", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
+          .
+          <button
+            type="button"
+            className="font-semibold underline"
+            onClick={() => {
+              themeRef.current = restore.themeId;
+              variantRef.current = restore.variantId;
+              setThemeId(restore.themeId);
+              setVariantId(restore.variantId);
+              form.reset(restore.values, { keepDefaultValues: true });
+              setRestore(null);
+              onChange();
+            }}
+          >
+            Pulihkan perubahan yang belum tersimpan
+          </button>
+          <button
+            type="button"
+            className="underline"
+            onClick={() => {
+              removeDraft(p.id);
+              setRestore(null);
+            }}
+          >
+            Buang
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  const previewSrc = `${previewBase}${previewBase.includes("?") ? "&" : "?"}editor=1`;
+
+  if (stepped) {
+    const stepList = (
+      <ol className="space-y-1" aria-label="Langkah pengisian">
+        {stepTitles.map((t, i) => (
+          <li key={t}>
+            <button
+              type="button"
+              disabled={stepBusy}
+              onClick={() => void goStep(i)}
+              aria-current={i === step ? "step" : undefined}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                i === step
+                  ? "bg-background text-foreground font-medium shadow-sm"
+                  : i < step
+                    ? "text-foreground hover:bg-background/60"
+                    : "text-muted-foreground hover:bg-background/60",
+              )}
+            >
+              <span className="w-4 text-xs tabular-nums">{i + 1}</span>
+              <span className="flex-1">{t}</span>
+              {i < step ? (
+                <Check className="text-primary size-4" aria-label="selesai" />
+              ) : i === step ? (
+                <CircleDot className="text-gold size-4" aria-hidden />
+              ) : null}
+            </button>
+          </li>
+        ))}
+      </ol>
+    );
+    const current = stepDefs[step];
+    return (
+      <FormProvider {...form}>
+        <MediaContext.Provider value={mediaCtx}>
+          <div className="bg-sand paper min-h-dvh">
+            {banners}
+            <div className="mx-auto flex max-w-[1380px] items-start gap-8 p-0 sm:p-5 lg:p-6">
+              {/* Kartu form: daftar langkah (kiri) + isian (kanan) */}
+              <div className="bg-card flex h-dvh min-w-0 flex-1 overflow-hidden border shadow-[0_30px_80px_-40px_rgb(80_40_20/0.35)] sm:h-[calc(100dvh-2.5rem)] sm:rounded-[28px] lg:h-[calc(100dvh-3rem)]">
+                <aside className="bg-muted/70 m-2 hidden w-64 shrink-0 flex-col rounded-[22px] p-5 md:flex">
+                  <p className="font-heading text-primary text-3xl leading-none">
+                    U<span className="text-gold">.</span>
+                  </p>
+                  <h1 className="font-heading mt-6 text-2xl leading-tight">
+                    {mode === "claim" ? "Isi undangan" : "Pesan undangan"}
+                  </h1>
+                  {mode === "claim" && (
+                    <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{p.title}</p>
+                  )}
+                  <div className="mt-6 flex-1">{stepList}</div>
+                  <StatusPill state={state} />
+                </aside>
+
+                <div className="flex min-w-0 flex-1 flex-col">
+                  {/* HP: ringkasan langkah (ketuk → semua langkah) */}
+                  <div className="flex items-center gap-2 border-b px-4 py-3 md:hidden">
+                    <Sheet open={stepsSheet} onOpenChange={setStepsSheet}>
+                      <SheetTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="min-w-0 flex-1 justify-start"
+                        >
+                          <ListOrdered />
+                          <span className="truncate">
+                            Langkah {step + 1} dari {stepCount} · {stepTitles[step]}
+                          </span>
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="w-72">
+                        <SheetHeader>
+                          <SheetTitle className="font-heading text-2xl">
+                            {mode === "claim" ? "Isi undangan" : "Pesan undangan"}
+                          </SheetTitle>
+                          <SheetDescription>{p.title}</SheetDescription>
+                        </SheetHeader>
+                        <div className="px-4">{stepList}</div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+
+                  <form
+                    ref={formRef}
+                    onSubmit={(e) => e.preventDefault()}
+                    noValidate
+                    className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8 sm:py-8"
+                  >
+                    <div className="mx-auto max-w-2xl">
+                      <p className="text-muted-foreground text-xs tracking-wide">
+                        Langkah {step + 1}/{stepCount}
+                      </p>
+                      <h2 className="font-heading mt-1 text-3xl tracking-tight">
+                        {stepTitles[step]}
+                      </h2>
+                      {current && (
+                        <p className="text-muted-foreground mt-1 text-sm">{current.hint}</p>
+                      )}
+                      <div className="mt-6 space-y-8">
+                        {isFinal && p.finalStep?.({ flushSave })}
+                        {current?.items.map((g, idx) => {
+                          const vis = visibilityOf(g);
+                          const tags = [
+                            ...(g.extraChips ?? []),
+                            ...chips(g.section),
+                            ...(vis?.visible === false
+                              ? [{ text: "disembunyikan", tone: "neutral" as const }]
+                              : []),
+                          ];
+                          return (
+                            <section
+                              key={g.key}
+                              onFocusCapture={() => focusPreview(focusOf(g))}
+                              className="space-y-4"
+                              aria-labelledby={`sub-${g.key}`}
+                            >
+                              {idx > 0 && <Separator />}
+                              {current.items.length > 1 && (
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h3 id={`sub-${g.key}`} className="font-medium">
+                                    {g.title}
+                                  </h3>
+                                  {tags.map((c) => (
+                                    <Badge
+                                      key={c.text}
+                                      variant="secondary"
+                                      className={
+                                        c.tone === "amber" ? "bg-amber-100 text-amber-900" : ""
+                                      }
+                                    >
+                                      {c.text}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              {vis && (
+                                <label className="bg-muted/60 flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm">
+                                  <span>
+                                    Tampilkan bagian ini di undangan
+                                    {!vis.visible && (
+                                      <span className="text-muted-foreground block text-xs">
+                                        Disembunyikan — tamu tidak melihat bagian ini.
+                                      </span>
+                                    )}
+                                  </span>
+                                  <Switch
+                                    checked={vis.visible}
+                                    onChange={(e) => vis.onChange(e.target.checked)}
+                                  />
+                                </label>
+                              )}
+                              {g.body}
+                            </section>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </form>
+
+                  <div className="flex flex-wrap items-center gap-2 border-t px-4 py-3 sm:px-8">
+                    {!isFinal && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void saveAndClose()}
+                      >
+                        <Save /> Simpan &amp; tutup
+                      </Button>
+                    )}
+                    {!wide && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPreviewSheet(true)}
+                      >
+                        <Smartphone /> Lihat pratinjau
+                      </Button>
+                    )}
+                    <span
+                      role={stepError ? "alert" : "status"}
+                      className={cn(
+                        "min-w-0 flex-1 text-xs",
+                        stepError ? "text-destructive" : "text-muted-foreground",
+                      )}
+                    >
+                      {stepError ?? savedNote}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={step === 0 || stepBusy}
+                      onClick={() => void goStep(step - 1)}
+                    >
+                      <ChevronLeft /> Kembali
+                    </Button>
+                    {step < stepCount - 1 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={stepBusy}
+                        onClick={() => void goStep(step + 1)}
+                      >
+                        {stepBusy ? "Menyimpan…" : "Simpan & lanjut"} <ChevronRight />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Pratinjau HP mengambang di samping kartu (layar lebar) */}
+              {wide && (
+                <section
+                  aria-label="Pratinjau undangan"
+                  className="sticky top-6 hidden h-[calc(100dvh-3rem)] w-[360px] shrink-0 flex-col xl:flex"
+                >
+                  <div className="flex items-center justify-between px-2 pb-2 text-xs">
+                    <span className="text-muted-foreground tracking-[0.2em] uppercase">
+                      Pratinjau
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = !showCover;
+                        setShowCover(next);
+                        post({ ns: "undangku", type: "cover", show: next });
+                      }}
+                      className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                    >
+                      {showCover ? "Lihat isi" : "Lihat cover"}
+                    </button>
+                  </div>
+                  <div className="min-h-0 flex-1">
+                    <PreviewFrame ref={iframeRef} src={previewSrc} title="Pratinjau undangan" />
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+          {!wide && (
+            <Sheet open={previewSheet} onOpenChange={setPreviewSheet}>
+              <SheetContent side="right" className="bg-sand w-full sm:max-w-md">
+                <SheetHeader>
+                  <SheetTitle className="font-heading text-xl">Pratinjau</SheetTitle>
+                  <SheetDescription>Tampilan undangan di HP tamu.</SheetDescription>
+                </SheetHeader>
+                <div className="min-h-0 flex-1 px-3 pb-4">
+                  <PreviewFrame ref={iframeRef} src={previewSrc} title="Pratinjau undangan" />
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+        </MediaContext.Provider>
+      </FormProvider>
+    );
+  }
 
   return (
     <FormProvider {...form}>
@@ -1064,15 +1451,13 @@ export function Editor(p: EditorProps) {
             >
               {showCover ? "Lihat isi" : "Lihat cover"}
             </button>
-            {mode !== "local" && (
-              <Link
-                href={previewBase}
-                target="_blank"
-                className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
-              >
-                Pratinjau penuh
-              </Link>
-            )}
+            <Link
+              href={previewBase}
+              target="_blank"
+              className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
+            >
+              Pratinjau penuh
+            </Link>
             {mode === "customer" && p.liveUrl && (
               <a
                 href={p.liveUrl}
@@ -1082,11 +1467,6 @@ export function Editor(p: EditorProps) {
               >
                 Lihat undangan
               </a>
-            )}
-            {stepped && (
-              <span className="text-muted-foreground text-xs whitespace-nowrap sm:text-sm">
-                Langkah {step + 1}/{stepCount}
-              </span>
             )}
             {isAdmin && !p.suspended && (
               <button
@@ -1166,54 +1546,7 @@ export function Editor(p: EditorProps) {
             />
           )}
 
-          {state.kind === "conflict" && (
-            <div className="flex flex-wrap items-center gap-3 bg-rose-50 px-4 py-2 text-sm text-rose-900">
-              Undangan ini diubah di tab atau perangkat lain. Perubahan Anda di sini tersimpan
-              sebagai draf di browser.
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="font-semibold underline"
-              >
-                Muat ulang data terbaru
-              </button>
-            </div>
-          )}
-          {restore && (
-            <div className="flex flex-wrap items-center gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-950">
-              Ada perubahan yang belum tersimpan dari{" "}
-              {new Date(restore.savedAt).toLocaleString("id-ID", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-              .
-              <button
-                type="button"
-                className="font-semibold underline"
-                onClick={() => {
-                  themeRef.current = restore.themeId;
-                  variantRef.current = restore.variantId;
-                  setThemeId(restore.themeId);
-                  setVariantId(restore.variantId);
-                  form.reset(restore.values, { keepDefaultValues: true });
-                  setRestore(null);
-                  onChange();
-                }}
-              >
-                Pulihkan perubahan yang belum tersimpan
-              </button>
-              <button
-                type="button"
-                className="underline"
-                onClick={() => {
-                  removeDraft(p.id);
-                  setRestore(null);
-                }}
-              >
-                Buang
-              </button>
-            </div>
-          )}
+          {banners}
 
           {/* Tab mobile */}
           <div className="bg-background flex shrink-0 border-b lg:hidden" role="tablist">
@@ -1245,92 +1578,31 @@ export function Editor(p: EditorProps) {
               )}
             >
               <div className="mx-auto max-w-xl space-y-3 pb-24">
-                {stepped && (
-                  <ol className="flex flex-wrap gap-1.5" aria-label="Langkah pengisian">
-                    {[
-                      ...shownGroups.map((g) => g.title),
-                      ...(p.finalStep ? [p.finalStepTitle ?? "Konfirmasi"] : []),
-                    ].map((t, i) => (
-                      <li key={t}>
-                        <button
-                          type="button"
-                          disabled={stepBusy}
-                          onClick={() => void goStep(i)}
-                          aria-current={i === step ? "step" : undefined}
-                          className={cn(
-                            "rounded-full border px-2.5 py-1 text-[11px]",
-                            i === step
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : i < step
-                                ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-                                : "bg-background text-muted-foreground",
-                          )}
-                        >
-                          {i + 1}. {t}
-                        </button>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-                {isFinal && p.finalStep?.({ flushSave })}
-                {shownGroups
-                  .filter((_, i) => !stepped || i === step)
-                  .map((g) => (
-                    <Group
-                      key={g.key}
-                      title={g.title}
-                      open={openGroup === g.key}
-                      onToggle={() => toggleGroup(g.key, focusOf(g))}
-                      chips={[
-                        ...(g.extraChips ?? []),
-                        ...chips(g.section),
-                        ...(visibilityOf(g)?.visible === false
-                          ? [{ text: "disembunyikan", tone: "neutral" as const }]
-                          : []),
-                      ]}
-                      visibility={visibilityOf(g)}
-                    >
-                      {g.body}
-                    </Group>
-                  ))}
-                {stepped && (
-                  <div className="sticky bottom-0 -mx-1 flex items-center justify-between gap-2 border-t bg-neutral-50/95 px-1 py-3 backdrop-blur">
-                    <button
-                      type="button"
-                      disabled={step === 0 || stepBusy}
-                      onClick={() => void goStep(step - 1)}
-                      className="hover:bg-muted rounded-md border px-3 py-2 text-sm disabled:opacity-40"
-                    >
-                      ← Sebelumnya
-                    </button>
-                    {stepError && (
-                      <span role="alert" className="text-destructive text-center text-xs">
-                        {stepError}
-                      </span>
-                    )}
-                    {step < stepCount - 1 && (
-                      <button
-                        type="button"
-                        disabled={stepBusy}
-                        onClick={() => void goStep(step + 1)}
-                        className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60"
-                      >
-                        {stepBusy ? "Menyimpan…" : "Simpan & lanjut →"}
-                      </button>
-                    )}
-                  </div>
-                )}
+                {shownGroups.map((g) => (
+                  <Group
+                    key={g.key}
+                    title={g.title}
+                    open={openGroup === g.key}
+                    onToggle={() => toggleGroup(g.key, focusOf(g))}
+                    chips={[
+                      ...(g.extraChips ?? []),
+                      ...chips(g.section),
+                      ...(visibilityOf(g)?.visible === false
+                        ? [{ text: "disembunyikan", tone: "neutral" as const }]
+                        : []),
+                    ]}
+                    visibility={visibilityOf(g)}
+                  >
+                    {g.body}
+                  </Group>
+                ))}
               </div>
             </form>
             <section
               aria-label="Pratinjau undangan"
               className={cn("min-h-0 flex-1 p-3", tab !== "preview" && "hidden lg:block")}
             >
-              <PreviewFrame
-                ref={iframeRef}
-                src={`${previewBase}${previewBase.includes("?") ? "&" : "?"}editor=1`}
-                title="Pratinjau undangan"
-              />
+              <PreviewFrame ref={iframeRef} src={previewSrc} title="Pratinjau undangan" />
             </section>
           </div>
         </div>

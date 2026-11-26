@@ -331,7 +331,11 @@ async function main() {
       "/akun → langsung ke undangannya",
     );
     check((await bodyText(buyer)).includes("Tayang"), "status tayang tampil");
-    await clickText(buyer, "button", "Tempel banyak");
+    // Tabs shadcn aktif lewat mousedown → klik mouse sungguhan
+    const tabs = await buyer.$$("[role=tab]");
+    for (const t of tabs)
+      if ((await t.evaluate((e) => e.textContent ?? "")).includes("Tempel banyak")) await t.click();
+    await buyer.waitForSelector("textarea");
     await buyer.type(
       "textarea",
       "Budi Santoso, 0812 1111 2222\nKeluarga Pak RT\nSiti, 0857 3333 4444, Teman kantor\n, 0812",
