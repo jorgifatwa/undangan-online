@@ -15,12 +15,12 @@ import { Demo, type DemoTheme } from "./_landing/Demo";
 import { Hero } from "./_landing/Hero";
 import { About } from "./_landing/About";
 import { IntroCurtain } from "./_landing/IntroCurtain";
-import { ThemeMarquee } from "./_landing/Marquee";
 import { Numbered } from "./_landing/Numbered";
 import { PriceList } from "./_landing/PriceList";
 import { Faq, FinalCta, SectionHead, Steps, Testimonials } from "./_landing/Sections";
 import { SelectedThemes } from "./_landing/SelectedThemes";
 import { StoryPhone } from "./_landing/StoryPhone";
+import { TrustStrip } from "./_landing/TrustStrip";
 import { StickyCta } from "./_landing/StickyCta";
 
 const TITLE = `${business.name} — Undangan Pernikahan Online & Undangan Digital Ulang Tahun`;
@@ -70,6 +70,7 @@ export default function HomePage() {
   const demoThemes: DemoTheme[] = [...THEME_MANIFESTS]
     .sort(
       (a, b) =>
+        Number(b.id === "tirai-beludru") - Number(a.id === "tirai-beludru") ||
         Number(!a.eventTypes.includes("WEDDING")) - Number(!b.eventTypes.includes("WEDDING")),
     )
     .map((m) => ({
@@ -98,7 +99,7 @@ export default function HomePage() {
         <Hero />
       </div>
 
-      <ThemeMarquee />
+      <TrustStrip />
 
       <section id="lihat" className="mx-auto max-w-6xl scroll-mt-16 px-4 pt-10 pb-20 sm:px-6">
         <SectionHead
@@ -147,9 +148,9 @@ export default function HomePage() {
       <section id="fitur" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-20 sm:px-6 sm:py-28">
         <SectionHead
           center={false}
-          eyebrow="Fitur"
-          title="Semua yang dibutuhkan undanganmu"
-          lead="Dari membuat, mengelola tamu, sampai membagikannya — di satu tempat."
+          eyebrow="Di balik layar"
+          title="Semua yang Anda kelola, di satu tempat"
+          lead="Dari mengisi undangan, mengelola tamu, sampai memantau siapa yang hadir."
         />
         <Numbered />
       </section>

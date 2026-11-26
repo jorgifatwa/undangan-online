@@ -30,7 +30,10 @@ export function SectionHead({
 }) {
   return (
     <div className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
-      <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase" data-reveal>
+      <p
+        className="text-gold-ink text-[11px] font-semibold tracking-[0.24em] uppercase"
+        data-reveal
+      >
         {eyebrow}
       </p>
       <h2

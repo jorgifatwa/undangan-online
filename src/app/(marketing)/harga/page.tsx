@@ -28,7 +28,7 @@ export default function HargaPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">Harga</p>
+        <p className="text-gold-ink text-[11px] font-semibold tracking-[0.24em] uppercase">Harga</p>
         <h1 className="font-heading mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
           Harga per tema, semua fitur termasuk
         </h1>

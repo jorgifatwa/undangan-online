@@ -22,7 +22,7 @@ export function About() {
         <div>
           <p
             data-reveal
-            className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase"
+            className="text-gold-ink text-[11px] font-semibold tracking-[0.24em] uppercase"
           >
             Tentang kami
           </p>

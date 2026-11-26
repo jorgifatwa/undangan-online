@@ -7,6 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
   --color-sand: var(--sand);
   --color-clay: var(--clay);
   --color-foreground: var(--foreground);
@@ -82,6 +83,8 @@
   /* Identitas website: emas (garis & aksen), pasir (latar selang-seling),
      terracotta tua (section CTA). */
   --gold: oklch(0.72 0.095 78);
+  /* emas untuk TEKS di latar terang (kontras ≥ 4,5:1 di krem & pasir) */
+  --gold-ink: oklch(0.52 0.1 72);
   --sand: oklch(0.958 0.017 76);
   --clay: oklch(0.356 0.123 17.5);
   /* Sidebar admin: pasir hangat, item aktif marun. */

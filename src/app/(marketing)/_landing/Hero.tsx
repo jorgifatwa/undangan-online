@@ -28,7 +28,7 @@ export function Hero() {
         <ul className="hero-fade text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-[11px] font-semibold tracking-[0.22em] uppercase">
           {LABELS.map((l) => (
             <li key={l}>
-              <span className="text-gold">+</span> {l}
+              <span className="text-gold-ink">+</span> {l}
             </li>
           ))}
         </ul>

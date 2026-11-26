@@ -7,7 +7,7 @@
  *  - SEO: landing TIDAK noindex, metadata & JSON-LD, sitemap, robots;
  *    halaman undangan tetap noindex
  *  - demo: nama yang diketik tampil di cover tema asli (iframe), ganti tema
- *  - showcase filter, tab harga, FAQ, testimoni tersembunyi, kontak kosong tidak tampil
+ *  - tema pilihan (Tirai Beludru pertama), daftar harga, FAQ, testimoni tersembunyi, kontak kosong tidak tampil
  *  - video hero (dan tidak diputar bila prefers-reduced-motion)
  */
 import { PrismaClient } from "@prisma/client";
@@ -18,9 +18,6 @@ import { THEME_MANIFESTS } from "../src/themes/registry";
 import { launchBrowser } from "./lib/browser";
 
 /** Tema ulang tahun menurut manifest (urutan kartu = urutan registry). */
-const BDAY = THEME_MANIFESTS.filter((m) => m.eventTypes.includes("BIRTHDAY" as never)).map(
-  (m) => m.id,
-);
 
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith("http")) ?? "http://localhost:3001";
@@ -120,7 +117,8 @@ async function main() {
     const plain = (await (await fetch(`${base}${p}`)).text())
       .replace(/<[^>]+>/g, " ")
       .replace(/\s+/g, " ")
-      .replace(/3 hari sejak pembayaran/g, "");
+      .replace(/3 hari sejak pembayaran/g, "")
+      .replace(/Uang kembali 3 hari/g, "");
     const bad = plain.match(/masa uji|uji coba|\b3 hari\b|watermark/i);
     check(
       !bad,
@@ -129,8 +127,8 @@ async function main() {
   }
   const harga = await (await fetch(`${base}/harga`)).text();
   check(
-    harga.includes("Draf gratis tanpa batas waktu") && harga.includes("90"),
-    "/harga: draf gratis + retensi 90 hari",
+    harga.includes("Coba semua tema gratis") && harga.includes("link khusus"),
+    "/harga: coba gratis + alur pesan (link khusus)",
   );
   for (const p of ["/syarat", "/privasi"]) {
     const b = await (await fetch(`${base}${p}`)).text();
@@ -148,10 +146,17 @@ async function main() {
   await sleep(1500);
   const t0 = await text(m);
   check(
-    t0.includes("Masuk") && t0.includes("Coba Gratis"),
-    "header belum login: Masuk + Coba Gratis",
+    t0.includes("Masuk") || t0.includes("Pilih tema"),
+    "header belum login: Masuk / Pilih tema",
   );
-  check(t0.includes("Buat & Pratinjau Gratis"), "hero: Buat & Pratinjau Gratis");
+  check(
+    t0.includes("Pilih tema") && t0.includes("Coba dengan namamu"),
+    "hero: Pilih tema + Coba dengan namamu",
+  );
+  check(
+    t0.includes("Pembayaran aman") && t0.includes("Uang kembali 3 hari"),
+    "strip jaminan tampil (fakta layanan)",
+  );
   const video = await m.waitForSelector("video[data-playing]", { timeout: 15000 }).then(
     () => true,
     () => false,
@@ -161,9 +166,9 @@ async function main() {
 
   // Demo
   await m.evaluate(`document.getElementById("demo").scrollIntoView()`);
-  const frameReady = async () => {
+  const frameReady = async (theme = "") => {
     for (let i = 0; i < 60; i++) {
-      const f = m.frames().find((x) => x.url().includes("demo=1"));
+      const f = m.frames().find((x) => x.url().includes("demo=1") && x.url().includes(theme));
       if (f && (await f.$("[data-inv-ready]").catch(() => null))) return f;
       await sleep(500);
     }
@@ -188,64 +193,50 @@ async function main() {
   );
   await sleep(500);
   check(!(await m.$("#demo-secondary")), "demo ulang tahun: hanya satu isian nama");
-  f = await frameReady();
+  f = await frameReady("pita-krayon");
   await sleep(1000);
   await m.click("#demo-primary", { count: 3 });
   await m.type("#demo-primary", "Aira");
   await sleep(1500);
   check(
-    !!f && f.url().includes("pita-krayon") && (await text(f)).includes("Aira"),
+    !!f && f.url().includes("pita-krayon") && (await text(f)).toLowerCase().includes("aira"),
     "demo: ganti tema (Pita Krayon) + nama tampil",
   );
 
-  // Showcase filter
+  // Tema pilihan (portofolio): semua tema, Tirai Beludru (andalan) pertama
   await m.evaluate(`document.getElementById("tema").scrollIntoView()`);
   await sleep(400);
-  const cards = () =>
-    m.$$eval("[data-theme-card]", (els) => els.map((e) => e.getAttribute("data-theme-card")));
-  const all = await cards();
-  await m.evaluate(
-    `[...document.querySelectorAll('#tema [role="tab"]')].find((b)=>b.textContent.trim()==="Ulang tahun")?.click()`,
+  const cards = await m.$$eval("[data-theme-card]", (els) =>
+    els.map((e) => e.getAttribute("data-theme-card")),
   );
-  await sleep(300);
-  const bday = await cards();
   check(
-    all.length === THEME_MANIFESTS.length && bday.join() === BDAY.join(),
-    `filter tema: ${all.length} → ulang tahun ${bday.join(",")}`,
+    cards.length === THEME_MANIFESTS.length && cards[0] === "tirai-beludru",
+    `tema pilihan: ${cards.length} tema, pertama ${cards[0]}`,
   );
-  check(!!(await m.$('a[href="/preview/pita-krayon"]')), "tombol “Coba tema ini” ke /preview");
+  check(!!(await m.$('#tema a[href="/preview/pita-krayon"]')), "tombol Coba ke /preview");
+  check(!!(await m.$('#tema a[href^="/pesan/tirai-beludru"]')), "tombol Pesan ke /pesan");
 
-  // Harga
+  // Harga: daftar per tema dari manifest
   await m.evaluate(`document.getElementById("harga").scrollIntoView()`);
   await sleep(400);
   const priceText = await m.$eval("#harga", (e) => (e as HTMLElement).innerText);
+  const prices = [...new Set(THEME_MANIFESTS.map((t) => `Rp${t.price.toLocaleString("id-ID")}`))];
   check(
-    ["Rp49.000", "Rp99.000", "Rp149.000"].every((p) => priceText.includes(p)) &&
+    prices.every((p) => priceText.includes(p)) &&
       priceText.includes("Sudah termasuk di setiap tema") &&
       priceText.includes("Aktif 12 bulan setelah acara") &&
       !/Basic|Premium|Exclusive|paket Gratis/.test(priceText),
-    "harga per tema dari manifest + daftar yang termasuk (tanpa paket)",
+    `harga per tema dari manifest (${prices.join(", ")}) + yang termasuk (tanpa paket)`,
   );
   if (shots) await m.screenshot({ path: `${shots}/m-3-harga.png` });
-  await m.evaluate(
-    `[...document.querySelectorAll('#harga [role="tab"]')].find((b)=>b.textContent.trim()==="Ulang tahun")?.click()`,
-  );
-  await sleep(300);
-  const bdayCards = await m.$$eval("#harga [data-theme-price-card]", (els) =>
-    els.map((e) => e.getAttribute("data-theme-price-card")),
-  );
-  check(
-    bdayCards.join() === BDAY.join(),
-    `tab ulang tahun: hanya tema ulang tahun (${bdayCards.join(",")})`,
-  );
 
   // FAQ & lainnya
-  const faq = await m.$$eval("#faq details", (els) => els.length);
+  const faq = await m.$$eval("#faq [data-slot=accordion-item]", (els) => els.length);
   const all2 = await text(m);
   check(
     faq >= 7 &&
       ((await m.$eval("#faq", (e) => e.textContent ?? "")) as string).includes(
-        "12 bulan setelah tanggal acara",
+        "Berapa lama undangan aktif?",
       ),
     `FAQ ${faq} pertanyaan, masa aktif 12 bulan`,
   );

@@ -108,28 +108,6 @@
   margin-top: 0.35rem;
 }
 
-/* Strip bergulir (sampul tema) — berhenti bila gerak dikurangi. */
-.marquee {
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.marquee-track {
-  display: flex;
-  width: max-content;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .marquee-track {
-    animation: marquee 45s linear infinite;
-  }
-  .marquee:hover .marquee-track {
-    animation-play-state: paused;
-  }
-}
-@keyframes marquee {
-  to {
-    translate: -50% 0;
-  }
-}
-
 /* HP bercerita: layar berganti silang-pudar (tenang). */
 .story-screen {
   opacity: 0;
@@ -308,4 +286,12 @@ html:not([data-intro="play"]) .intro {
   from {
     transform: translateY(105%);
   }
+}
+
+/* Carousel geser tanpa batang gulir (tetap bisa digeser & di-scroll keyboard). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

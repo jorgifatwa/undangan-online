@@ -42,7 +42,7 @@ export function LegalPage({
           </p>
         </div>
       )}
-      <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">
+      <p className="text-gold-ink text-[11px] font-semibold tracking-[0.24em] uppercase">
         {business.name}
       </p>
       <h1 className="font-heading mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">

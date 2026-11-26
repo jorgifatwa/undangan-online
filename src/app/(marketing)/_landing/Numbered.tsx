@@ -1,12 +1,34 @@
-import { CalendarCheck, Check, LayoutDashboard, MessageCircle, Palette } from "lucide-react";
+import { CalendarCheck, Check, MessageCircle, PenLine, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { siteConfig } from "@/lib/site";
-import { THEME_MANIFESTS } from "@/themes/registry";
-
-import { PhoneThumb } from "./PhoneThumb";
 
 /** Ilustrasi kecil (JSX, tanpa gambar) untuk tiap fitur bernomor. */
+function StepperMock() {
+  const steps = ["Tema & warna", "Mempelai", "Acara", "Kata-kata", "Pelengkap"];
+  return (
+    <div className="bg-card w-full max-w-[260px] rounded-2xl border p-4 shadow-lg">
+      <ol className="space-y-1.5 text-xs">
+        {steps.map((t, i) => (
+          <li
+            key={t}
+            className={
+              i === 1
+                ? "bg-muted flex items-center gap-2 rounded-lg px-2 py-1.5 font-medium"
+                : "text-muted-foreground flex items-center gap-2 px-2 py-1"
+            }
+          >
+            <span className="w-3 tabular-nums">{i + 1}</span>
+            <span className="flex-1">{t}</span>
+            {i === 0 && <Check className="text-primary size-3.5" />}
+          </li>
+        ))}
+      </ol>
+      <p className="text-muted-foreground mt-3 text-[11px]">Tersimpan ✓</p>
+    </div>
+  );
+}
+
 function RsvpMock() {
   return (
     <div className="bg-card w-full max-w-[260px] rounded-2xl border p-4 shadow-lg">
@@ -64,28 +86,28 @@ function DashMock() {
 export function Numbered() {
   const ITEMS = [
     {
-      icon: Palette,
-      title: "Tema beranimasi",
-      body: "Cover yang terbuka seperti amplop, ornamen yang bergerak halus, dan pilihan warna. Ganti tema berharga sama selama belum tayang.",
-      art: <PhoneThumb theme={THEME_MANIFESTS[0]} sizes="140px" className="w-[130px] rotate-3" />,
+      icon: PenLine,
+      title: "Isi sendiri, lihat langsung",
+      body: "Form bertahap dengan pratinjau HP di sampingnya. Tersimpan setiap pindah langkah — bisa dilanjutkan kapan saja.",
+      art: <StepperMock />,
     },
     {
-      icon: CalendarCheck,
-      title: "Tamu, RSVP & ucapan",
-      body: "Tempel daftar tamu sekaligus, pantau siapa yang hadir dan jumlah orangnya, sembunyikan ucapan yang tidak pantas.",
-      art: <RsvpMock />,
+      icon: Users,
+      title: "Daftar tamu & link personal",
+      body: "Tempel daftar tamu sekaligus, kelompokkan per grup. Setiap tamu mendapat link dengan namanya sendiri.",
+      art: <DashMock />,
     },
     {
       icon: MessageCircle,
       title: "Kirim lewat WhatsApp",
-      body: "Template pesan sopan yang bisa diubah, link personal untuk setiap tamu, dan tanda terkirim otomatis.",
+      body: "Template pesan sopan yang bisa diubah, kirim per tamu atau ke grup, dan tanda terkirim otomatis.",
       art: <WaMock />,
     },
     {
-      icon: LayoutDashboard,
-      title: "Dashboard milik Anda",
-      body: "Ubah isi undangan selama masa aktif, unduh daftar tamu & RSVP ke CSV — tanpa menunggu admin.",
-      art: <DashMock />,
+      icon: CalendarCheck,
+      title: "Pantau kehadiran & ucapan",
+      body: "Rekap hadir, ragu, dan jumlah orang; sembunyikan ucapan yang tidak pantas; unduh semuanya ke CSV.",
+      art: <RsvpMock />,
     },
   ];
   return (
@@ -96,7 +118,7 @@ export function Numbered() {
           className="group grid items-center gap-6 py-10 md:grid-cols-[90px_1fr_300px]"
           data-reveal
         >
-          <span className="font-heading text-gold text-xl tabular-nums">
+          <span className="font-heading text-gold-ink text-xl tabular-nums">
             [{String(i + 1).padStart(2, "0")}]
           </span>
           <div>

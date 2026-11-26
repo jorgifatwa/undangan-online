@@ -1,14 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
  * "HP BERCERITA": HP menempel di layar saat digulir; isinya berganti mengikuti
  * langkah yang sedang dibaca (gambar layar tema asli Tirai Beludru,
- * pnpm landing:record & landing:story). Ringan: satu IntersectionObserver,
- * tanpa scroll handler; gambar selain pertama dimuat lambat.
+ * pnpm landing:record & landing:story). Di HP: HP kecil di kiri, teks di kanan
+ * (tidak bertumpuk). Ringan: satu IntersectionObserver, tanpa scroll handler.
  */
 const STEPS = [
   {
@@ -61,9 +63,9 @@ export function StoryPhone() {
   }, []);
 
   return (
-    <div className="grid gap-x-16 md:grid-cols-[1fr_340px] lg:grid-cols-[1fr_380px]">
-      {/* HP menempel (di HP: di atas, kecil) */}
-      <div className="sticky top-20 z-[1] order-first mx-auto mb-6 w-[150px] self-start md:top-[calc(50vh-300px)] md:order-last md:mb-0 md:w-[290px] lg:w-[300px]">
+    <div className="grid grid-cols-[108px_1fr] gap-x-5 sm:grid-cols-[150px_1fr] sm:gap-x-8 md:grid-cols-[1fr_340px] md:gap-x-16 lg:grid-cols-[1fr_380px]">
+      {/* HP menempel: di HP kecil di kiri, di layar lebar di kanan */}
+      <div className="sticky top-[calc(50vh-125px)] z-[1] w-full self-start sm:top-[calc(50vh-170px)] md:top-[calc(50vh-300px)] md:order-last md:mx-auto md:w-[290px] lg:w-[300px]">
         <div className="phone">
           <div className="screen aspect-[540/1168]">
             {STEPS.map((s, i) => (
@@ -84,13 +86,13 @@ export function StoryPhone() {
             ))}
           </div>
         </div>
-        <ol className="mt-4 flex justify-center gap-1.5" aria-hidden>
+        <ol className="mt-3 flex justify-center gap-1 md:mt-4 md:gap-1.5" aria-hidden>
           {STEPS.map((s, i) => (
             <li
               key={s.img}
               className={cn(
                 "h-1 rounded-full transition-all duration-500",
-                i === active ? "bg-primary w-6" : "bg-foreground/15 w-1.5",
+                i === active ? "bg-primary w-4 md:w-6" : "bg-foreground/15 w-1 md:w-1.5",
               )}
             />
           ))}
@@ -105,24 +107,47 @@ export function StoryPhone() {
             ref={(el) => {
               refs.current[i] = el;
             }}
-            className="flex min-h-[70vh] items-center md:min-h-[82vh]"
+            className="flex min-h-[62vh] items-center md:min-h-[82vh]"
           >
             <div
               className={cn(
-                "bg-background/85 max-w-md rounded-3xl p-6 backdrop-blur transition-all duration-700 md:bg-transparent md:p-0 md:backdrop-blur-none",
-                i === active ? "opacity-100" : "opacity-35 md:translate-y-2",
+                "max-w-md transition-all duration-700",
+                i === active ? "opacity-100" : "opacity-30 md:translate-y-2",
               )}
             >
-              <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">
+              <p className="text-gold-ink text-[11px] font-semibold tracking-[0.24em] uppercase">
                 {String(i + 1).padStart(2, "0")} · {s.eyebrow}
               </p>
-              <h3 className="font-heading mt-3 text-3xl leading-tight tracking-tight sm:text-4xl">
+              <h3 className="font-heading mt-2 text-2xl leading-tight tracking-tight sm:mt-3 sm:text-4xl">
                 {s.title}
               </h3>
-              <p className="text-muted-foreground mt-3 leading-relaxed">{s.body}</p>
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:mt-3 sm:text-base">
+                {s.body}
+              </p>
             </div>
           </li>
         ))}
+        {/* Ajakan langsung ke tema andalan */}
+        <li className="flex min-h-[40vh] items-center md:min-h-[50vh]">
+          <div className="max-w-md">
+            <p className="font-heading text-2xl leading-tight sm:text-3xl">
+              Jatuh hati dengan Tirai Beludru?
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              <Button asChild size="lg" className="h-11 rounded-full px-6">
+                <Link href="/pesan/tirai-beludru">Pesan Tirai Beludru</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-11 rounded-full bg-transparent px-6"
+              >
+                <Link href="/preview/tirai-beludru">Coba dulu</Link>
+              </Button>
+            </div>
+          </div>
+        </li>
       </ol>
     </div>
   );

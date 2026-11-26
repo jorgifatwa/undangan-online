@@ -15,16 +15,20 @@ import { PhoneThumb } from "./PhoneThumb";
  */
 export function SelectedThemes({ themes }: { themes: ThemeManifest[] }) {
   return (
-    <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+    // HP: carousel geser ke samping (snap); layar lebar: grid.
+    <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3">
       {themes.map((t, i) => (
         <article
           key={t.id}
-          className={cn("group", i === 0 && "md:col-span-2")}
+          className={cn(
+            "group w-[78%] shrink-0 snap-center sm:w-[60%] md:w-auto",
+            i === 0 && "md:col-span-2",
+          )}
           data-theme-card={t.id}
         >
           <Link
             href={`/preview/${t.id}`}
-            className="relative flex h-[380px] items-end justify-center overflow-hidden rounded-[28px] sm:h-[440px]"
+            className="relative flex h-[360px] items-end justify-center overflow-hidden rounded-[28px] sm:h-[440px]"
             style={{
               background: t.thumbnail.background,
               ["--reveal-delay" as string]: `${(i % 3) * 120}ms`,
@@ -48,7 +52,7 @@ export function SelectedThemes({ themes }: { themes: ThemeManifest[] }) {
               <ArrowUpRight className="size-5" />
             </span>
           </Link>
-          <div className="mt-4 flex items-start justify-between gap-3">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <Badge variant="outline" className="text-muted-foreground font-normal">
                 {CATEGORY_LABELS[t.category]} ·{" "}
@@ -66,7 +70,7 @@ export function SelectedThemes({ themes }: { themes: ThemeManifest[] }) {
                 {formatRupiah(t.price)} · sekali bayar
               </p>
             </div>
-            <div className="flex shrink-0 gap-2 pt-1">
+            <div className="flex shrink-0 gap-2 sm:pt-1">
               <Button asChild size="sm" variant="outline" className="rounded-full bg-transparent">
                 <Link href={`/preview/${t.id}`}>Coba</Link>
               </Button>
