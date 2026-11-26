@@ -16,7 +16,8 @@ import { RESERVED_SLUGS, SLUG_RE } from "@/lib/invitations/reserved";
  *    X-Robots-Tag noindex; halaman → cookie penanda perangkat tamu
  *    (lihat lib/guestbook/device.ts)
  *  - /p/{token} (link pratinjau rahasia): noindex, no-referrer, no-store
- *  - /dashboard: proteksi login (logika di authConfig.callbacks.authorized)
+ *  - /isi/{token} (link khusus pembeli): sama seperti /p/ (token di URL)
+ *  - /dashboard & /akun: proteksi login (logika di authConfig.callbacks.authorized)
  * Tautan lama /u/{slug} dialihkan 301 di next.config.ts (sebelum middleware).
  */
 const authMiddleware = NextAuth(authConfig).auth as unknown as (
@@ -51,7 +52,7 @@ export default function middleware(req: NextRequest, ev: NextFetchEvent) {
       );
     return res;
   }
-  if (pathname.startsWith("/p/")) {
+  if (pathname.startsWith("/p/") || pathname.startsWith("/isi/")) {
     // Link pratinjau rahasia: jangan diindeks & jangan bocorkan token lewat Referer.
     const res = NextResponse.next();
     res.headers.set("X-Robots-Tag", NOINDEX);
@@ -59,7 +60,8 @@ export default function middleware(req: NextRequest, ev: NextFetchEvent) {
     res.headers.set("Cache-Control", "private, no-store");
     return res;
   }
-  if (pathname.startsWith("/dashboard")) return authMiddleware(req, ev);
+  if (pathname.startsWith("/dashboard") || pathname === "/akun" || pathname.startsWith("/akun/"))
+    return authMiddleware(req, ev);
   return NextResponse.next();
 }
 

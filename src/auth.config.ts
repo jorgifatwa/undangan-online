@@ -27,14 +27,18 @@ export const authConfig = {
      * Model jasa: hanya email admin (ADMIN_EMAILS) yang boleh masuk. Ditolak
      * SEBELUM akun dibuat, jadi email lain tidak pernah tersimpan.
      */
-    signIn({ user }) {
+    signIn({ user, account }) {
       if (canUseDashboard(user?.email)) return true;
+      // Akun pembeli (dibuat admin) — hanya lewat email/kata sandi.
+      if (account?.provider === "credentials" && user?.role === "CUSTOMER") return true;
       return `/masuk?error=${NOT_ADMIN_ERROR}`;
     },
     /** Dipanggil middleware: tentukan rute mana yang butuh login. */
     authorized({ auth, request: { nextUrl } }) {
-      const isProtected = nextUrl.pathname.startsWith("/dashboard");
-      if (isProtected) return Boolean(auth?.user) && canUseDashboard(auth?.user?.email);
+      const p = nextUrl.pathname;
+      if (p.startsWith("/dashboard"))
+        return Boolean(auth?.user) && canUseDashboard(auth?.user?.email);
+      if (p === "/akun" || p.startsWith("/akun/")) return auth?.user?.role === "CUSTOMER";
       return true;
     },
     jwt({ token, user }) {

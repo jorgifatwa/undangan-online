@@ -81,6 +81,23 @@ export interface EditorProps {
   library: LibraryTrack[];
   /** Musik yang pernah diunggah untuk undangan ini (termasuk yang masih diproses). */
   uploadedAudio: UploadedAudio[];
+  /**
+   * admin    : editor lengkap (dashboard).
+   * claim    : pembeli mengisi lewat link khusus — form BERTAHAP, simpan tiap pindah
+   *            langkah, tanpa tombol admin; langkah terakhir = `finalStep`.
+   * customer : pembeli setelah tayang (/akun) — tema terkunci, tanpa tombol admin.
+   */
+  mode?: "admin" | "claim" | "customer";
+  /** URL pratinjau pemilik (bawaan: rute dashboard). */
+  previewBase?: string;
+  /** Tujuan tombol ← (null = tanpa tombol). */
+  backHref?: string | null;
+  /** URL undangan tayang (mode customer) untuk tombol "Lihat undangan". */
+  liveUrl?: string | null;
+  /** Mode claim: langkah awal & penyimpan posisi langkah. */
+  steps?: { initial: number; onStep: (index: number) => void };
+  /** Mode claim: isi langkah terakhir (konfirmasi). */
+  finalStep?: (api: { flushSave: () => Promise<boolean> }) => React.ReactNode;
 }
 
 type SaveState =
@@ -217,6 +234,9 @@ function Group({
 }
 
 export function Editor(p: EditorProps) {
+  const mode = p.mode ?? "admin";
+  const isAdmin = mode === "admin";
+  const previewBase = p.previewBase ?? `/dashboard/undangan/${p.id}/pratinjau`;
   const schema = p.eventType === "WEDDING" ? weddingDataSchema : birthdayDataSchema;
   // Validasi = schema yang sama dengan server, atas nilai yang sudah dibersihkan.
   const resolver = useMemo<Resolver<FieldValues>>(() => {
@@ -662,15 +682,28 @@ export function Editor(p: EditorProps) {
       title: "Tema, warna & alamat",
       body: (
         <div className="space-y-6">
-          <SlugField
-            id={p.id}
-            slug={slug}
-            onSaved={(s, updatedAt) => {
-              setSlug(s);
-              setPublish((x) => ({ ...x, slug: s, updatedAt }));
-              base.current = updatedAt;
-            }}
-          />
+          {mode !== "claim" && (
+            <SlugField
+              id={p.id}
+              slug={slug}
+              onSaved={(s, updatedAt) => {
+                setSlug(s);
+                setPublish((x) => ({ ...x, slug: s, updatedAt }));
+                base.current = updatedAt;
+              }}
+            />
+          )}
+          {mode === "claim" && (
+            <p className="text-muted-foreground rounded-lg bg-neutral-100 px-3 py-2 text-xs">
+              Boleh ganti ke tema lain dengan harga yang sama selama undangan belum dikonfirmasi.
+              Setelah tayang, tema terkunci.
+            </p>
+          )}
+          {mode === "customer" && (
+            <p className="text-muted-foreground rounded-lg bg-neutral-100 px-3 py-2 text-xs">
+              Tema terkunci setelah undangan tayang. Warna masih bisa diganti.
+            </p>
+          )}
           <ThemePicker
             themes={p.themes}
             themeId={themeId}
@@ -913,6 +946,8 @@ export function Editor(p: EditorProps) {
     {
       key: "bukutamu",
       title: "RSVP & ucapan tamu",
+      // pembeli melihat ucapan & RSVP di dashboard akunnya (tab terpisah)
+      hidden: !isAdmin,
       body: <GuestbookPanel invitationId={p.id} />,
     },
   ];
@@ -929,18 +964,68 @@ export function Editor(p: EditorProps) {
     return list;
   })();
 
+  // ── Mode claim: form bertahap (satu grup per langkah + langkah konfirmasi) ──
+  const stepped = mode === "claim";
+  const stepCount = shownGroups.length + (p.finalStep ? 1 : 0);
+  const [step, setStep] = useState(() =>
+    Math.min(Math.max(0, p.steps?.initial ?? 0), Math.max(0, stepCount - 1)),
+  );
+  const [stepBusy, setStepBusy] = useState(false);
+  const [stepError, setStepError] = useState<string | null>(null);
+  const isFinal = stepped && !!p.finalStep && step >= shownGroups.length;
+  const goStep = async (n: number) => {
+    if (stepBusy || n === step || n < 0 || n >= stepCount) return;
+    setStepBusy(true);
+    setStepError(null);
+    // simpan SETIAP pindah langkah; isian belum valid → tetap di langkah ini
+    const ok = state.kind === "saved" ? true : await flushSave();
+    setStepBusy(false);
+    if (!ok && schema.safeParse(prune(form.getValues())).success === false) {
+      setStepError("Periksa isian bertanda merah sebelum lanjut.");
+      return;
+    }
+    if (!ok) {
+      setStepError("Gagal menyimpan. Periksa koneksi lalu coba lagi.");
+      return;
+    }
+    setStep(n);
+    p.steps?.onStep(n);
+    formRef.current?.scrollTo({ top: 0 });
+    const g = shownGroups[n];
+    if (g) {
+      setOpenGroup(g.key);
+      const target = focusOf(g);
+      if (target)
+        post({
+          ns: "undangku",
+          type: "focus",
+          section: target,
+          order: ((o) => (o.includes(target) ? o : [...manifest.sections]))(
+            defaultOrderFor(p.eventType, manifest.sectionOrder),
+          ),
+        });
+    }
+  };
+  useEffect(() => {
+    if (stepped && shownGroups[step]) setOpenGroup(shownGroups[step].key);
+    // hanya saat mount: sinkronkan grup terbuka dengan langkah tersimpan
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <FormProvider {...form}>
       <MediaContext.Provider value={mediaCtx}>
         <div className="flex h-dvh flex-col bg-neutral-50">
           <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-3 sm:px-4">
-            <Link
-              href="/dashboard"
-              className="text-muted-foreground hover:text-foreground text-sm"
-              aria-label="Kembali ke dashboard"
-            >
-              ←
-            </Link>
+            {p.backHref !== null && (
+              <Link
+                href={p.backHref ?? "/dashboard"}
+                className="text-muted-foreground hover:text-foreground text-sm"
+                aria-label="Kembali"
+              >
+                ←
+              </Link>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{p.title}</p>
               <StatusPill state={state} />
@@ -957,13 +1042,28 @@ export function Editor(p: EditorProps) {
               {showCover ? "Lihat isi" : "Lihat cover"}
             </button>
             <Link
-              href={`/dashboard/undangan/${p.id}/pratinjau`}
+              href={previewBase}
               target="_blank"
               className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
             >
               Pratinjau penuh
             </Link>
-            {!p.suspended && (
+            {mode === "customer" && p.liveUrl && (
+              <a
+                href={p.liveUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-md bg-[#1f9d55] px-3 py-1.5 text-sm font-medium text-white"
+              >
+                Lihat undangan
+              </a>
+            )}
+            {stepped && (
+              <span className="text-muted-foreground text-xs whitespace-nowrap sm:text-sm">
+                Langkah {step + 1}/{stepCount}
+              </span>
+            )}
+            {isAdmin && !p.suspended && (
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
@@ -974,7 +1074,7 @@ export function Editor(p: EditorProps) {
                 <span className="hidden sm:inline">Bagikan pratinjau</span>
               </button>
             )}
-            {live && (
+            {isAdmin && live && (
               <button
                 type="button"
                 onClick={() => setShareOpen(true)}
@@ -983,20 +1083,22 @@ export function Editor(p: EditorProps) {
                 Bagikan
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => setPublishOpen(true)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium",
-                publish.suspended
-                  ? "border border-red-300 text-red-800"
-                  : live
-                    ? "border border-emerald-600 text-emerald-700"
-                    : "bg-primary text-primary-foreground",
-              )}
-            >
-              {publish.suspended ? "Ditangguhkan" : live ? "Terbit ✓" : "Terbitkan"}
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setPublishOpen(true)}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-sm font-medium",
+                  publish.suspended
+                    ? "border border-red-300 text-red-800"
+                    : live
+                      ? "border border-emerald-600 text-emerald-700"
+                      : "bg-primary text-primary-foreground",
+                )}
+              >
+                {publish.suspended ? "Ditangguhkan" : live ? "Terbit ✓" : "Terbitkan"}
+              </button>
+            )}
           </header>
           {publishOpen && (
             <PublishDialog
@@ -1118,24 +1220,81 @@ export function Editor(p: EditorProps) {
               )}
             >
               <div className="mx-auto max-w-xl space-y-3 pb-24">
-                {shownGroups.map((g) => (
-                  <Group
-                    key={g.key}
-                    title={g.title}
-                    open={openGroup === g.key}
-                    onToggle={() => toggleGroup(g.key, focusOf(g))}
-                    chips={[
-                      ...(g.extraChips ?? []),
-                      ...chips(g.section),
-                      ...(visibilityOf(g)?.visible === false
-                        ? [{ text: "disembunyikan", tone: "neutral" as const }]
-                        : []),
-                    ]}
-                    visibility={visibilityOf(g)}
-                  >
-                    {g.body}
-                  </Group>
-                ))}
+                {stepped && (
+                  <ol className="flex flex-wrap gap-1.5" aria-label="Langkah pengisian">
+                    {[
+                      ...shownGroups.map((g) => g.title),
+                      ...(p.finalStep ? ["Konfirmasi"] : []),
+                    ].map((t, i) => (
+                      <li key={t}>
+                        <button
+                          type="button"
+                          disabled={stepBusy}
+                          onClick={() => void goStep(i)}
+                          aria-current={i === step ? "step" : undefined}
+                          className={cn(
+                            "rounded-full border px-2.5 py-1 text-[11px]",
+                            i === step
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : i < step
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                                : "bg-background text-muted-foreground",
+                          )}
+                        >
+                          {i + 1}. {t}
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                {isFinal && p.finalStep?.({ flushSave })}
+                {shownGroups
+                  .filter((_, i) => !stepped || i === step)
+                  .map((g) => (
+                    <Group
+                      key={g.key}
+                      title={g.title}
+                      open={openGroup === g.key}
+                      onToggle={() => toggleGroup(g.key, focusOf(g))}
+                      chips={[
+                        ...(g.extraChips ?? []),
+                        ...chips(g.section),
+                        ...(visibilityOf(g)?.visible === false
+                          ? [{ text: "disembunyikan", tone: "neutral" as const }]
+                          : []),
+                      ]}
+                      visibility={visibilityOf(g)}
+                    >
+                      {g.body}
+                    </Group>
+                  ))}
+                {stepped && (
+                  <div className="sticky bottom-0 -mx-1 flex items-center justify-between gap-2 border-t bg-neutral-50/95 px-1 py-3 backdrop-blur">
+                    <button
+                      type="button"
+                      disabled={step === 0 || stepBusy}
+                      onClick={() => void goStep(step - 1)}
+                      className="hover:bg-muted rounded-md border px-3 py-2 text-sm disabled:opacity-40"
+                    >
+                      ← Sebelumnya
+                    </button>
+                    {stepError && (
+                      <span role="alert" className="text-destructive text-center text-xs">
+                        {stepError}
+                      </span>
+                    )}
+                    {step < stepCount - 1 && (
+                      <button
+                        type="button"
+                        disabled={stepBusy}
+                        onClick={() => void goStep(step + 1)}
+                        className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60"
+                      >
+                        {stepBusy ? "Menyimpan…" : "Simpan & lanjut →"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
             <section
@@ -1144,7 +1303,7 @@ export function Editor(p: EditorProps) {
             >
               <PreviewFrame
                 ref={iframeRef}
-                src={`/dashboard/undangan/${p.id}/pratinjau?editor=1`}
+                src={`${previewBase}?editor=1`}
                 title="Pratinjau undangan"
               />
             </section>

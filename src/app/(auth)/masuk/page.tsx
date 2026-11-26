@@ -10,6 +10,8 @@ import { NOT_ADMIN_ERROR, canUseDashboard } from "@/lib/admin-access";
 import { safeCallback } from "@/lib/auth/callback";
 import { siteConfig } from "@/lib/site";
 
+import { CustomerLoginForm } from "./CustomerLoginForm";
+
 export const metadata: Metadata = { title: "Masuk" };
 
 /** Pesan error Auth.js (?error=...) dalam Bahasa Indonesia. */
@@ -31,6 +33,8 @@ export default async function MasukPage({
   const redirectTo = safeCallback(callbackUrl);
 
   const session = await auth();
+  // Pembeli → dashboard akunnya.
+  if (session?.user?.role === "CUSTOMER") redirect("/akun");
   // Sesi lama milik email non-admin: jangan dialihkan ke dashboard (akan
   // kembali ke sini terus) — tampilkan pesan & tombol keluar.
   const blocked = !!session?.user && !canUseDashboard(session.user.email);
@@ -52,11 +56,11 @@ export default async function MasukPage({
           {siteConfig.name}
         </Link>
         <h1 className="font-heading mt-6 text-center text-3xl">
-          {adminOnly ? "Masuk admin" : "Selamat datang"}
+          {adminOnly ? "Masuk" : "Selamat datang"}
         </h1>
         <p className="text-muted-foreground mt-2 text-center text-sm">
           {adminOnly
-            ? "Khusus admin untuk membuat dan mengelola undangan pesanan."
+            ? "Pembeli: masuk dengan email & kata sandi yang dikirim admin."
             : "Masuk untuk membuat dan mengelola undanganmu."}
         </p>
 
@@ -91,14 +95,22 @@ export default async function MasukPage({
             </Button>
           </form>
         ) : (
-          /* Form POST biasa ke route handler (bukan server action) — lihat masuk/google/route.ts */
-          <form method="post" action="/masuk/google" className="mt-8">
-            <input type="hidden" name="callbackUrl" value={redirectTo} />
-            <Button type="submit" variant="outline" size="lg" className="w-full gap-3">
-              <GoogleIcon className="size-5" />
-              Masuk dengan Google
-            </Button>
-          </form>
+          <>
+            <CustomerLoginForm />
+            <div className="text-muted-foreground my-6 flex items-center gap-3 text-xs">
+              <span className="bg-border h-px flex-1" />
+              admin
+              <span className="bg-border h-px flex-1" />
+            </div>
+            {/* Form POST biasa ke route handler (bukan server action) — lihat masuk/google/route.ts */}
+            <form method="post" action="/masuk/google">
+              <input type="hidden" name="callbackUrl" value={redirectTo} />
+              <Button type="submit" variant="outline" size="lg" className="w-full gap-3">
+                <GoogleIcon className="size-5" />
+                Masuk dengan Google
+              </Button>
+            </form>
+          </>
         )}
 
         <p className="text-muted-foreground mt-8 text-center text-xs leading-relaxed">

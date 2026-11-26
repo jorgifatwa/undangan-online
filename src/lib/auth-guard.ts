@@ -12,6 +12,7 @@ import { NOT_ADMIN_ERROR, canUseDashboard } from "@/lib/admin-access";
 export async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) redirect("/masuk");
+  if (session.user.role === "CUSTOMER") redirect("/akun");
   // Model jasa: dashboard/editor hanya untuk admin — diperiksa di setiap
   // request, termasuk server action, bukan hanya di middleware.
   if (!canUseDashboard(session.user.email)) redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
