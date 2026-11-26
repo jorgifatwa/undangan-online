@@ -48,7 +48,8 @@ export const authConfig = {
     session({ session, token }) {
       // Narrowing eksplisit: tipe JWT di next-auth beta tidak selalu ter-augment.
       if (typeof token.id === "string") session.user.id = token.id;
-      session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
+      session.user.role =
+        token.role === "ADMIN" ? "ADMIN" : token.role === "CUSTOMER" ? "CUSTOMER" : "USER";
       return session;
     },
   },

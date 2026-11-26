@@ -23,6 +23,24 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  /// Pembeli (marketplace / website): login hanya untuk mengelola undangannya
+  /// sendiri — ubah data (tanpa ganti tema), ucapan, tamu, kirim undangan.
+  CUSTOMER
+}
+
+/// Asal link khusus.
+enum ClaimSource {
+  MARKETPLACE
+  WEBSITE
+}
+
+enum ClaimStatus {
+  /// Pembeli sedang mengisi (boleh ganti tema berharga sama).
+  OPEN
+  /// Pembeli menekan "Pakai undangan ini": undangan tayang, tema terkunci.
+  CONFIRMED
+  /// Dicabut admin.
+  REVOKED
 }
 
 enum EventType {
@@ -192,6 +210,9 @@ model Invitation {
   /// Template pesan WhatsApp milik pemilik (null = template bawaan). Kolom
   /// terpisah dari `data` agar autosave editor tidak menimpanya.
   shareTemplate String?
+  /// Masa aktif setelah tayang lewat link khusus (pengaturan global super admin
+  /// saat konfirmasi). Selama belum lewat, pembeli bebas mengubah data.
+  activeUntil   DateTime?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
@@ -206,6 +227,7 @@ model Invitation {
   previewLinks PreviewLink[]
   ownerLinks   OwnerLink[]
   booking      Booking?
+  claim        ClaimLink?
 
   @@index([userId])
   @@index([status])
@@ -530,4 +552,51 @@ model OwnerLink {
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
 
   @@index([invitationId])
+}
+
+/// Link khusus (/isi/{token}): pembeli mengisi undangannya sendiri lewat form
+/// bertahap + pratinjau, tanpa login. Dibuat admin (marketplace) atau otomatis
+/// setelah bayar (website). Hanya HASH token yang disimpan. Belum dikonfirmasi
+/// & lewat `expiresAt` → undangan draf + link dihapus otomatis (cron).
+model ClaimLink {
+  id               String      @id @default(cuid())
+  /// Kode pendek untuk admin & pembeli, mis. "LK-7K3P".
+  code             String      @unique
+  tokenHash        String      @unique
+  source           ClaimSource
+  /// Nama marketplace (mis. "Shopee") & nomor pesanannya.
+  marketplace      String?
+  marketplaceOrder String?
+  customerName     String
+  /// Nomor WhatsApp ternormalisasi (62…).
+  customerPhone    String?
+  customerEmail    String?
+  /// Harga tema yang dibayar (rupiah) — ganti tema hanya ke harga yang sama.
+  price            Int
+  /// Undangan draf milik link ini (dibuat bersama link).
+  invitationId     String      @unique
+  status           ClaimStatus @default(OPEN)
+  /// Step form terakhir yang tersimpan (melanjutkan pengisian).
+  step             Int         @default(0)
+  expiresAt        DateTime
+  confirmedAt      DateTime?
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  /// Admin pembuat (null bila dibuat otomatis oleh pembayaran website).
+  createdById      String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([status, expiresAt])
+  @@index([createdAt])
+}
+
+/// Pengaturan global yang diubah super admin (mis. batas waktu link khusus).
+/// Nilai JSON per kunci; bawaan ada di src/lib/settings.ts.
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }
