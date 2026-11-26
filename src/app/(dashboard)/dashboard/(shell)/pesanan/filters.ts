@@ -10,9 +10,14 @@ export const STATUS_FILTERS = [
 ] as const;
 export type StatusFilter = (typeof STATUS_FILTERS)[number]["key"];
 
-export function orderWhere(status: StatusFilter, q: string): Prisma.WebOrderWhereInput {
+export function orderWhere(
+  status: StatusFilter,
+  q: string,
+  themeId = "",
+): Prisma.WebOrderWhereInput {
   return {
     ...(status !== "semua" ? { status } : {}),
+    ...(themeId ? { themeId } : {}),
     ...(q
       ? {
           OR: [

@@ -1,7 +1,12 @@
 import { CircleCheck, CircleX } from "lucide-react";
 import type { Metadata } from "next";
 
+import type { Prisma } from "@prisma/client";
+
 import { PageHeader } from "@/components/admin/PageHeader";
+import { DataPagination } from "@/components/data/DataPagination";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { listParams } from "@/components/data/list-params";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -45,9 +50,20 @@ const dt = new Intl.DateTimeFormat("id-ID", {
 const mb = (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`;
 
 /** Admin: status konfigurasi, penyimpanan, cron, dan log aktivitas admin. */
-export default async function SystemPage() {
+export default async function SystemPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await requireAdmin();
-  const [storage, counts, runs, logs] = await Promise.all([
+  const sp = await searchParams;
+  const { q, page, skip, take, one } = listParams(sp);
+  const aksi = one("aksi");
+  const logWhere: Prisma.AdminAuditWhereInput = {
+    ...(aksi && Object.hasOwn(ACTION_LABEL, aksi) ? { action: aksi } : {}),
+    ...(q ? { actor: { contains: q, mode: "insensitive" } } : {}),
+  };
+  const [storage, counts, runs, logs, logTotal] = await Promise.all([
     db.media.aggregate({ where: { status: "READY" }, _sum: { bytes: true }, _count: true }),
     Promise.all([
       db.invitation.count(),
@@ -57,7 +73,8 @@ export default async function SystemPage() {
       db.wish.count(),
     ]),
     cronRuns(),
-    db.adminAudit.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
+    db.adminAudit.findMany({ where: logWhere, orderBy: { createdAt: "desc" }, skip, take }),
+    db.adminAudit.count({ where: logWhere }),
   ]);
   const checks = [
     { label: "Email (SMTP)", ok: emailConfigured(), hint: "SMTP_HOST, SMTP_USER, SMTP_PASS" },
@@ -174,11 +191,25 @@ export default async function SystemPage() {
       <Card>
         <CardHeader>
           <CardTitle className="font-heading text-xl font-normal">Log aktivitas admin</CardTitle>
-          <CardDescription>100 aksi terakhir.</CardDescription>
+          <CardDescription>Terbaru di atas.</CardDescription>
         </CardHeader>
         <CardContent>
+          <DataToolbar
+            className="mb-4"
+            searchPlaceholder="Cari admin (email / nama)"
+            filters={[
+              {
+                key: "aksi",
+                label: "Jenis aksi",
+                allLabel: "Semua aksi",
+                options: Object.entries(ACTION_LABEL).map(([value, label]) => ({ value, label })),
+              },
+            ]}
+          />
           {logs.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">Belum ada aktivitas.</p>
+            <p className="text-muted-foreground py-6 text-center text-sm">
+              {q || aksi ? "Tidak ada aktivitas yang cocok." : "Belum ada aktivitas."}
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -205,6 +236,13 @@ export default async function SystemPage() {
               </TableBody>
             </Table>
           )}
+          <DataPagination
+            basePath="/dashboard/sistem"
+            params={sp}
+            page={page}
+            total={logTotal}
+            unit="aktivitas"
+          />
         </CardContent>
       </Card>
     </>

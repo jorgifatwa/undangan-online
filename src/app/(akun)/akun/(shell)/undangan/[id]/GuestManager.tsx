@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ClientPagination } from "@/components/data/ClientPagination";
 import { saveShareTemplateAction } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/share-actions";
 import {
   defaultTemplate,
@@ -108,6 +109,8 @@ export function GuestManager({
   const [filter, setFilter] = useState<Filter>("semua");
   const [groupFilter, setGroupFilter] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const PAGE = 20;
 
   const fallback = useMemo(() => defaultTemplate(info), [info]);
   const [template, setTemplate] = useState(initialTemplate ?? fallback);
@@ -155,6 +158,11 @@ export function GuestManager({
         (!groupFilter || g.group === groupFilter),
     );
   }, [guests, q, filter, groupFilter]);
+  // kembali ke halaman 1 bila pencarian/filter berubah
+  useEffect(() => setPage(1), [q, filter, groupFilter]);
+  const pageCount = Math.max(1, Math.ceil(shown.length / PAGE));
+  const curPage = Math.min(page, pageCount);
+  const pageItems = shown.slice((curPage - 1) * PAGE, curPage * PAGE);
   const sentCount = (guests ?? []).filter((g) => g.sentAt).length;
 
   const markSent = (ids: string[], sent: boolean) =>
@@ -478,14 +486,14 @@ export function GuestManager({
                   type="checkbox"
                   className="accent-primary size-4"
                   aria-label="Pilih semua yang tampil"
-                  checked={shown.every((g) => selected.has(g.id))}
+                  checked={pageItems.length > 0 && pageItems.every((g) => selected.has(g.id))}
                   onChange={(e) =>
-                    setSelected(e.target.checked ? new Set(shown.map((g) => g.id)) : new Set())
+                    setSelected(e.target.checked ? new Set(pageItems.map((g) => g.id)) : new Set())
                   }
                 />
-                Pilih semua ({shown.length})
+                Pilih semua di halaman ini ({pageItems.length})
               </li>
-              {shown.map((g) => {
+              {pageItems.map((g) => {
                 const msg = message(g);
                 return (
                   <li
@@ -548,6 +556,15 @@ export function GuestManager({
                 );
               })}
             </ul>
+          )}
+          {guests !== null && shown.length > 0 && (
+            <ClientPagination
+              page={curPage}
+              total={shown.length}
+              pageSize={PAGE}
+              onPage={setPage}
+              unit="tamu"
+            />
           )}
         </CardContent>
       </Card>

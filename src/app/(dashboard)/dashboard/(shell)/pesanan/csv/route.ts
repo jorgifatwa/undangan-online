@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   const status = (STATUS_FILTERS.some((f) => f.key === st) ? st : "semua") as StatusFilter;
   const q = (url.searchParams.get("q") ?? "").trim().slice(0, 80);
   const orders = await db.webOrder.findMany({
-    where: orderWhere(status, q),
+    where: orderWhere(status, q, (url.searchParams.get("tema") ?? "").slice(0, 40)),
     orderBy: { createdAt: "desc" },
     take: 5000,
   });

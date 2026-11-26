@@ -1,12 +1,13 @@
-import { Download, Search } from "lucide-react";
+import { Download } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { PageHeader } from "@/components/admin/PageHeader";
+import { DataPagination } from "@/components/data/DataPagination";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { listParams } from "@/components/data/list-params";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -20,8 +21,7 @@ import { db } from "@/lib/db";
 import { emailConfigured } from "@/lib/email";
 import { formatRupiah, formatTanggal } from "@/lib/format";
 import { midtransConfigured } from "@/lib/midtrans";
-import { cn } from "@/lib/utils";
-import { getManifest } from "@/themes/registry";
+import { getManifest, THEME_MANIFESTS } from "@/themes/registry";
 
 import { OrderActions } from "./OrderActions";
 import { orderWhere, STATUS_FILTERS, STATUS_STYLE, type StatusFilter } from "./filters";
@@ -32,29 +32,27 @@ export const metadata: Metadata = { title: "Pesanan website" };
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireAdmin();
   const sp = await searchParams;
-  const status = (
-    STATUS_FILTERS.some((f) => f.key === sp.status) ? sp.status : "semua"
-  ) as StatusFilter;
-  const q = (sp.q ?? "").trim().slice(0, 80);
-  const [orders, counts] = await Promise.all([
-    db.webOrder.findMany({
-      where: orderWhere(status, q),
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
+  const { q, page, skip, take, one } = listParams(sp);
+  const st = one("status");
+  const status = (STATUS_FILTERS.some((f) => f.key === st) ? st : "semua") as StatusFilter;
+  const theme = THEME_MANIFESTS.some((m) => m.id === one("tema")) ? one("tema") : "";
+  const where = orderWhere(status, q, theme);
+  const [orders, total, counts] = await Promise.all([
+    db.webOrder.findMany({ where, orderBy: { createdAt: "desc" }, skip, take }),
+    db.webOrder.count({ where }),
     db.webOrder.groupBy({ by: ["status"], _count: true }),
   ]);
-  const countOf = (k: StatusFilter) =>
-    k === "semua"
-      ? counts.reduce((s, c) => s + c._count, 0)
-      : (counts.find((c) => c.status === k)?._count ?? 0);
+  const countOf = (k: StatusFilter) => counts.find((c) => c.status === k)?._count ?? 0;
   const emailEnabled = emailConfigured();
-  const qs = (patch: Record<string, string>) =>
-    `?${new URLSearchParams({ ...(q ? { q } : {}), ...(status !== "semua" ? { status } : {}), ...patch })}`;
+  const csvQs = new URLSearchParams({
+    ...(q ? { q } : {}),
+    ...(status !== "semua" ? { status } : {}),
+    ...(theme ? { tema: theme } : {}),
+  }).toString();
 
   return (
     <>
@@ -67,51 +65,42 @@ export default async function OrdersPage({
         }
         actions={
           <Button asChild variant="outline">
-            <a href={`/dashboard/pesanan/csv${qs({})}`}>
+            <a href={`/dashboard/pesanan/csv${csvQs ? `?${csvQs}` : ""}`}>
               <Download /> Unduh CSV
             </a>
           </Button>
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="bg-muted flex flex-wrap rounded-lg p-[3px]">
-          {STATUS_FILTERS.map((f) => (
-            <Button
-              key={f.key}
-              asChild
-              size="sm"
-              variant="ghost"
-              className={cn(status === f.key ? "bg-background shadow-sm" : "text-muted-foreground")}
-            >
-              <Link
-                href={`/dashboard/pesanan${qs({ status: f.key === "semua" ? "" : f.key })}`.replace(
-                  /status=&?/,
-                  "",
-                )}
-              >
-                {f.label}
-                <span className="text-muted-foreground text-xs tabular-nums">{countOf(f.key)}</span>
-              </Link>
-            </Button>
-          ))}
-        </div>
-        <form className="relative ml-auto w-full max-w-xs" action="/dashboard/pesanan">
-          {status !== "semua" && <input type="hidden" name="status" value={status} />}
-          <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-          <Input
-            name="q"
-            defaultValue={q}
-            placeholder="Cari nama, email, no. pesanan"
-            className="pl-8"
-          />
-        </form>
-      </div>
-
       <Card>
         <CardContent>
+          <DataToolbar
+            className="mb-4"
+            searchPlaceholder="Cari nama, email, WA, no. pesanan"
+            filters={[
+              {
+                key: "status",
+                label: "Status",
+                allLabel: "Semua status",
+                options: STATUS_FILTERS.filter((f) => f.key !== "semua").map((f) => ({
+                  value: f.key,
+                  label: `${f.label} (${countOf(f.key)})`,
+                })),
+              },
+              {
+                key: "tema",
+                label: "Tema",
+                allLabel: "Semua tema",
+                options: THEME_MANIFESTS.map((m) => ({ value: m.id, label: m.name })),
+              },
+            ]}
+          />
           {orders.length === 0 ? (
-            <p className="text-muted-foreground py-10 text-center text-sm">Belum ada pesanan.</p>
+            <p className="text-muted-foreground py-10 text-center text-sm">
+              {q || status !== "semua" || theme
+                ? "Tidak ada pesanan yang cocok."
+                : "Belum ada pesanan."}
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -175,6 +164,13 @@ export default async function OrdersPage({
               </TableBody>
             </Table>
           )}
+          <DataPagination
+            basePath="/dashboard/pesanan"
+            params={sp}
+            page={page}
+            total={total}
+            unit="pesanan"
+          />
         </CardContent>
       </Card>
     </>

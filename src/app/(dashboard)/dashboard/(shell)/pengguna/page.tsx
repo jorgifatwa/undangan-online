@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import type { Prisma } from "@prisma/client";
+
 import { PageHeader } from "@/components/admin/PageHeader";
+import { DataPagination } from "@/components/data/DataPagination";
+import { DataToolbar } from "@/components/data/DataToolbar";
+import { listParams } from "@/components/data/list-params";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -28,40 +33,100 @@ export const metadata: Metadata = { title: "Pengguna" };
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const me = await requireAdmin();
-  const { tab } = await searchParams;
+  const sp = await searchParams;
+  const { q, page, skip, take, one } = listParams(sp);
+  const tab = one("tab") === "pembeli" ? "pembeli" : "admin";
   const emailEnabled = emailConfigured();
-  const [admins, customers] = await Promise.all([
-    db.user.findMany({ where: { role: "ADMIN" }, orderBy: { createdAt: "asc" } }),
-    db.user.findMany({
-      where: { role: "CUSTOMER" },
-      orderBy: { createdAt: "desc" },
-      take: 300,
-      include: {
-        invitations: {
-          select: {
-            id: true,
-            slug: true,
-            status: true,
-            eventType: true,
-            data: true,
-            activeUntil: true,
-            claim: { select: { status: true, code: true } },
-            _count: { select: { guests: true, wishes: true, rsvps: true } },
-          },
-        },
-      },
-    }),
-  ]);
-  const sentCounts = await db.guest.groupBy({
-    by: ["invitationId"],
-    where: { NOT: { sentAt: null }, invitation: { user: { role: "CUSTOMER" } } },
-    _count: true,
-  });
+  const envList = adminEmails();
+  const masuk = one("masuk");
+  const adminWhere: Prisma.UserWhereInput = {
+    role: "ADMIN",
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+    ...(masuk === "sandi" ? { passwordHash: { not: null } } : {}),
+    ...(masuk === "google" ? { email: { in: envList } } : {}),
+  };
+  const st = one("status");
+  const akun = one("akun");
+  const customerWhere: Prisma.UserWhereInput = {
+    role: "CUSTOMER",
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+            { invitations: { some: { slug: { contains: q.toLowerCase() } } } },
+            { invitations: { some: { claim: { code: { contains: q.toUpperCase() } } } } },
+          ],
+        }
+      : {}),
+    ...(st === "tayang" ? { invitations: { some: { status: "PUBLISHED" } } } : {}),
+    ...(st === "belum" ? { invitations: { none: { status: "PUBLISHED" } } } : {}),
+    ...(akun === "ada" ? { email: { not: null } } : {}),
+    ...(akun === "belum" ? { email: null } : {}),
+  };
+  const [admins, adminTotal, adminAll, customers, customerTotal, customerAll, dbAdminEmails] =
+    await Promise.all([
+      tab === "admin"
+        ? db.user.findMany({ where: adminWhere, orderBy: { createdAt: "asc" }, skip, take })
+        : Promise.resolve([]),
+      db.user.count({ where: adminWhere }),
+      db.user.count({ where: { role: "ADMIN" } }),
+      tab === "pembeli"
+        ? db.user.findMany({
+            where: customerWhere,
+            orderBy: { createdAt: "desc" },
+            skip,
+            take,
+            include: {
+              invitations: {
+                select: {
+                  id: true,
+                  slug: true,
+                  status: true,
+                  eventType: true,
+                  data: true,
+                  activeUntil: true,
+                  claim: { select: { status: true, code: true } },
+                  _count: { select: { guests: true, wishes: true, rsvps: true } },
+                },
+              },
+            },
+          })
+        : Promise.resolve([]),
+      db.user.count({ where: customerWhere }),
+      db.user.count({ where: { role: "CUSTOMER" } }),
+      db.user.findMany({
+        where: { role: "ADMIN", email: { in: envList } },
+        select: { email: true },
+      }),
+    ]);
+  const invIds = customers.flatMap((c) => c.invitations.map((i) => i.id));
+  const sentCounts = invIds.length
+    ? await db.guest.groupBy({
+        by: ["invitationId"],
+        where: { NOT: { sentAt: null }, invitationId: { in: invIds } },
+        _count: true,
+      })
+    : [];
   const sentOf = (id: string) => sentCounts.find((s) => s.invitationId === id)?._count ?? 0;
-  const envOnly = adminEmails().filter((e) => !admins.some((a) => a.email === e));
+  // Admin lewat ADMIN_EMAILS yang belum pernah masuk (belum ada di database)
+  const envOnly =
+    page === 1 && masuk !== "sandi"
+      ? envList.filter(
+          (e) => !dbAdminEmails.some((a) => a.email === e) && (!q || e.includes(q.toLowerCase())),
+        )
+      : [];
+  const tabHref = (t: string) => `/dashboard/pengguna${t === "pembeli" ? "?tab=pembeli" : ""}`;
 
   return (
     <>
@@ -69,10 +134,14 @@ export default async function UsersPage({
         title="Pengguna"
         description="Kelola akun admin dan pantau akun pembeli beserta undangannya."
       />
-      <Tabs defaultValue={tab === "pembeli" ? "pembeli" : "admin"} className="gap-6">
+      <Tabs value={tab} className="gap-6">
         <TabsList>
-          <TabsTrigger value="admin">Admin ({admins.length + envOnly.length})</TabsTrigger>
-          <TabsTrigger value="pembeli">Pembeli ({customers.length})</TabsTrigger>
+          <TabsTrigger value="admin" asChild>
+            <Link href={tabHref("admin")}>Admin ({adminAll + envOnly.length})</Link>
+          </TabsTrigger>
+          <TabsTrigger value="pembeli" asChild>
+            <Link href={tabHref("pembeli")}>Pembeli ({customerAll})</Link>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="admin" className="space-y-6">
@@ -90,6 +159,21 @@ export default async function UsersPage({
           </Card>
           <Card>
             <CardContent>
+              <DataToolbar
+                className="mb-4"
+                searchPlaceholder="Cari nama atau email admin"
+                filters={[
+                  {
+                    key: "masuk",
+                    label: "Cara masuk",
+                    allLabel: "Semua cara masuk",
+                    options: [
+                      { value: "sandi", label: "Email & kata sandi" },
+                      { value: "google", label: "Google (ADMIN_EMAILS)" },
+                    ],
+                  },
+                ]}
+              />
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -147,6 +231,13 @@ export default async function UsersPage({
                   ))}
                 </TableBody>
               </Table>
+              <DataPagination
+                basePath="/dashboard/pengguna"
+                params={sp}
+                page={page}
+                total={adminTotal}
+                unit="admin"
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -154,9 +245,33 @@ export default async function UsersPage({
         <TabsContent value="pembeli">
           <Card>
             <CardContent>
+              <DataToolbar
+                className="mb-4"
+                searchPlaceholder="Cari nama, email, alamat undangan, kode link"
+                filters={[
+                  {
+                    key: "status",
+                    label: "Status undangan",
+                    allLabel: "Semua undangan",
+                    options: [
+                      { value: "tayang", label: "Sudah tayang" },
+                      { value: "belum", label: "Belum tayang" },
+                    ],
+                  },
+                  {
+                    key: "akun",
+                    label: "Akun login",
+                    allLabel: "Semua akun",
+                    options: [
+                      { value: "ada", label: "Sudah punya login" },
+                      { value: "belum", label: "Belum punya login" },
+                    ],
+                  },
+                ]}
+              />
               {customers.length === 0 ? (
                 <p className="text-muted-foreground py-10 text-center text-sm">
-                  Belum ada pembeli.
+                  {q || st || akun ? "Tidak ada pembeli yang cocok." : "Belum ada pembeli."}
                 </p>
               ) : (
                 <Table>
@@ -238,6 +353,13 @@ export default async function UsersPage({
                   </TableBody>
                 </Table>
               )}
+              <DataPagination
+                basePath="/dashboard/pengguna"
+                params={sp}
+                page={page}
+                total={customerTotal}
+                unit="pembeli"
+              />
             </CardContent>
           </Card>
           <p className="text-muted-foreground mt-3 text-xs">
