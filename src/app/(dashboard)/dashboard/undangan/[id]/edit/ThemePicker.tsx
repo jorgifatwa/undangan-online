@@ -29,7 +29,10 @@ export function ThemePicker({
   onPreviewTheme,
   onTheme,
   onVariant,
+  mode = "admin",
 }: {
+  /** admin: alur beli/terbit lama; local/claim/customer: alur pesan baru. */
+  mode?: "admin" | "local" | "claim" | "customer";
   themes: ThemeManifest[];
   themeId: string;
   variantId: string | null;
@@ -93,7 +96,16 @@ export function ThemePicker({
           })}
         </div>
         <div className="text-muted-foreground mt-3 space-y-2 text-xs" data-theme-pricing>
-          {purchase.purchased ? (
+          {mode === "local" ? (
+            <p>
+              Tema <strong>{current.name}</strong>: {formatRupiah(current.price)}, dibayar sekali di
+              langkah terakhir (Pesan & bayar).
+            </p>
+          ) : mode !== "admin" ? (
+            <p>
+              Tema <strong>{current.name}</strong> sudah dibayar untuk undangan ini.
+            </p>
+          ) : purchase.purchased ? (
             <p>
               Tema <strong>{current.name}</strong> sudah dibeli untuk undangan ini.{" "}
               {PAID_ACTIVE.short}.
@@ -177,9 +189,11 @@ export function ThemePicker({
         </ul>
         <p className="text-muted-foreground mt-3 text-xs">
           Ganti tema tidak menghapus data.{" "}
-          {purchase.purchased
-            ? "Pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana); ke tema lebih mahal cukup bayar selisihnya."
-            : "Sebelum membeli, semua tema bebas dicoba."}{" "}
+          {mode !== "admin"
+            ? ""
+            : purchase.purchased
+              ? "Pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana); ke tema lebih mahal cukup bayar selisihnya."
+              : "Sebelum membeli, semua tema bebas dicoba."}{" "}
           Section yang tidak didukung tema tetap tersimpan dan ditandai &ldquo;tidak tampil di tema
           ini&rdquo;.
         </p>

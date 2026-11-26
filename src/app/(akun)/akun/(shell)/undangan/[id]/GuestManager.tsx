@@ -524,34 +524,37 @@ export function GuestManager({
                         )}
                       </p>
                     </div>
-                    <Button
-                      asChild
-                      size="sm"
-                      className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90"
-                    >
-                      <a
-                        href={waLink(msg, g.phone)}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={() => !g.sentAt && markSent([g.id], true)}
+                    {/* HP: tombol di baris kedua (nama tidak terhimpit) */}
+                    <div className="flex w-full gap-2 pl-6 sm:w-auto sm:pl-0">
+                      <Button
+                        asChild
+                        size="sm"
+                        className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90"
                       >
-                        <MessageCircle /> WhatsApp
-                      </a>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void copy(msg, "Pesan disalin")}
-                    >
-                      <Copy /> Pesan
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void copy(guestLink(slug, g.name), "Link disalin")}
-                    >
-                      <Link2 /> Link
-                    </Button>
+                        <a
+                          href={waLink(msg, g.phone)}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={() => !g.sentAt && markSent([g.id], true)}
+                        >
+                          <MessageCircle /> WhatsApp
+                        </a>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void copy(msg, "Pesan disalin")}
+                      >
+                        <Copy /> Pesan
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void copy(guestLink(slug, g.name), "Link disalin")}
+                      >
+                        <Link2 /> Link
+                      </Button>
+                    </div>
                   </li>
                 );
               })}

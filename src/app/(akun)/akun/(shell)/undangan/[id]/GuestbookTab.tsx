@@ -4,14 +4,7 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GuestbookPanel } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/GuestbookPanel";
 import { guestbookAction } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/guestbook-actions";
 
@@ -55,14 +48,14 @@ export function GuestbookTab({ invitationId, slug }: { invitationId: string; slu
         <CardDescription>
           Rekap kehadiran dan ucapan tamu; sembunyikan yang tidak pantas.
         </CardDescription>
-        <CardAction className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           <Button variant="outline" size="sm" onClick={() => void exportCsv("ucapan")}>
             <Download /> Unduh ucapan (CSV)
           </Button>
           <Button variant="outline" size="sm" onClick={() => void exportCsv("rsvp")}>
             <Download /> Unduh RSVP (CSV)
           </Button>
-        </CardAction>
+        </div>
       </CardHeader>
       <CardContent>
         <GuestbookPanel invitationId={invitationId} />

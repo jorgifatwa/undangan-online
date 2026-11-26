@@ -23,12 +23,12 @@ export function PeriodPicker({ period, base }: { period: Period; base: string })
           </Button>
         ))}
       </div>
-      <form action={base} className="flex items-center gap-1.5">
+      <form action={base} className="flex flex-wrap items-center gap-1.5">
         <Input
           type="date"
           name="from"
           defaultValue={period.fromYmd}
-          className="h-8 w-36"
+          className="h-8 w-[8.75rem]"
           aria-label="Dari tanggal"
         />
         <span className="text-muted-foreground text-xs">–</span>
@@ -36,7 +36,7 @@ export function PeriodPicker({ period, base }: { period: Period; base: string })
           type="date"
           name="to"
           defaultValue={period.toYmd}
-          className="h-8 w-36"
+          className="h-8 w-[8.75rem]"
           aria-label="Sampai tanggal"
         />
         <Button

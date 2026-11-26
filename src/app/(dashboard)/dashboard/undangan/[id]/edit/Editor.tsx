@@ -751,6 +751,7 @@ export function Editor(p: EditorProps) {
             </p>
           )}
           <ThemePicker
+            mode={mode}
             themes={p.themes}
             themeId={themeId}
             variantId={variantId}
