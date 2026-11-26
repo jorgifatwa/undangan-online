@@ -22,9 +22,9 @@ import {
   Search,
   Trash2,
   UserPlus,
+  Users,
 } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -186,174 +186,169 @@ export function GuestManager({
     });
 
   return (
-    <div className="space-y-6">
-      {!active && (
-        <Alert>
-          <AlertDescription>
-            Undangan belum tayang — link baru bisa dibuka tamu setelah dikonfirmasi.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Tambah tamu */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-heading text-xl font-normal">Tambah tamu</CardTitle>
-          <CardDescription>Satu per satu, atau tempel daftar dari catatan/Excel.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "satu" | "massal")}>
-            <TabsList>
-              <TabsTrigger value="satu">Satu per satu</TabsTrigger>
-              <TabsTrigger value="massal">Tempel banyak</TabsTrigger>
-            </TabsList>
-            <TabsContent value="satu" className="pt-3">
-              <form
-                className="grid gap-2 sm:grid-cols-[1fr_11rem_10rem_auto]"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  start(async () => {
-                    const r = await addGuestAction(invitationId, { name, phone, group });
-                    if (!r.ok) return void toast.error(r.error);
-                    if (r.errors.length) return void toast.error(r.errors[0]);
-                    setName("");
-                    setPhone("");
-                    await reload();
-                  });
-                }}
-              >
-                <Input
-                  placeholder="Nama tamu"
-                  aria-label="Nama tamu"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  maxLength={80}
-                />
-                <Input
-                  placeholder="No. WA (opsional)"
-                  aria-label="Nomor WhatsApp"
-                  inputMode="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                <Input
-                  placeholder="Grup (opsional)"
-                  aria-label="Grup"
-                  list="guest-groups"
-                  value={group}
-                  onChange={(e) => setGroup(e.target.value)}
-                  maxLength={40}
-                />
-                <Button type="submit" disabled={pending}>
-                  <UserPlus /> Tambah
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="massal" className="space-y-2 pt-3">
-              <form
-                className="space-y-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  start(async () => {
-                    const r = await addGuestsBulkAction(invitationId, bulk, group);
-                    if (!r.ok) return void toast.error(r.error);
-                    toast.success(`${r.added} tamu ditambahkan`, {
-                      description: r.errors.slice(0, 3).join("\n") || undefined,
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+      <div className="space-y-6 lg:sticky lg:top-24">
+        {/* Tambah tamu */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-xl font-normal">Tambah tamu</CardTitle>
+            <CardDescription>Satu per satu, atau tempel daftar dari catatan/Excel.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={mode} onValueChange={(v) => setMode(v as "satu" | "massal")}>
+              <TabsList>
+                <TabsTrigger value="satu">Satu per satu</TabsTrigger>
+                <TabsTrigger value="massal">Tempel banyak</TabsTrigger>
+              </TabsList>
+              <TabsContent value="satu" className="pt-3">
+                <form
+                  className="grid grid-cols-2 gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    start(async () => {
+                      const r = await addGuestAction(invitationId, { name, phone, group });
+                      if (!r.ok) return void toast.error(r.error);
+                      if (r.errors.length) return void toast.error(r.errors[0]);
+                      setName("");
+                      setPhone("");
+                      await reload();
                     });
-                    if (!r.errors.length) setBulk("");
-                    await reload();
-                  });
-                }}
-              >
-                <Textarea
-                  className="font-mono"
-                  rows={6}
-                  value={bulk}
-                  onChange={(e) => setBulk(e.target.value)}
-                  placeholder={
-                    "Satu tamu per baris, contoh:\nBudi Santoso, 0812 3456 7890\nKeluarga Pak RT\nSiti, 0857…, Teman kantor"
-                  }
-                />
-                <div className="flex flex-wrap items-center gap-2">
+                  }}
+                >
                   <Input
-                    className="w-56"
-                    placeholder="Grup untuk semua (opsional)"
+                    className="col-span-2"
+                    placeholder="Nama tamu"
+                    aria-label="Nama tamu"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    maxLength={80}
+                  />
+                  <Input
+                    placeholder="No. WA (opsional)"
+                    aria-label="Nomor WhatsApp"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Grup (opsional)"
+                    aria-label="Grup"
                     list="guest-groups"
                     value={group}
                     onChange={(e) => setGroup(e.target.value)}
                     maxLength={40}
                   />
-                  <Button type="submit" disabled={pending || !bulk.trim()}>
-                    Tambahkan semua
+                  <Button type="submit" className="col-span-2" disabled={pending}>
+                    <UserPlus /> Tambah tamu
                   </Button>
-                </div>
-              </form>
-            </TabsContent>
-          </Tabs>
-          <datalist id="guest-groups">
-            {groups.map((g) => (
-              <option key={g} value={g} />
-            ))}
-          </datalist>
-        </CardContent>
-      </Card>
-
-      {/* Template pesan + kirim ke grup */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-heading text-xl font-normal">Pesan undangan</CardTitle>
-          <CardDescription>
-            Kirim ke grup memakai sapaan umum tanpa nama. Untuk link personal, kirim per tamu di
-            daftar bawah.
-          </CardDescription>
-          <CardAction className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowTemplate((v) => !v)}>
-              <PenLine /> {showTemplate ? "Tutup template" : "Ubah template"}
-            </Button>
-            <Button asChild size="sm" className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90">
-              <a href={waLink(message(null))} target="_blank" rel="noreferrer">
-                <MessageCircle /> Kirim ke grup WA
-              </a>
-            </Button>
-          </CardAction>
-        </CardHeader>
-        {showTemplate && (
-          <CardContent className="space-y-3">
-            <div className="flex flex-wrap gap-1.5">
-              {PLACEHOLDERS.map((p) => (
-                <Badge
-                  key={p.key}
-                  asChild
-                  variant="outline"
-                  className="cursor-pointer font-mono"
-                  title={p.label}
+                </form>
+              </TabsContent>
+              <TabsContent value="massal" className="space-y-2 pt-3">
+                <form
+                  className="space-y-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    start(async () => {
+                      const r = await addGuestsBulkAction(invitationId, bulk, group);
+                      if (!r.ok) return void toast.error(r.error);
+                      toast.success(`${r.added} tamu ditambahkan`, {
+                        description: r.errors.slice(0, 3).join("\n") || undefined,
+                      });
+                      if (!r.errors.length) setBulk("");
+                      await reload();
+                    });
+                  }}
                 >
-                  <button type="button" onClick={() => setTemplate((t) => `${t}${p.key}`)}>
-                    {p.key}
-                  </button>
-                </Badge>
+                  <Textarea
+                    className="font-mono"
+                    rows={6}
+                    value={bulk}
+                    onChange={(e) => setBulk(e.target.value)}
+                    placeholder={
+                      "Satu tamu per baris, contoh:\nBudi Santoso, 0812 3456 7890\nKeluarga Pak RT\nSiti, 0857…, Teman kantor"
+                    }
+                  />
+                  <div className="grid gap-2">
+                    <Input
+                      placeholder="Grup untuk semua (opsional)"
+                      list="guest-groups"
+                      value={group}
+                      onChange={(e) => setGroup(e.target.value)}
+                      maxLength={40}
+                    />
+                    <Button type="submit" disabled={pending || !bulk.trim()}>
+                      Tambahkan semua
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+            </Tabs>
+            <datalist id="guest-groups">
+              {groups.map((g) => (
+                <option key={g} value={g} />
               ))}
-              <Button variant="link" size="xs" onClick={() => setTemplate(fallback)}>
-                Kembalikan bawaan
+            </datalist>
+          </CardContent>
+        </Card>
+
+        {/* Template pesan + kirim ke grup */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-heading text-xl font-normal">Pesan undangan</CardTitle>
+            <CardDescription>
+              Kirim ke grup memakai sapaan umum tanpa nama. Untuk link personal, kirim per tamu dari
+              daftar tamu.
+              {!active && " Link baru bisa dibuka tamu setelah undangan tayang."}
+            </CardDescription>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setShowTemplate((v) => !v)}>
+                <PenLine /> {showTemplate ? "Tutup template" : "Ubah template"}
+              </Button>
+              <Button asChild size="sm" className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90">
+                <a href={waLink(message(null))} target="_blank" rel="noreferrer">
+                  <MessageCircle /> Kirim ke grup WA
+                </a>
               </Button>
             </div>
-            <Textarea
-              rows={8}
-              maxLength={MAX_TEMPLATE}
-              value={template}
-              onChange={(e) => setTemplate(e.target.value)}
-            />
-            <p className="text-muted-foreground text-xs">Pratinjau (tamu contoh “Budi”):</p>
-            <pre className="bg-muted/60 rounded-lg p-3 text-xs whitespace-pre-wrap">
-              {message({ name: "Budi" })}
-            </pre>
-          </CardContent>
-        )}
-      </Card>
+          </CardHeader>
+          {showTemplate && (
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap gap-1.5">
+                {PLACEHOLDERS.map((p) => (
+                  <Badge
+                    key={p.key}
+                    asChild
+                    variant="outline"
+                    className="cursor-pointer font-mono"
+                    title={p.label}
+                  >
+                    <button type="button" onClick={() => setTemplate((t) => `${t}${p.key}`)}>
+                      {p.key}
+                    </button>
+                  </Badge>
+                ))}
+                <Button variant="link" size="xs" onClick={() => setTemplate(fallback)}>
+                  Kembalikan bawaan
+                </Button>
+              </div>
+              <Textarea
+                rows={8}
+                maxLength={MAX_TEMPLATE}
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+              />
+              <p className="text-muted-foreground text-xs">Pratinjau (tamu contoh “Budi”):</p>
+              <pre className="bg-muted/60 rounded-lg p-3 text-xs whitespace-pre-wrap">
+                {message({ name: "Budi" })}
+              </pre>
+            </CardContent>
+          )}
+        </Card>
+      </div>
 
       {/* Daftar tamu */}
-      <Card>
+      <Card className="min-h-80">
         <CardHeader>
           <CardTitle className="font-heading text-xl font-normal">Daftar tamu</CardTitle>
           <CardDescription>
@@ -463,9 +458,19 @@ export function GuestManager({
               <Skeleton className="h-10 w-full" />
             </div>
           ) : shown.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">
-              {guests.length === 0 ? "Belum ada tamu. Tambahkan di atas." : "Tidak ada yang cocok."}
-            </p>
+            <div className="flex flex-col items-center gap-3 py-12 text-center">
+              <span className="bg-sand text-primary grid size-14 place-items-center rounded-full">
+                <Users className="size-6" />
+              </span>
+              <p className="font-heading text-xl">
+                {guests.length === 0 ? "Belum ada tamu" : "Tidak ada yang cocok"}
+              </p>
+              <p className="text-muted-foreground max-w-xs text-sm">
+                {guests.length === 0
+                  ? "Tambahkan tamu satu per satu atau tempel daftar sekaligus, lalu kirim undangan personal lewat WhatsApp."
+                  : "Coba kata kunci atau saringan lain."}
+              </p>
+            </div>
           ) : (
             <ul className="divide-y">
               <li className="text-muted-foreground flex items-center gap-2 py-2 text-xs">
