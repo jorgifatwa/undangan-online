@@ -39,6 +39,7 @@
     "e2e:media": "tsx --env-file=.env --conditions=react-server scripts/e2e-media.ts",
     "e2e:claims": "tsx --env-file=.env --conditions=react-server scripts/e2e-claims.ts",
     "admin:create": "tsx --env-file=.env scripts/admin-create.ts",
+    "e2e:admin": "tsx --env-file=.env --conditions=react-server scripts/e2e-admin.ts",
     "e2e:web-order": "tsx --env-file=.env --conditions=react-server scripts/e2e-web-order.ts",
     "e2e:claim-flow": "tsx --env-file=.env --conditions=react-server scripts/e2e-claim-flow.ts",
     "e2e:retention": "tsx --env-file=.env --conditions=react-server scripts/e2e-retention.ts",

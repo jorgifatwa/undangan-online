@@ -4,6 +4,7 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
 import type { Prisma } from "@prisma/client";
 
+import { notifyPaidOrder } from "@/lib/admin/notify";
 import { claimLinkMessage, claimUrl } from "@/lib/claims/messages";
 import { createClaim } from "@/lib/claims/service";
 import { db } from "@/lib/db";
@@ -189,6 +190,12 @@ async function fulfil(orderId: string) {
       if (r.ok)
         await db.webOrder.update({ where: { id: order.id }, data: { emailSentAt: new Date() } });
     }
+    // beri tahu admin (gagal kirim tidak membatalkan pesanan)
+    const fresh = await db.webOrder.findUnique({ where: { id: order.id } });
+    if (fresh)
+      await notifyPaidOrder(fresh).catch((e) =>
+        console.error("[web-order] notifikasi admin gagal", e),
+      );
   } catch (e) {
     console.error("[web-order] gagal memenuhi pesanan", order.midtransOrderId, e);
     const fresh = await db.webOrder.findUnique({ where: { id: order.id } });
