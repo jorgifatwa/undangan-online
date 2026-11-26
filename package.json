@@ -38,6 +38,7 @@
     "media:cleanup": "tsx --env-file=.env --conditions=react-server scripts/media-cleanup.ts",
     "e2e:media": "tsx --env-file=.env --conditions=react-server scripts/e2e-media.ts",
     "e2e:claims": "tsx --env-file=.env --conditions=react-server scripts/e2e-claims.ts",
+    "e2e:claim-flow": "tsx --env-file=.env --conditions=react-server scripts/e2e-claim-flow.ts",
     "e2e:retention": "tsx --env-file=.env --conditions=react-server scripts/e2e-retention.ts",
     "e2e:publish": "tsx --env-file=.env --conditions=react-server scripts/e2e-publish.ts",
     "seed:perf": "tsx --env-file=.env scripts/seed-perf.ts",

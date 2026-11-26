@@ -20,7 +20,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
 
   // tolak POST lintas situs (CSRF login)
   const origin = req.headers.get("origin");
-  if (origin && origin !== req.nextUrl.origin) return new NextResponse(null, { status: 403 });
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (origin && origin !== "null") {
+    let originHost: string | null = null;
+    try {
+      originHost = new URL(origin).host;
+    } catch {
+      /* origin rusak */
+    }
+    if (!host || originHost !== host) return new NextResponse(null, { status: 403 });
+  }
 
   const { state, claim } = await findClaimByToken(token);
   if (!claim || (state !== "open" && state !== "confirmed"))

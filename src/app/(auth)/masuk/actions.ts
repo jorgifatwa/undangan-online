@@ -6,18 +6,20 @@ import { signIn } from "@/auth";
 
 /** Login akun pembeli (email + kata sandi dari admin). Sukses → /akun (redirect dilempar). */
 export async function customerLoginAction(
-  _prev: { error: string | null },
+  _prev: { error: string | null; email: string },
   form: FormData,
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; email: string }> {
+  const email = String(form.get("email") ?? "").slice(0, 200);
   try {
     await signIn("credentials", {
-      email: String(form.get("email") ?? ""),
+      email,
       password: String(form.get("password") ?? ""),
       redirectTo: "/akun",
     });
   } catch (e) {
-    if (e instanceof AuthError) return { error: "Email atau kata sandi salah." };
+    // email dikembalikan agar form (yang direset React setelah action) tetap terisi
+    if (e instanceof AuthError) return { error: "Email atau kata sandi salah.", email };
     throw e; // redirect sukses
   }
-  return { error: null };
+  return { error: null, email };
 }

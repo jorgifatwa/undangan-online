@@ -10,7 +10,7 @@ import { customerLoginAction } from "./actions";
 
 /** Form login pembeli (data login dikirim admin lewat WhatsApp/email). */
 export function CustomerLoginForm() {
-  const [state, action, pending] = useActionState(customerLoginAction, { error: null });
+  const [state, action, pending] = useActionState(customerLoginAction, { error: null, email: "" });
   return (
     <form action={action} className="mt-6 grid gap-3">
       {state.error && (
@@ -23,7 +23,15 @@ export function CustomerLoginForm() {
       )}
       <div className="grid gap-1">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          defaultValue={state.email}
+          key={state.email}
+        />
       </div>
       <div className="grid gap-1">
         <Label htmlFor="password">Kata sandi</Label>
