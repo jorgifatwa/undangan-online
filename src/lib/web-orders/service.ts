@@ -256,3 +256,54 @@ export async function purgeUnpaidWebOrders(now = new Date()) {
   });
   return { deleted: r.count };
 }
+
+// ------------------------------- Admin -------------------------------------
+
+/**
+ * Admin: perbarui pesanan — PENDING dicek ke Midtrans; LUNAS tapi link belum
+ * dibuat → dipenuhi ulang. Mengembalikan pesanan terbaru.
+ */
+export async function adminRefreshOrder(id: string) {
+  const order = await db.webOrder.findUnique({ where: { id } });
+  if (!order) return null;
+  if (order.status === "PENDING" && midtransConfigured()) {
+    const st = await fetchTransactionStatus(order.midtransOrderId).catch(() => null);
+    if (st && st.order_id === order.midtransOrderId)
+      await applyPaymentOutcome(order.midtransOrderId, outcomeOf(st), st);
+  }
+  const now = await db.webOrder.findUnique({ where: { id } });
+  if (now?.status === "PAID" && !now.claimId) await fulfil(id);
+  return db.webOrder.findUnique({ where: { id } });
+}
+
+/** Link khusus pesanan (dibuka dari token terenkripsi), atau null. */
+export function orderClaimUrl(order: { claimTokenEnc: string | null }) {
+  const token = order.claimTokenEnc ? open(order.claimTokenEnc) : null;
+  return token ? claimUrl(token) : null;
+}
+
+/** Admin: kirim ulang email link khusus ke pemesan. */
+export async function resendOrderEmail(
+  id: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!emailConfigured()) return { ok: false, error: "SMTP belum diisi di env." };
+  const order = await db.webOrder.findUnique({ where: { id } });
+  const url = order ? orderClaimUrl(order) : null;
+  if (!order || !url || !order.claimId)
+    return { ok: false, error: "Link khusus pesanan belum ada." };
+  const claim = await db.claimLink.findUnique({ where: { id: order.claimId } });
+  if (!claim) return { ok: false, error: "Link khusus tidak ditemukan." };
+  const r = await sendEmail({
+    to: order.buyerEmail,
+    subject: "Link pengisian undangan Anda",
+    text: claimLinkMessage({
+      customerName: order.buyerName,
+      themeName: getManifest(order.themeId)?.name ?? order.themeId,
+      url,
+      expiresAt: claim.expiresAt,
+    }).replace(/\*/g, ""),
+  });
+  if (!r.ok) return r;
+  await db.webOrder.update({ where: { id }, data: { emailSentAt: new Date() } });
+  return { ok: true };
+}
