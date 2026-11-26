@@ -57,3 +57,5 @@ next-env.d.ts
 
 # worktree git lokal
 /.worktrees/
+# catatan tugas agen lokal
+/.agents/tasks/
