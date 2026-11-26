@@ -56,9 +56,21 @@ export default async function DashboardPage() {
               : `Kamu punya ${invitations.length} undangan.`}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/undangan/baru">+ Buat undangan</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {user.role === "ADMIN" && (
+            <>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/link-khusus">Link khusus</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/pengaturan">Pengaturan</Link>
+              </Button>
+            </>
+          )}
+          <Button asChild>
+            <Link href="/dashboard/undangan/baru">+ Buat undangan</Link>
+          </Button>
+        </div>
       </div>
 
       {invitations.length > 0 && (
