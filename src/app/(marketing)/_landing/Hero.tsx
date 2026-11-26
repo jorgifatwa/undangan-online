@@ -46,7 +46,7 @@ export function Hero() {
               <Button
                 asChild
                 size="lg"
-                className="h-12 rounded-full px-6 text-[15px] shadow-[0_12px_30px_-12px_rgb(120_50_25/0.6)]"
+                className="h-12 rounded-full px-6 text-[15px] shadow-[0_12px_30px_-12px_rgb(110_20_35/0.5)]"
               >
                 <Link href="/tema">
                   Pilih tema <ArrowRight aria-hidden />

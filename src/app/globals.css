@@ -53,14 +53,14 @@
 }
 
 :root {
-  /* Hangat diperhalus: gading lembut, terakota redup, aksen emas tipis. */
+  /* Hangat diperhalus: gading lembut, MARUN LOGO (#6e1423), aksen emas tipis. */
   --background: oklch(0.986 0.006 80);
   --foreground: oklch(0.25 0.018 45);
   --card: oklch(0.997 0.003 85);
   --card-foreground: oklch(0.25 0.018 45);
   --popover: oklch(0.997 0.003 85);
   --popover-foreground: oklch(0.25 0.018 45);
-  --primary: oklch(0.5 0.105 38);
+  --primary: oklch(0.356 0.123 17.5);
   --primary-foreground: oklch(0.99 0.005 80);
   --secondary: oklch(0.955 0.014 78);
   --secondary-foreground: oklch(0.32 0.035 45);
@@ -72,7 +72,8 @@
   --border: oklch(0.91 0.012 72);
   --input: oklch(0.9 0.014 72);
   --ring: oklch(0.7 0.09 78);
-  --chart-1: oklch(0.5 0.105 38);
+  /* grafik: marun lebih terang (#932937) agar lolos uji kecerahan & buta warna */
+  --chart-1: oklch(0.45 0.14 17.5);
   --chart-2: oklch(0.7 0.1 78);
   --chart-3: oklch(0.6 0.06 140);
   --chart-4: oklch(0.45 0.05 250);
@@ -82,11 +83,11 @@
      terracotta tua (section CTA). */
   --gold: oklch(0.72 0.095 78);
   --sand: oklch(0.958 0.017 76);
-  --clay: oklch(0.36 0.085 35);
-  /* Sidebar admin: pasir hangat, item aktif terakota lembut. */
+  --clay: oklch(0.356 0.123 17.5);
+  /* Sidebar admin: pasir hangat, item aktif marun. */
   --sidebar: oklch(0.972 0.012 78);
   --sidebar-foreground: oklch(0.28 0.02 45);
-  --sidebar-primary: oklch(0.5 0.105 38);
+  --sidebar-primary: oklch(0.356 0.123 17.5);
   --sidebar-primary-foreground: oklch(0.99 0.005 80);
   --sidebar-accent: oklch(0.935 0.022 75);
   --sidebar-accent-foreground: oklch(0.28 0.03 45);

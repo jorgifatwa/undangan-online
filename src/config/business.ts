@@ -8,7 +8,7 @@ import { siteConfig } from "@/lib/site";
  * Contoh isian ada di komentar CONTOH; ganti `null` dengan nilai asli.
  */
 export const business = {
-  /** Nama brand dari env NEXT_PUBLIC_BRAND_NAME (default "Undangan Online"). */
+  /** Nama brand dari env NEXT_PUBLIC_BRAND_NAME (default "undanganonline.id"). */
   name: siteConfig.name,
 
   /**

@@ -8,7 +8,7 @@ import { siteConfig } from "@/lib/site";
  * Kirim email lewat SMTP (link khusus, data login pembeli, dll.).
  * Kredensial diisi pemilik di env:
  *   SMTP_HOST, SMTP_PORT (465 = SSL, 587 = STARTTLS), SMTP_USER, SMTP_PASS,
- *   SMTP_FROM (mis. "Undangan Online <halo@domain.id>").
+ *   SMTP_FROM (mis. "undanganonline.id <halo@undanganonline.id>").
  * Belum diisi → `emailConfigured()` false; pemanggil menampilkan opsi
  * WhatsApp saja (tidak melempar).
  */
