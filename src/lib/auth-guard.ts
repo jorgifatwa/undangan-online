@@ -2,7 +2,9 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { NOT_ADMIN_ERROR, canUseDashboard } from "@/lib/admin-access";
+import { business } from "@/config/business";
+import { NOT_ADMIN_ERROR, canUseDashboard, isAdminEmail } from "@/lib/admin-access";
+import { db } from "@/lib/db";
 
 /**
  * Pastikan request berasal dari user yang login.
@@ -17,6 +19,12 @@ export async function requireUser() {
   // request, termasuk server action, bukan hanya di middleware.
   if (!canUseDashboard(session.user.email, session.user.role))
     redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
+  // Admin dari database (bukan ADMIN_EMAILS): role di JWT bisa basi setelah
+  // akses dicabut → periksa ulang ke database di setiap request.
+  if (!business.selfService && !isAdminEmail(session.user.email)) {
+    const u = await db.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+    if (u?.role !== "ADMIN") redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
+  }
   return session.user;
 }
 
@@ -47,7 +55,5 @@ export async function requireMember() {
   const session = await auth();
   if (!session?.user?.id) redirect("/masuk");
   if (session.user.role === "CUSTOMER") return session.user;
-  if (!canUseDashboard(session.user.email, session.user.role))
-    redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
-  return session.user;
+  return requireUser();
 }

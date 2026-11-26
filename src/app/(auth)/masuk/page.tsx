@@ -9,8 +9,9 @@ import { GoogleIcon } from "@/components/layout/google-icon";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { business } from "@/config/business";
-import { NOT_ADMIN_ERROR, canUseDashboard } from "@/lib/admin-access";
+import { NOT_ADMIN_ERROR, canUseDashboard, isAdminEmail } from "@/lib/admin-access";
 import { safeCallback } from "@/lib/auth/callback";
+import { db } from "@/lib/db";
 import { siteConfig } from "@/lib/site";
 
 import { bouquetHanging, velvetBg } from "../../(marketing)/_landing/art";
@@ -41,7 +42,12 @@ export default async function MasukPage({
   if (session?.user?.role === "CUSTOMER") redirect("/akun");
   // Sesi lama milik email non-admin: jangan dialihkan ke dashboard (akan
   // kembali ke sini terus) — tampilkan pesan & tombol keluar.
-  const blocked = !!session?.user && !canUseDashboard(session.user.email, session.user.role);
+  let blocked = !!session?.user && !canUseDashboard(session.user.email, session.user.role);
+  // Admin dari database yang aksesnya sudah dicabut (role di JWT masih ADMIN).
+  if (session?.user && !blocked && !business.selfService && !isAdminEmail(session.user.email)) {
+    const u = await db.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+    blocked = u?.role !== "ADMIN";
+  }
   if (session?.user && !blocked) redirect(redirectTo);
 
   const errorKey = blocked ? NOT_ADMIN_ERROR : error;

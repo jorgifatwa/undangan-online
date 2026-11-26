@@ -1,3 +1,4 @@
+import { markCronRun } from "@/lib/admin/cron-log";
 import { purgeExpiredClaims } from "@/lib/claims/service";
 import { purgeUnpaidWebOrders } from "@/lib/web-orders/service";
 
@@ -15,5 +16,6 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`)
     return new Response("Unauthorized", { status: 401 });
   const [claims, webOrders] = await Promise.all([purgeExpiredClaims(), purgeUnpaidWebOrders()]);
+  await markCronRun("claims-cleanup", { claims, webOrders });
   return Response.json({ claims, webOrders });
 }

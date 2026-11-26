@@ -7,6 +7,7 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { newPassword } from "@/lib/admin/password";
 import { requireAdmin } from "@/lib/auth-guard";
 import { createClaim, hashClaimToken } from "@/lib/claims/service";
 import { claimLinkMessage, claimUrl, loginMessage } from "@/lib/claims/messages";
@@ -180,12 +181,6 @@ export async function extendActiveAction(claimId: string, days: number): Promise
   await audit(admin.email ?? admin.id, "claim.extendActive", claim.invitationId, { days: d.data });
   revalidatePath(PATH);
   return { ok: true };
-}
-
-/** Kata sandi acak yang mudah diketik (tanpa huruf/angka mirip). */
-function newPassword() {
-  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  return [...randomBytes(12)].map((b) => chars[b % chars.length]).join("");
 }
 
 export interface IssuedLogin {
