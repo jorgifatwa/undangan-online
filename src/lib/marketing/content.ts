@@ -1,7 +1,5 @@
 import { business } from "@/config/business";
 import { formatRupiah } from "@/lib/format";
-import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
-import { DRAFT_MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
 import { MAX_AUDIO_SECONDS, MAX_PHOTO_BYTES } from "@/lib/media/limits";
 import { LIMITS, PAID_ACTIVE } from "@/lib/pricing";
 import { ADDONS } from "@/lib/pricing/addons";
@@ -31,7 +29,6 @@ export const INCLUDED: string[] = [
 
 /** Belum tersedia: fitur yang direncanakan + add-on yang belum dijual. */
 export const COMING_SOON: string[] = [
-  "Daftar tamu",
   "Impor tamu dari Excel",
   "QR check-in di lokasi",
   "Mode privat dengan kata sandi",
@@ -40,14 +37,14 @@ export const COMING_SOON: string[] = [
 
 /** Kalimat cara bayar (tergantung ada/tidaknya nomor WhatsApp). */
 export const PAYMENT_TEXT = business.whatsapp
-  ? "Pembayaran online (QRIS, transfer bank, e-wallet) segera hadir. Sementara itu, hubungi kami lewat WhatsApp untuk membeli tema."
-  : "Pembayaran online (QRIS, transfer bank, e-wallet) segera hadir. Sementara itu, semua tema bisa dicoba & dipratinjau gratis.";
+  ? "Bayar online saat memesan (QRIS, transfer bank, e-wallet). Membeli di marketplace? Kami kirim link khusus lewat WhatsApp."
+  : "Bayar online saat memesan (QRIS, transfer bank, e-wallet).";
 
 export const REFUND_TEXT =
   "Dana dikembalikan penuh bila diminta dalam 3 hari sejak pembayaran dan undangan belum pernah diterbitkan. Setelah undangan diterbitkan, dana tidak dapat dikembalikan, kecuali undangan tidak dapat diakses karena kesalahan layanan kami.";
 
 export const THEME_CHANGE_TEXT =
-  "Sebelum membeli, semua tema bebas dicoba. Setelah membeli, pindah ke tema dengan harga sama atau lebih murah gratis (tanpa pengembalian dana), sedangkan pindah ke tema lebih mahal cukup membayar selisih harganya. Isi undangan tetap utuh.";
+  "Sebelum memesan, semua tema bebas dicoba. Setelah membayar, Anda masih boleh pindah ke tema lain dengan harga yang sama selama undangan belum dikonfirmasi tayang — isi undangan tetap utuh. Setelah tayang, tema terkunci.";
 
 const photoMb = Math.round(MAX_PHOTO_BYTES / 1024 / 1024);
 const priceList = THEME_MANIFESTS.map((m) => `${m.name} ${formatRupiah(m.price)}`).join(", ");
@@ -73,15 +70,15 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Bagaimana data tamu saya dijaga?",
-    a: "Halaman undangan tidak diindeks mesin pencari. Alamat IP tamu tidak disimpan mentah (hanya sidik acak harian untuk mencegah spam), dan Anda bisa menyembunyikan atau menghapus ucapan kapan saja dari editor. Data hanya dipakai untuk menjalankan undangan Anda.",
+    a: "Halaman undangan tidak diindeks mesin pencari. Alamat IP tamu tidak disimpan mentah (hanya sidik acak harian untuk mencegah spam), dan Anda bisa menyembunyikan atau menghapus ucapan kapan saja dari dashboard Anda. Data hanya dipakai untuk menjalankan undangan Anda.",
   },
   {
     q: "Apakah bisa dicoba gratis?",
-    a: `Bisa. Buat undangan, isi semua bagian, ganti tema, dan pratinjau sepuasnya tanpa bayar dan tanpa batas waktu. Undangan bisa diterbitkan & dibagikan ke tamu setelah tema dibeli. Foto dan musik draf yang belum dibeli dan tidak diubah selama ${DRAFT_MEDIA_RETENTION_DAYS} hari dihapus otomatis (teks tetap tersimpan, dengan peringatan 7 hari sebelumnya).`,
+    a: "Bisa. Semua tema bisa dicoba gratis dengan data contoh, bahkan dengan nama Anda sendiri — tanpa daftar akun. Saat memesan, isi undangan langkah demi langkah sambil melihat pratinjaunya (tersimpan di browser Anda), lalu bayar sekali. Setelah lunas, kami kirim link khusus untuk mengunggah foto dan menayangkan undangan.",
   },
   {
-    q: "Bisakah keluarga melihat dulu sebelum diterbitkan?",
-    a: `Bisa. Dari editor, buat link pratinjau rahasia dan kirim ke keluarga atau pasangan — bisa dibuka tanpa login, bertanda "PRATINJAU", berlaku ${PREVIEW_LINK_DAYS} hari, dan bisa dicabut kapan saja. RSVP, ucapan, dan amplop digital tidak aktif di link pratinjau.`,
+    q: "Bisakah keluarga melihat dulu sebelum ditayangkan?",
+    a: "Bisa. Pratinjau tampil langsung di samping form selama Anda mengisi, dan undangan baru bisa dibuka tamu setelah Anda sendiri mengonfirmasi & menayangkannya. Setelah tayang, isi undangan masih bisa diubah selama masa aktif.",
   },
   { q: "Bisakah dana dikembalikan?", a: REFUND_TEXT },
 ];

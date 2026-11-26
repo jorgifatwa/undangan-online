@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import { PageHeader } from "@/components/admin/PageHeader";
 import { requireAdmin } from "@/lib/auth-guard";
 import { getSettings } from "@/lib/settings";
 
@@ -13,13 +13,9 @@ export default async function SettingsPage() {
   await requireAdmin();
   const settings = await getSettings();
   return (
-    <section>
-      <Link href="/dashboard" className="text-muted-foreground text-sm hover:underline">
-        ← Dashboard
-      </Link>
-      <h1 className="font-heading mt-1 text-3xl">Pengaturan</h1>
-      <p className="text-muted-foreground mt-1 text-sm">Berlaku global untuk semua pembeli.</p>
+    <>
+      <PageHeader title="Pengaturan" description="Berlaku global untuk semua pembeli." />
       <SettingsForm initial={settings} />
-    </section>
+    </>
   );
 }

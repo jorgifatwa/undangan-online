@@ -116,7 +116,9 @@ async function main() {
     await admin.setViewport({ width: 1280, height: 900 });
     await admin.goto(`${base}/dashboard/link-khusus`, { waitUntil: "networkidle0" });
     check((await bodyText(admin)).includes("Buat link baru"), "halaman link khusus admin tampil");
-    await admin.select("#themeId", "lili");
+    await admin.click("[data-testid=theme-select]");
+    await admin.waitForSelector("[role=option]");
+    await clickText(admin, "[role=option]", "Lili");
     await admin.type("#customerName", "Larasati Uji");
     await admin.type("#customerPhone", "0812 3456 7890");
     await admin.type("#marketplaceOrder", "SHP-E2E-1");
@@ -262,7 +264,17 @@ async function main() {
     await shot(buyer, "04-konfirmasi");
     const typeSlug = async (v: string) => {
       await fill(buyer, (await buyer.$("#claim-slug"))!, v);
-      await sleep(1200);
+      await sleep(600);
+      // tunggu hasil cek (aksi server pertama bisa lambat saat dev mengompilasi)
+      await buyer
+        .waitForFunction(
+          () =>
+            ![...document.querySelectorAll("[role=status]")].some((e) =>
+              e.textContent?.includes("Memeriksa"),
+            ),
+          { timeout: 20000 },
+        )
+        .catch(() => {});
       return buyer.$eval("#claim-slug ~ p, [role=status]", () =>
         [...document.querySelectorAll("[role=status]")].map((e) => e.textContent).join(" | "),
       );
@@ -414,10 +426,13 @@ async function main() {
     // ── 7. admin membuat akun login ────────────────────────────────────────
     console.log("7. Akun login pembeli");
     await admin.goto(`${base}/dashboard/link-khusus`, { waitUntil: "networkidle0" });
-    await clickText(admin, "button", "Buat akun pembeli");
-    await admin.waitForSelector("input[placeholder='email login pembeli']");
-    await fill(admin, (await admin.$("input[placeholder='email login pembeli']"))!, BUYER_EMAIL);
-    await clickText(admin, "button", "Buat kata sandi");
+    await admin.click("button[aria-label='Aksi Larasati Uji']");
+    await admin.waitForSelector("[role=menuitem]");
+    await clickText(admin, "[role=menuitem]", "Buat akun pembeli");
+    await admin.waitForSelector("input[id^='login-email-']");
+    await sleep(500); // tunggu animasi dialog selesai sebelum mengetik
+    await fill(admin, (await admin.$("input[id^='login-email-']"))!, BUYER_EMAIL);
+    await clickText(admin, "[role=dialog] button", "Buat kata sandi");
     await admin.waitForFunction(
       () =>
         [...document.querySelectorAll("textarea[readonly]")].some((t) =>

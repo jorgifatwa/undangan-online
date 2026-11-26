@@ -4,53 +4,57 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { ThemeCard } from "@/components/themes/ThemeCard";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ThemeManifest } from "@/themes/types";
 
-const FILTERS = [
+export const THEME_FILTERS = [
   { key: "all", label: "Semua" },
   { key: "WEDDING", label: "Pernikahan" },
   { key: "BIRTHDAY", label: "Ulang tahun" },
 ] as const;
+export type ThemeFilter = (typeof THEME_FILTERS)[number]["key"];
 
-/** Kartu tema + filter jenis acara. "Coba tema ini" → /preview/{tema}. */
+/** Filter jenis acara (shadcn Tabs). */
+export function ThemeFilterTabs({
+  value,
+  onChange,
+  className,
+}: {
+  value: ThemeFilter;
+  onChange: (v: ThemeFilter) => void;
+  className?: string;
+}) {
+  return (
+    <Tabs value={value} onValueChange={(v) => onChange(v as ThemeFilter)} className={className}>
+      <TabsList aria-label="Filter tema" className="rounded-full">
+        {THEME_FILTERS.map((f) => (
+          <TabsTrigger key={f.key} value={f.key} className="rounded-full px-4">
+            {f.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
+  );
+}
+
+/** Kartu tema + filter jenis acara. "Coba tema" → /preview/{tema}. */
 export function Showcase({ themes }: { themes: ThemeManifest[] }) {
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
+  const [filter, setFilter] = useState<ThemeFilter>("all");
   const shown = themes.filter(
     (t) => filter === "all" || (t.eventTypes as readonly string[]).includes(filter),
   );
   return (
     <div>
-      <div className="flex flex-wrap justify-center gap-2" role="tablist" aria-label="Filter tema">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            role="tab"
-            aria-selected={filter === f.key}
-            onClick={() => setFilter(f.key)}
-            className={cn(
-              "rounded-full border px-4 py-2 text-sm transition-colors",
-              filter === f.key
-                ? "bg-foreground text-background border-foreground"
-                : "hover:bg-sand",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <ThemeFilterTabs value={filter} onChange={setFilter} className="items-center" />
       <ul className="mt-10 flex flex-wrap justify-center gap-x-4 gap-y-10 sm:gap-x-10">
         {shown.map((t) => (
           <li key={t.id} className="group w-[calc(50%-0.5rem)] sm:w-[220px]" data-theme-card={t.id}>
             <div className="mx-auto max-w-[220px]">
               <ThemeCard theme={t} />
-              <Link
-                href={`/preview/${t.id}`}
-                className="border-foreground/15 hover:bg-sand mt-4 block rounded-full border px-4 py-2 text-center text-sm font-medium"
-              >
-                Coba tema ini
-              </Link>
+              <Button asChild variant="outline" className="mt-4 w-full rounded-full bg-transparent">
+                <Link href={`/preview/${t.id}`}>Coba tema ini</Link>
+              </Button>
             </div>
           </li>
         ))}

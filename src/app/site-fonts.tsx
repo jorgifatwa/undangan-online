@@ -1,5 +1,7 @@
 import localFont from "next/font/local";
 
+import { FontVarsOnHtml } from "./site-fonts-portal";
+
 /**
  * Font WEBSITE (landing, auth, dashboard, galeri tema).
  * Sengaja tidak dipasang di root layout: next/font mem-preload font di setiap
@@ -24,8 +26,14 @@ const siteFraunces = localFont({
 });
 
 /** Pasang di elemen pembungkus halaman website. */
-export const siteFontClass = `${siteJakarta.variable} ${siteFraunces.variable} font-sans`;
+const fontVars = `${siteJakarta.variable} ${siteFraunces.variable}`;
+export const siteFontClass = `${fontVars} font-sans`;
 
 export function SiteFonts({ children }: { children: React.ReactNode }) {
-  return <div className={siteFontClass}>{children}</div>;
+  return (
+    <div className={siteFontClass}>
+      <FontVarsOnHtml className={fontVars} />
+      {children}
+    </div>
+  );
 }

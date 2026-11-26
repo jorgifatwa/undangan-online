@@ -10,8 +10,8 @@ import {
   REFUND_TEXT,
   THEME_CHANGE_TEXT,
 } from "@/lib/marketing/content";
-import { DRAFT_MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
-import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PAID_ACTIVE, priceRange } from "@/lib/pricing";
 import { THEME_MANIFESTS } from "@/themes/registry";
 
@@ -19,7 +19,7 @@ const { min } = priceRange();
 
 export const metadata: Metadata = {
   title: "Harga Undangan Digital per Tema",
-  description: `Harga undangan pernikahan online & undangan ulang tahun online per tema, mulai ${formatRupiah(min)}. Sekali bayar per undangan, semua fitur termasuk. Buat & pratinjau gratis.`,
+  description: `Harga undangan pernikahan online & undangan ulang tahun online per tema, mulai ${formatRupiah(min)}. Sekali bayar per undangan, semua fitur termasuk. Coba semua tema gratis.`,
   alternates: { canonical: "/harga" },
 };
 
@@ -34,7 +34,7 @@ export default function HargaPage() {
         </h1>
         <p className="text-muted-foreground mt-4 sm:text-lg">
           Pilih tema yang kamu suka, bayar sekali untuk satu undangan — tanpa paket, tanpa
-          langganan. Buat & pratinjau gratis dengan tema apa pun; bayar saat siap disebar.
+          langganan. Coba tema apa pun gratis; bayar saat memesan.
         </p>
       </div>
 
@@ -43,46 +43,69 @@ export default function HargaPage() {
       </div>
 
       <section className="mt-20 grid gap-6 md:grid-cols-2" aria-label="Ketentuan">
-        <div className="bg-sand rounded-3xl border p-6">
-          <h2 className="font-heading text-2xl">Draf gratis & masa aktif</h2>
-          <ul className="text-muted-foreground mt-3 list-disc space-y-2 pl-5 text-sm">
-            <li>
-              Draf gratis tanpa batas waktu: isi, ganti tema, dan pratinjau sepuasnya — termasuk
-              link pratinjau rahasia untuk keluarga (berlaku {PREVIEW_LINK_DAYS} hari).
-            </li>
-            <li>Undangan bisa diterbitkan & dibagikan ke tamu setelah tema dibeli.</li>
-            <li>Setelah tema dibeli: {PAID_ACTIVE.long}</li>
-            <li>Pembelian berlaku untuk satu undangan.</li>
-            <li>
-              Foto & musik draf yang belum dibeli dan tidak diubah selama{" "}
-              {DRAFT_MEDIA_RETENTION_DAYS} hari dihapus otomatis (teks tetap tersimpan).
-            </li>
-          </ul>
-        </div>
-        <div className="bg-sand rounded-3xl border p-6">
-          <h2 className="font-heading text-2xl">Ganti tema</h2>
-          <p className="text-muted-foreground mt-3 text-sm">{THEME_CHANGE_TEXT}</p>
-        </div>
-        <div className="rounded-3xl border p-6">
-          <h2 className="font-heading text-2xl">Pembayaran & pengembalian dana</h2>
-          <p className="text-muted-foreground mt-3 text-sm">{PAYMENT_TEXT}</p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {REFUND_TEXT}{" "}
-            <Link href="/syarat" className="underline underline-offset-4">
-              Syarat & Ketentuan
-            </Link>
-          </p>
-        </div>
-        <div className="rounded-3xl border border-dashed p-6">
-          <h2 className="font-heading text-2xl">Segera hadir</h2>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {COMING_SOON.map((c) => (
-              <li key={c} className="text-muted-foreground rounded-full border px-3 py-1.5 text-sm">
-                {c}
+        <Card className="bg-sand rounded-3xl shadow-none">
+          <CardHeader>
+            <CardTitle className="font-heading text-2xl font-normal">
+              Cara pesan & masa aktif
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="text-muted-foreground list-disc space-y-2 pl-5 text-sm">
+              <li>Coba semua tema gratis dengan data contoh, tanpa daftar akun.</li>
+              <li>
+                Saat memesan, isi undangan langkah demi langkah sambil melihat pratinjaunya, lalu
+                bayar sekali.
               </li>
-            ))}
-          </ul>
-        </div>
+              <li>
+                Setelah lunas, kami kirim link khusus untuk mengunggah foto, memilih alamat
+                undangan, dan menayangkannya.
+              </li>
+              <li>Setelah tayang: {PAID_ACTIVE.long}</li>
+              <li>Pembelian berlaku untuk satu undangan.</li>
+            </ul>
+          </CardContent>
+        </Card>
+        <Card className="bg-sand rounded-3xl shadow-none">
+          <CardHeader>
+            <CardTitle className="font-heading text-2xl font-normal">Ganti tema</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground text-sm">{THEME_CHANGE_TEXT}</CardContent>
+        </Card>
+        <Card className="rounded-3xl shadow-none">
+          <CardHeader>
+            <CardTitle className="font-heading text-2xl font-normal">
+              Pembayaran & pengembalian dana
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground space-y-2 text-sm">
+            <p>{PAYMENT_TEXT}</p>
+            <p>
+              {REFUND_TEXT}{" "}
+              <Link href="/syarat" className="underline underline-offset-4">
+                Syarat & Ketentuan
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="rounded-3xl border-dashed shadow-none">
+          <CardHeader>
+            <CardTitle className="font-heading text-2xl font-normal">Segera hadir</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-wrap gap-2">
+              {COMING_SOON.map((c) => (
+                <li key={c}>
+                  <Badge
+                    variant="outline"
+                    className="text-muted-foreground h-8 px-3 text-sm font-normal"
+                  >
+                    {c}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       </section>
     </main>
   );

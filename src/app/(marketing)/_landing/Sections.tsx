@@ -1,6 +1,5 @@
 import {
   CalendarCheck,
-  ChevronDown,
   Clock,
   EyeOff,
   Gift,
@@ -18,6 +17,15 @@ import {
 import Link from "next/link";
 
 import { WhatsAppIcon } from "@/components/marketing/BrandIcons";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { business } from "@/config/business";
 import { COMING_SOON, FAQ } from "@/lib/marketing/content";
 import { LIMITS } from "@/lib/pricing";
@@ -50,18 +58,18 @@ export function SectionHead({
 const STEPS = [
   {
     icon: Palette,
-    title: "Pilih tema",
-    body: "Jelajahi tema pernikahan dan ulang tahun, lalu coba langsung dengan data contoh.",
+    title: "Pilih & coba tema",
+    body: "Jelajahi tema pernikahan dan ulang tahun, lalu coba langsung dengan data contoh — gratis, tanpa daftar.",
   },
   {
     icon: PenLine,
-    title: "Isi data",
-    body: "Nama, acara, foto, musik, dan kutipan. Setiap perubahan langsung terlihat di pratinjau HP.",
+    title: "Isi & bayar",
+    body: "Isi nama, acara, dan kutipan langkah demi langkah sambil melihat pratinjau HP. Bayar online sekali, lalu lengkapi foto lewat link khusus.",
   },
   {
     icon: Send,
-    title: "Bagikan ke WhatsApp",
-    body: "Terbitkan, ketik nama tamu, dan kirim. Setiap tamu disapa dengan namanya sendiri.",
+    title: "Tayang & kirim",
+    body: "Pilih alamat undanganmu, tayangkan, lalu kirim ke tamu lewat WhatsApp — setiap tamu disapa dengan namanya.",
   },
 ];
 
@@ -69,16 +77,21 @@ export function Steps() {
   return (
     <ol className="mt-12 grid gap-5 md:grid-cols-3">
       {STEPS.map((s, i) => (
-        <li
-          key={s.title}
-          className="bg-card relative rounded-3xl border p-7"
-          data-reveal
-          style={{ ["--reveal-delay" as string]: `${i * 90}ms` }}
-        >
-          <span className="font-heading text-gold/70 absolute top-5 right-6 text-5xl">{i + 1}</span>
-          <s.icon className="text-primary size-7" aria-hidden />
-          <h3 className="font-heading mt-5 text-2xl">{s.title}</h3>
-          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{s.body}</p>
+        <li key={s.title} data-reveal style={{ ["--reveal-delay" as string]: `${i * 90}ms` }}>
+          <Card className="relative h-full rounded-3xl p-1 shadow-none">
+            <CardHeader className="pt-6">
+              <span className="font-heading text-gold/70 absolute top-5 right-6 text-5xl">
+                {i + 1}
+              </span>
+              <span className="bg-sand text-primary grid size-12 place-items-center rounded-2xl">
+                <s.icon className="size-6" aria-hidden />
+              </span>
+              <CardTitle className="font-heading mt-4 text-2xl font-normal">{s.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <CardDescription className="leading-relaxed">{s.body}</CardDescription>
+            </CardContent>
+          </Card>
         </li>
       ))}
     </ol>
@@ -125,8 +138,8 @@ const GROUPS = [
       },
       {
         icon: CalendarCheck,
-        t: "RSVP & rekap kehadiran",
-        d: "Hadir, tidak hadir, ragu, dan jumlah orang terekap otomatis di editor undangan.",
+        t: "Daftar tamu & RSVP",
+        d: "Tempel daftar tamu sekaligus, tandai yang sudah dikirimi, dan lihat rekap hadir, ragu, serta jumlah orang — bisa diunduh CSV.",
       },
       {
         icon: MessagesSquare,
@@ -179,19 +192,16 @@ export function Features() {
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
             {g.items.map((it, i) => (
-              <li
-                key={it.t}
-                className="bg-card flex gap-4 rounded-2xl border p-5"
-                data-reveal
-                style={{ ["--reveal-delay" as string]: `${i * 60}ms` }}
-              >
-                <span className="bg-sand text-primary grid size-10 shrink-0 place-items-center rounded-xl">
-                  <it.icon className="size-5" aria-hidden />
-                </span>
-                <div>
-                  <p className="font-medium">{it.t}</p>
-                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{it.d}</p>
-                </div>
+              <li key={it.t} data-reveal style={{ ["--reveal-delay" as string]: `${i * 60}ms` }}>
+                <Card className="h-full flex-row gap-4 rounded-2xl p-5 shadow-none transition-shadow hover:shadow-md">
+                  <span className="bg-sand text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+                    <it.icon className="size-5" aria-hidden />
+                  </span>
+                  <div>
+                    <p className="font-medium">{it.t}</p>
+                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{it.d}</p>
+                  </div>
+                </Card>
               </li>
             ))}
           </ul>
@@ -201,12 +211,14 @@ export function Features() {
         <p className="text-sm font-semibold">Segera hadir</p>
         <ul className="mt-3 flex flex-wrap gap-2">
           {COMING_SOON.map((t) => (
-            <li
-              key={t}
-              className="text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm"
-            >
-              <Clock className="size-4" aria-hidden /> {t}
-              <span className="sr-only"> (segera hadir)</span>
+            <li key={t}>
+              <Badge
+                variant="outline"
+                className="text-muted-foreground h-8 gap-2 px-3 text-sm font-normal"
+              >
+                <Clock aria-hidden /> {t}
+                <span className="sr-only"> (segera hadir)</span>
+              </Badge>
             </li>
           ))}
         </ul>
@@ -217,23 +229,19 @@ export function Features() {
 
 // ---------------------------------- FAQ -----------------------------------
 
-/** Tanpa JavaScript: <details> bawaan browser. */
+/** FAQ (shadcn Accordion). */
 export function Faq() {
   return (
-    <div className="divide-border mx-auto mt-10 max-w-3xl divide-y border-y">
-      {FAQ.map((f) => (
-        <details key={f.q} className="group py-1" data-reveal>
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-left font-medium [&::-webkit-details-marker]:hidden">
-            {f.q}
-            <ChevronDown
-              className="text-muted-foreground size-5 shrink-0 transition-transform group-open:rotate-180"
-              aria-hidden
-            />
-          </summary>
-          <p className="text-muted-foreground pb-5 leading-relaxed">{f.a}</p>
-        </details>
+    <Accordion type="single" collapsible className="mx-auto mt-10 max-w-3xl border-y" data-reveal>
+      {FAQ.map((f, i) => (
+        <AccordionItem key={f.q} value={`faq-${i}`}>
+          <AccordionTrigger className="py-5 text-base">{f.q}</AccordionTrigger>
+          <AccordionContent className="text-muted-foreground text-[15px] leading-relaxed">
+            {f.a}
+          </AccordionContent>
+        </AccordionItem>
       ))}
-    </div>
+    </Accordion>
   );
 }
 
@@ -247,10 +255,14 @@ export function Testimonials() {
       <SectionHead eyebrow="Kata mereka" title={<span id="testimoni">Dari pengguna kami</span>} />
       <ul className="mt-10 grid gap-5 md:grid-cols-3">
         {business.testimonials.map((t) => (
-          <li key={t.name} className="bg-card rounded-3xl border p-6" data-reveal>
-            <p className="leading-relaxed">“{t.quote}”</p>
-            <p className="mt-4 text-sm font-medium">{t.name}</p>
-            <p className="text-muted-foreground text-xs">{t.event}</p>
+          <li key={t.name} data-reveal>
+            <Card className="h-full rounded-3xl p-6 shadow-none">
+              <p className="leading-relaxed">“{t.quote}”</p>
+              <div>
+                <p className="text-sm font-medium">{t.name}</p>
+                <p className="text-muted-foreground text-xs">{t.event}</p>
+              </div>
+            </Card>
           </li>
         ))}
       </ul>
@@ -278,25 +290,27 @@ export function FinalCta({ waHref }: { waHref: string | null }) {
           Undangan digital pertamamu bisa siap sebelum teh hangatmu dingin.
         </h2>
         <p className="mt-4 text-white/75">
-          Buat & pratinjau dengan tema apa pun tanpa bayar. Beli tema hanya saat undangan siap
-          dibagikan.
+          Coba tema apa pun tanpa bayar. Bayar sekali saat memesan — tanpa langganan.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/masuk"
-            className="text-clay bg-background rounded-full px-7 py-3.5 font-medium transition-transform hover:-translate-y-0.5"
+          <Button
+            asChild
+            size="lg"
+            className="bg-background text-clay hover:bg-background/90 h-12 rounded-full px-7 text-base transition-transform hover:-translate-y-0.5"
           >
-            Buat & Pratinjau Gratis
-          </Link>
+            <Link href="/tema">Pilih tema</Link>
+          </Button>
           {waHref && (
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3.5 font-medium hover:bg-white/10"
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="h-12 rounded-full border-white/30 bg-transparent px-6 text-base text-white hover:bg-white/10 hover:text-white"
             >
-              <WhatsAppIcon className="size-4" /> Tanya lewat WhatsApp
-            </a>
+              <a href={waHref} target="_blank" rel="noopener">
+                <WhatsAppIcon className="size-4" /> Tanya lewat WhatsApp
+              </a>
+            </Button>
           )}
         </div>
       </div>

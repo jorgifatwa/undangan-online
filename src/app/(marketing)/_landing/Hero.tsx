@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { business } from "@/config/business";
 
 import { HeroVideo } from "./HeroVideo";
@@ -25,27 +26,32 @@ export function Hero() {
             <span className="text-primary">{business.tagline.split(" ").slice(-2).join(" ")}</span>
           </h1>
           <p className="text-muted-foreground mt-5 max-w-lg text-[17px] text-pretty sm:mt-6 sm:text-lg">
-            Undangan digital pernikahan & ulang tahun dengan tema yang hangat. Sapa setiap tamu
-            dengan namanya, kumpulkan RSVP & ucapan, lalu kirim lewat WhatsApp dalam hitungan menit.
+            Undangan digital pernikahan & ulang tahun dengan tema yang hangat. Pilih tema, isi
+            sendiri sambil melihat hasilnya, lalu sapa setiap tamu dengan namanya lewat WhatsApp.
           </p>
           <div className="mt-7 flex gap-2.5 sm:mt-8 sm:gap-3">
-            <Link
-              href="/masuk"
-              className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-full px-5 py-3.5 text-[15px] font-medium whitespace-nowrap shadow-[0_12px_30px_-12px_rgb(120_50_25/0.6)] transition-transform hover:-translate-y-0.5 sm:px-6 sm:text-base"
+            <Button
+              asChild
+              size="lg"
+              className="h-12 rounded-full px-6 text-[15px] shadow-[0_12px_30px_-12px_rgb(120_50_25/0.6)] transition-transform hover:-translate-y-0.5 sm:text-base"
             >
-              Buat & Pratinjau Gratis <ArrowRight className="hidden size-4 sm:block" aria-hidden />
-            </Link>
-            <Link
-              href="/#tema"
-              className="border-foreground/15 hover:bg-sand rounded-full border px-5 py-3.5 text-[15px] font-medium whitespace-nowrap sm:px-6 sm:text-base"
+              <Link href="/tema">
+                Pilih tema <ArrowRight className="hidden sm:block" aria-hidden />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="h-12 rounded-full bg-transparent px-6 text-[15px] sm:text-base"
             >
-              Lihat Tema
-            </Link>
+              <Link href="/#demo">Coba dengan namamu</Link>
+            </Button>
           </div>
           <ul className="text-muted-foreground mt-6 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] sm:mt-8 sm:gap-x-5 sm:text-sm">
-            <li>✦ Bayar saat siap disebar</li>
-            <li>✦ Tanpa aplikasi</li>
-            <li>✦ Ganti tema kapan saja</li>
+            <li>✦ Coba semua tema gratis</li>
+            <li>✦ Tanpa daftar akun</li>
+            <li>✦ Sekali bayar, tanpa langganan</li>
           </ul>
         </div>
 

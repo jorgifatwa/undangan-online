@@ -1,14 +1,17 @@
-import Link from "next/link";
-
 import { signOut } from "@/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { requireUser } from "@/lib/auth-guard";
+import { db } from "@/lib/db";
 import { siteConfig } from "@/lib/site";
 
+/** Kerangka panel admin: Sidebar shadcn + area konten. */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
-  const initial = (user.name ?? user.email ?? "?").charAt(0).toUpperCase();
+  const openClaims = await db.claimLink.count({
+    where: { status: "OPEN", expiresAt: { gt: new Date() } },
+  });
 
   async function logout() {
     "use server";
@@ -16,26 +19,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-dvh">
-      <header className="bg-background/80 sticky top-0 z-10 border-b backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-          <Link href="/dashboard" className="font-heading text-xl">
-            {siteConfig.name}
-          </Link>
-          <div className="flex items-center gap-3">
-            <Avatar className="size-8">
-              {user.image && <AvatarImage src={user.image} alt={user.name ?? ""} />}
-              <AvatarFallback>{initial}</AvatarFallback>
-            </Avatar>
-            <form action={logout}>
-              <Button type="submit" variant="ghost" size="sm">
-                Keluar
-              </Button>
-            </form>
-          </div>
+    <SidebarProvider>
+      <AdminSidebar
+        brand={siteConfig.name}
+        user={{ name: user.name ?? null, email: user.email ?? null, image: user.image ?? null }}
+        openClaims={openClaims}
+        logout={logout}
+      />
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-1 !h-4" />
+          <span className="text-muted-foreground text-sm">{siteConfig.name} · Admin</span>
+        </header>
+        <div className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:px-6">
+          {children}
         </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

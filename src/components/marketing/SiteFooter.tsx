@@ -1,6 +1,8 @@
 import { Mail, MapPin } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { business, hasContact, instagramLink, waLink } from "@/config/business";
 
 import { InstagramIcon, WhatsAppIcon } from "./BrandIcons";
@@ -49,14 +51,14 @@ export function SiteFooter() {
             <ul className="mt-3 space-y-2 text-sm">
               {wa && (
                 <li>
-                  <a
-                    href={wa}
-                    target="_blank"
-                    rel="noopener"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#1f9d55] px-4 py-2 font-medium text-white"
+                  <Button
+                    asChild
+                    className="rounded-full bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90"
                   >
-                    <WhatsAppIcon className="size-4" /> Chat WhatsApp
-                  </a>
+                    <a href={wa} target="_blank" rel="noopener">
+                      <WhatsAppIcon className="size-4" /> Chat WhatsApp
+                    </a>
+                  </Button>
                 </li>
               )}
               {business.email && (
@@ -90,7 +92,8 @@ export function SiteFooter() {
           </div>
         )}
       </div>
-      <div className="border-t">
+      <Separator />
+      <div>
         <p className="text-muted-foreground mx-auto max-w-6xl px-4 py-5 text-xs sm:px-6">
           © {new Date().getFullYear()} {business.name}. Undangan pernikahan online & undangan ulang
           tahun digital.

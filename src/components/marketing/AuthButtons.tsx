@@ -3,23 +3,23 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 /**
  * Tombol header. Halaman website sengaja STATIS (cepat & bisa di-cache CDN),
  * jadi status login dicek di browser setelah halaman tampil: default "Masuk" +
- * "Coba Gratis", berganti "Dashboard" bila sesi ada.
+ * "Pilih tema"; bila sesi ada → "Dashboard" (admin) / "Undangan saya" (pembeli).
  */
-export function AuthButtons({ compact = false }: { compact?: boolean }) {
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+export function AuthButtons() {
+  const [role, setRole] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     let alive = true;
     const check = () =>
       fetch("/api/auth/session", { credentials: "same-origin" })
         .then((r) => (r.ok ? r.json() : null))
-        .then((s: { user?: unknown } | null) => alive && setLoggedIn(!!s?.user))
-        .catch(() => alive && setLoggedIn(false));
+        .then((s: { user?: { role?: string } } | null) => alive && setRole(s?.user?.role ?? null))
+        .catch(() => alive && setRole(null));
     const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
     if (w.requestIdleCallback) w.requestIdleCallback(check);
     else setTimeout(check, 200);
@@ -28,29 +28,22 @@ export function AuthButtons({ compact = false }: { compact?: boolean }) {
     };
   }, []);
 
-  if (loggedIn)
+  if (role)
     return (
-      <Link
-        href="/dashboard"
-        className="bg-primary text-primary-foreground rounded-full px-4 py-2 text-sm font-medium shadow-sm"
-      >
-        Dashboard
-      </Link>
+      <Button asChild size="sm" className="rounded-full px-4">
+        <Link href={role === "CUSTOMER" ? "/akun" : "/dashboard"}>
+          {role === "CUSTOMER" ? "Undangan saya" : "Dashboard"}
+        </Link>
+      </Button>
     );
   return (
     <div className="flex items-center gap-1 sm:gap-2">
-      <Link href="/masuk" className="hover:bg-sand rounded-full px-3 py-2 text-sm font-medium">
-        Masuk
-      </Link>
-      <Link
-        href="/masuk"
-        className={cn(
-          "bg-primary text-primary-foreground rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-transform hover:-translate-y-px",
-          compact && "px-3",
-        )}
-      >
-        Coba Gratis
-      </Link>
+      <Button asChild variant="ghost" size="sm" className="hidden rounded-full sm:inline-flex">
+        <Link href="/masuk">Masuk</Link>
+      </Button>
+      <Button asChild size="sm" className="rounded-full px-4 shadow-sm">
+        <Link href="/tema">Pilih tema</Link>
+      </Button>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LegalContact } from "@/components/marketing/LegalPage";
+import { Button } from "@/components/ui/button";
 import { business } from "@/config/business";
 
 export const metadata: Metadata = {
@@ -70,18 +71,12 @@ export default function TentangPage() {
       </section>
 
       <div className="mt-12 flex flex-wrap gap-3">
-        <Link
-          href="/masuk"
-          className="bg-primary text-primary-foreground rounded-full px-6 py-3 font-medium"
-        >
-          Buat & Pratinjau Gratis
-        </Link>
-        <Link
-          href="/tema"
-          className="border-foreground/15 hover:bg-sand rounded-full border px-6 py-3 font-medium"
-        >
-          Lihat Tema
-        </Link>
+        <Button asChild size="lg" className="h-11 rounded-full px-6">
+          <Link href="/tema">Pilih tema</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="h-11 rounded-full px-6">
+          <Link href="/harga">Lihat harga</Link>
+        </Button>
       </div>
     </main>
   );

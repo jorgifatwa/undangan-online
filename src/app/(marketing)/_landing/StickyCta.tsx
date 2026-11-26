@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** HP: bar tombol di bawah layar setelah hero terlewati (sembunyi lagi di CTA penutup). */
@@ -33,13 +34,11 @@ export function StickyCta() {
       )}
       aria-hidden={!show}
     >
-      <Link
-        href="/masuk"
-        tabIndex={show ? 0 : -1}
-        className="bg-primary text-primary-foreground block rounded-full py-3 text-center font-medium"
-      >
-        Coba Gratis
-      </Link>
+      <Button asChild size="lg" className="h-12 w-full rounded-full text-base">
+        <Link href="/tema" tabIndex={show ? 0 : -1}>
+          Pilih tema
+        </Link>
+      </Button>
     </div>
   );
 }
