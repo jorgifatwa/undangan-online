@@ -4,7 +4,8 @@ import { MAX_EVENTS } from "@/schemas/common";
 
 import { Prisma } from "@prisma/client";
 
-import { requireUser } from "@/lib/auth-guard";
+import { requireMember } from "@/lib/auth-guard";
+import { customerEditError } from "@/lib/claims/guard";
 import { db } from "@/lib/db";
 import { findOwnedInvitation, type ActionResult } from "@/lib/invitations/access";
 import { isValidSlug, RESERVED_SLUGS } from "@/lib/invitations/slug";
@@ -43,9 +44,11 @@ export async function saveInvitation(
   payload: { data: unknown; themeId: string; colorVariant: string | null },
   baseUpdatedAt: string,
 ): Promise<SaveResult> {
-  const user = await requireUser();
+  const user = await requireMember();
   const inv = await findOwnedInvitation(user.id, id);
   if (!inv) return { ok: false, error: "Undangan tidak ditemukan." };
+  const denied = await customerEditError(user.role, inv, payload.themeId);
+  if (denied) return { ok: false, error: denied };
 
   const manifest = getManifest(payload.themeId);
   if (!manifest || !manifest.eventTypes.includes(inv.eventType as never)) {
@@ -125,9 +128,11 @@ export async function updateSlug(
   id: string,
   raw: string,
 ): Promise<ActionResult<{ slug: string; updatedAt: string }>> {
-  const user = await requireUser();
+  const user = await requireMember();
   const inv = await findOwnedInvitation(user.id, id);
   if (!inv) return { ok: false, error: "Undangan tidak ditemukan." };
+  const denied = await customerEditError(user.role, inv);
+  if (denied) return { ok: false, error: denied };
 
   const slug = String(raw ?? "")
     .trim()

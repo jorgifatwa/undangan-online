@@ -13,7 +13,7 @@ export const maxDuration = 300;
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return Response.json({ error: "Harus masuk" }, { status: 401 });
-  if (!canUseDashboard(session.user.email))
+  if (session.user.role !== "CUSTOMER" && !canUseDashboard(session.user.email))
     return Response.json({ error: "Khusus admin" }, { status: 403 });
   const { id } = await params;
   try {

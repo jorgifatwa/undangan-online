@@ -43,7 +43,6 @@ async function main() {
         customerPhone: "6281234567890",
         marketplace: "Shopee",
         marketplaceOrder: "SHP-1",
-        ownerUserId: admin.id,
         createdById: admin.id,
       },
       now,
@@ -66,6 +65,11 @@ async function main() {
       "draf undangan dibuat, tema terbayar, kredit = harga",
     );
     check(inv.slug.startsWith("draf-"), `alamat sementara ${inv.slug}`);
+    const owner = await db.user.findUniqueOrThrow({ where: { id: inv.userId } });
+    check(
+      owner.role === "CUSTOMER" && owner.email === null && owner.name === "Pembeli Uji",
+      "pemilik draf = akun CUSTOMER baru (tanpa email)",
+    );
 
     check((await findClaimByToken(token)).state === "open", "token valid → open");
     check((await findClaimByToken("x".repeat(43))).state === "not-found", "token asal → not-found");
@@ -80,7 +84,6 @@ async function main() {
         source: "MARKETPLACE",
         themeId: "lili",
         customerName: "Pembeli Dua",
-        ownerUserId: admin.id,
       },
       now,
     );
@@ -102,11 +105,22 @@ async function main() {
       "link kedaluwarsa ikut terhapus (cascade)",
     );
     check(
+      !(await db.user.findUnique({ where: { id: inv.userId } })),
+      "akun CUSTOMER tanpa undangan ikut terhapus",
+    );
+    check(
       !!(await db.claimLink.findUnique({ where: { id: second.claim.id } })),
       "link yang sudah dikonfirmasi tetap ada",
     );
   } finally {
+    const owners = await db.invitation.findMany({
+      where: { id: { in: created } },
+      select: { userId: true },
+    });
     await db.invitation.deleteMany({ where: { id: { in: created } } });
+    await db.user.deleteMany({
+      where: { id: { in: owners.map((o) => o.userId) }, role: "CUSTOMER" },
+    });
     await updateSettings({ claimLinkDays: before.claimLinkDays });
     await db.$disconnect();
   }

@@ -1,6 +1,7 @@
 "use server";
 
-import { requireUser } from "@/lib/auth-guard";
+import { requireMember } from "@/lib/auth-guard";
+import { customerEditErrorById } from "@/lib/claims/guard";
 import {
   UploadError,
   deleteByUrls,
@@ -35,22 +36,24 @@ async function wrap<T>(fn: () => Promise<T>): Promise<MediaResult<T>> {
 }
 
 export async function requestUploadAction(invitationId: string, req: UploadRequest) {
-  const user = await requireUser();
+  const user = await requireMember();
+  const denied = await customerEditErrorById(user.role, invitationId);
+  if (denied) return { ok: false as const, error: denied };
   return wrap(() => requestUpload(user.id, invitationId, req));
 }
 
 export async function finalizePhotoAction(mediaId: string) {
-  const user = await requireUser();
+  const user = await requireMember();
   return wrap(() => finalizePhoto(user.id, mediaId));
 }
 
 export async function markAudioUploadedAction(mediaId: string) {
-  const user = await requireUser();
+  const user = await requireMember();
   return wrap(() => markAudioUploaded(user.id, mediaId));
 }
 
 export async function mediaStatusAction(mediaId: string) {
-  const user = await requireUser();
+  const user = await requireMember();
   return wrap(async () => {
     const m = await db.media.findFirst({ where: { id: mediaId, userId: user.id } });
     if (!m) throw new UploadError("File tidak ditemukan.", "NOT_FOUND");
@@ -59,7 +62,9 @@ export async function mediaStatusAction(mediaId: string) {
 }
 
 export async function deleteMediaAction(invitationId: string, urls: string[]) {
-  const user = await requireUser();
+  const user = await requireMember();
+  const denied = await customerEditErrorById(user.role, invitationId);
+  if (denied) return { ok: false as const, error: denied };
   return wrap(async () => ({
     deleted: await deleteByUrls(user.id, invitationId, urls.slice(0, 100)),
   }));

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireUser } from "@/lib/auth-guard";
+import { requireMember } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { MAX_TEMPLATE } from "@/lib/invitations/share";
 
@@ -12,7 +12,7 @@ export async function saveShareTemplateAction(
   invitationId: string,
   template: string | null,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const user = await requireUser();
+  const user = await requireMember();
   const value = template?.replace(/\r\n/g, "\n").trim() || null;
   if (value && value.length > MAX_TEMPLATE)
     return { ok: false, error: `Template maksimal ${MAX_TEMPLATE} karakter.` };

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireUser } from "@/lib/auth-guard";
+import { requireMember } from "@/lib/auth-guard";
 import { deleteRsvp, deleteWish, ownerGuestbook, setWishHidden } from "@/lib/guestbook/service";
 
 /** Moderasi buku tamu oleh pemilik undangan (dicek kepemilikannya di service). */
@@ -15,12 +15,12 @@ async function run<T>(fn: () => Promise<T>): Promise<R<T>> {
 }
 
 export async function guestbookAction(invitationId: string) {
-  const user = await requireUser();
+  const user = await requireMember();
   return run(() => ownerGuestbook(user.id, invitationId));
 }
 
 export async function hideWishAction(invitationId: string, wishId: string, hidden: boolean) {
-  const user = await requireUser();
+  const user = await requireMember();
   return run(async () => {
     await setWishHidden(user.id, invitationId, wishId, hidden);
     return {};
@@ -28,7 +28,7 @@ export async function hideWishAction(invitationId: string, wishId: string, hidde
 }
 
 export async function deleteWishAction(invitationId: string, wishId: string) {
-  const user = await requireUser();
+  const user = await requireMember();
   return run(async () => {
     await deleteWish(user.id, invitationId, wishId);
     return {};
@@ -36,7 +36,7 @@ export async function deleteWishAction(invitationId: string, wishId: string) {
 }
 
 export async function deleteRsvpAction(invitationId: string, rsvpId: string) {
-  const user = await requireUser();
+  const user = await requireMember();
   return run(async () => {
     await deleteRsvp(user.id, invitationId, rsvpId);
     return {};

@@ -10,7 +10,8 @@ import { getManifest } from "@/themes/registry";
 
 /**
  * LINK KHUSUS: /isi/{token}
- *  - Pembeli mengisi undangannya sendiri (form bertahap + pratinjau) tanpa login.
+ *  - Pembeli mengisi undangannya sendiri (form bertahap + pratinjau) tanpa login;
+ *    membuka link = masuk sebagai akun CUSTOMER pemilik undangan (dibuat di sini).
  *  - Token acak 32 byte (base64url); yang disimpan hanya hash SHA-256-nya.
  *  - Satu link per undangan draf; draf dibuat bersamaan dengan link.
  *  - Kedaluwarsa sesuai pengaturan global `claimLinkDays`; lewat & belum
@@ -41,8 +42,6 @@ export interface CreateClaimInput {
   customerEmail?: string | null;
   marketplace?: string | null;
   marketplaceOrder?: string | null;
-  /** Pemilik draf sementara (admin pembuat); dipindah ke akun pembeli nanti. */
-  ownerUserId: string;
   createdById?: string | null;
 }
 
@@ -83,9 +82,14 @@ export async function createClaim(input: CreateClaimInput, now = new Date()) {
     const code = newCode();
     try {
       const claim = await db.$transaction(async (tx) => {
+        // Akun pembeli (CUSTOMER) pemilik undangan. Tanpa email/kata sandi dulu:
+        // masuk lewat link khusus; admin membuat data login setelah tayang.
+        const owner = await tx.user.create({
+          data: { name: input.customerName, role: "CUSTOMER" },
+        });
         const invitation = await tx.invitation.create({
           data: {
-            userId: input.ownerUserId,
+            userId: owner.id,
             // alamat sementara (draf tidak tayang); pembeli memilih alamatnya sendiri
             slug: `draf-${code.toLowerCase()}`,
             eventType,
@@ -153,12 +157,20 @@ export async function findClaimByToken(token: string, now = new Date()) {
 export async function purgeExpiredClaims(now = new Date()) {
   const expired = await db.claimLink.findMany({
     where: { status: { in: ["OPEN", "REVOKED"] }, expiresAt: { lte: now } },
-    select: { invitationId: true },
+    select: { invitationId: true, invitation: { select: { userId: true } } },
     take: 500,
   });
   if (expired.length === 0) return { deleted: 0 };
   const r = await db.invitation.deleteMany({
     where: { id: { in: expired.map((e) => e.invitationId) }, status: "DRAFT" },
+  });
+  // Akun pembeli yang kini tak punya undangan apa pun ikut dihapus.
+  await db.user.deleteMany({
+    where: {
+      id: { in: expired.map((e) => e.invitation.userId) },
+      role: "CUSTOMER",
+      invitations: { none: {} },
+    },
   });
   return { deleted: r.count };
 }

@@ -23,3 +23,28 @@ export async function requireAdmin() {
   if (user.role !== "ADMIN") redirect("/dashboard");
   return user;
 }
+
+/**
+ * Pembeli (role CUSTOMER): masuk lewat link khusus (/isi/{token}) atau login
+ * email/kata sandi yang dibuat admin. Hanya boleh menyentuh undangannya sendiri
+ * (findOwnedInvitation memeriksa userId) — bukan dashboard admin.
+ */
+export async function requireCustomer() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/masuk");
+  if (session.user.role !== "CUSTOMER") redirect("/masuk");
+  return session.user;
+}
+
+/**
+ * Untuk server action editor yang dipakai admin MAUPUN pembeli. Pemanggil
+ * tetap wajib memeriksa kepemilikan (findOwnedInvitation) dan, untuk pembeli,
+ * aturan link khusus (lib/claims/guard.ts).
+ */
+export async function requireMember() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/masuk");
+  if (session.user.role === "CUSTOMER") return session.user;
+  if (!canUseDashboard(session.user.email)) redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
+  return session.user;
+}
