@@ -15,6 +15,20 @@ export interface MediaCtx {
   musicLimit: number;
   releaseUrl: (url: string) => void;
   saveSoon: () => void;
+  /**
+   * Diisi = unggah foto/musik belum bisa (mis. form pemesanan website yang
+   * hanya disimpan di browser); field menampilkan pesan ini.
+   */
+  uploadsDisabled?: string;
+}
+
+/** Catatan pengganti tombol unggah saat `uploadsDisabled`. */
+export function UploadsDisabledNote({ message }: { message: string }) {
+  return (
+    <p className="text-muted-foreground rounded-md bg-neutral-100 px-2.5 py-1.5 text-xs">
+      {message}
+    </p>
+  );
 }
 
 export const MediaContext = createContext<MediaCtx | null>(null);

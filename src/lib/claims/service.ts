@@ -34,6 +34,41 @@ function defaultDate(now: Date) {
   return new Date(now.getTime() + 60 * 86400_000).toISOString().slice(0, 10);
 }
 
+/**
+ * Data awal undangan baru (nama contoh "Mempelai Wanita/Pria", tanggal +60 hari,
+ * kota "Kota") — dipakai link khusus & form pemesanan website.
+ */
+export function placeholderData(
+  eventType: "WEDDING" | "BIRTHDAY",
+  themeId: string,
+  name: string,
+  now = new Date(),
+) {
+  return buildInitialData(
+    wizardSchema.parse(
+      eventType === "WEDDING"
+        ? {
+            eventType: "WEDDING",
+            brideName: "Mempelai Wanita",
+            groomName: "Mempelai Pria",
+            date: defaultDate(now),
+            timezone: "WIB",
+            city: "Kota",
+            greeting: "islami",
+            themeId,
+          }
+        : {
+            eventType: "BIRTHDAY",
+            name,
+            date: defaultDate(now),
+            timezone: "WIB",
+            city: "Kota",
+            themeId,
+          },
+    ),
+  );
+}
+
 export interface CreateClaimInput {
   source: "MARKETPLACE" | "WEBSITE";
   themeId: string;
@@ -54,29 +89,7 @@ export async function createClaim(input: CreateClaimInput, now = new Date()) {
   const { claimLinkDays } = await getSettings();
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(now.getTime() + claimLinkDays * 86400_000);
-  const initial = buildInitialData(
-    wizardSchema.parse(
-      eventType === "WEDDING"
-        ? {
-            eventType: "WEDDING",
-            brideName: "Mempelai Wanita",
-            groomName: "Mempelai Pria",
-            date: defaultDate(now),
-            timezone: "WIB",
-            city: "Kota",
-            greeting: "islami",
-            themeId: input.themeId,
-          }
-        : {
-            eventType: "BIRTHDAY",
-            name: input.customerName,
-            date: defaultDate(now),
-            timezone: "WIB",
-            city: "Kota",
-            themeId: input.themeId,
-          },
-    ),
-  );
+  const initial = placeholderData(eventType, input.themeId, input.customerName, now);
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = newCode();

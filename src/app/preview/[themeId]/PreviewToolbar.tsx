@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 interface Props {
+  themeId: string;
   themeName: string;
   variants: { id: string; name: string; swatch: string[] }[];
   eventTypes: ("WEDDING" | "BIRTHDAY")[];
@@ -15,7 +16,7 @@ interface Props {
  * Panel kontrol preview. Sengaja berada DI LUAR wrapper tema (gaya website,
  * bukan token --inv-*). Semua pilihan disimpan di URL supaya bisa dibagikan.
  */
-export function PreviewToolbar({ themeName, variants, eventTypes, current }: Props) {
+export function PreviewToolbar({ themeId, themeName, variants, eventTypes, current }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -62,6 +63,17 @@ export function PreviewToolbar({ themeName, variants, eventTypes, current }: Pro
           <span className="font-medium">{open ? "Tutup" : "Preview"}</span>
           {pending && <span className="text-muted-foreground text-xs">…</span>}
         </button>
+        {/* Pesan tema ini: isi form (disimpan di browser) → bayar */}
+        <Link
+          href={`/pesan/${themeId}?${new URLSearchParams({
+            ...(current.eventType === "BIRTHDAY" ? { acara: "ultah" } : {}),
+            variant: current.variantId,
+          }).toString()}`}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-full px-3.5 py-2 font-medium shadow-lg"
+          data-testid="order-theme"
+        >
+          Pesan tema ini
+        </Link>
       </div>
 
       {open && (

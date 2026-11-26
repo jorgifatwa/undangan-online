@@ -22,7 +22,7 @@ import {
 import type { ThemeManifest } from "@/themes/types";
 import { defaultOrderFor } from "@/schemas/sections";
 
-import { saveInvitation } from "./actions";
+import { saveInvitation, type SaveResult } from "./actions";
 import { deleteMediaAction } from "./media-actions";
 import { GalleryField } from "./media/GalleryField";
 import { MediaContext, type MediaCtx } from "./media/MediaContext";
@@ -86,8 +86,21 @@ export interface EditorProps {
    * claim    : pembeli mengisi lewat link khusus — form BERTAHAP, simpan tiap pindah
    *            langkah, tanpa tombol admin; langkah terakhir = `finalStep`.
    * customer : pembeli setelah tayang (/akun) — tema terkunci, tanpa tombol admin.
+   * local    : pemesanan website sebelum bayar — sama dengan claim, tapi data
+   *            hanya di browser (persist) dan tanpa unggah foto/musik.
    */
-  mode?: "admin" | "claim" | "customer";
+  mode?: "admin" | "claim" | "customer" | "local";
+  /**
+   * Penyimpan pengganti server action (mode local: form pemesanan website yang
+   * hanya disimpan di browser sampai dibayar).
+   */
+  persist?: (payload: {
+    data: unknown;
+    themeId: string;
+    colorVariant: string | null;
+  }) => Promise<SaveResult>;
+  /** Diisi = unggah foto/musik dimatikan dengan pesan ini. */
+  uploadsDisabled?: string;
   /** URL pratinjau pemilik (bawaan: rute dashboard). */
   previewBase?: string;
   /** Tujuan tombol ← (null = tanpa tombol). */
@@ -98,6 +111,8 @@ export interface EditorProps {
   steps?: { initial: number; onStep: (index: number) => void };
   /** Mode claim: isi langkah terakhir (konfirmasi). */
   finalStep?: (api: { flushSave: () => Promise<boolean> }) => React.ReactNode;
+  /** Label langkah terakhir (bawaan "Konfirmasi"). */
+  finalStepTitle?: string;
 }
 
 type SaveState =
@@ -332,11 +347,10 @@ export function Editor(p: EditorProps) {
     saving.current = true;
     setState({ kind: "saving" });
     try {
-      const res = await saveInvitation(
-        p.id,
-        { data: raw, themeId: themeRef.current, colorVariant: variantRef.current },
-        base.current,
-      );
+      const payload = { data: raw, themeId: themeRef.current, colorVariant: variantRef.current };
+      const res = p.persist
+        ? await p.persist(payload)
+        : await saveInvitation(p.id, payload, base.current);
       if (res.ok) {
         base.current = res.updatedAt;
         // Hapus file lama yang tidak lagi dirujuk data yang BARU SAJA tersimpan.
@@ -368,7 +382,7 @@ export function Editor(p: EditorProps) {
     } finally {
       saving.current = false;
     }
-  }, [form, p.id, schema]);
+  }, [form, p, schema]);
 
   /** Simpan SEKARANG (dipakai sebelum terbit): tunggu simpanan berjalan, lalu simpan. */
   const flushSave = useCallback(async () => {
@@ -466,8 +480,9 @@ export function Editor(p: EditorProps) {
         window.clearTimeout(timers.current.save);
         timers.current.save = window.setTimeout(() => void save(), 300);
       },
+      uploadsDisabled: p.uploadsDisabled,
     }),
-    [p.id, features.galleryLimit, features.customMusicTracks, save],
+    [p.id, features.galleryLimit, features.customMusicTracks, save, p.uploadsDisabled],
   );
 
   const previewTheme = (id: string | null) => {
@@ -682,7 +697,7 @@ export function Editor(p: EditorProps) {
       title: "Tema, warna & alamat",
       body: (
         <div className="space-y-6">
-          {mode !== "claim" && (
+          {(mode === "admin" || mode === "customer") && (
             <SlugField
               id={p.id}
               slug={slug}
@@ -697,6 +712,12 @@ export function Editor(p: EditorProps) {
             <p className="text-muted-foreground rounded-lg bg-neutral-100 px-3 py-2 text-xs">
               Boleh ganti ke tema lain dengan harga yang sama selama undangan belum dikonfirmasi.
               Setelah tayang, tema terkunci.
+            </p>
+          )}
+          {mode === "local" && (
+            <p className="text-muted-foreground rounded-lg bg-neutral-100 px-3 py-2 text-xs">
+              Bebas pilih tema &amp; warna — harga mengikuti tema yang dipilih. Isian tersimpan di
+              browser ini sampai pembayaran selesai.
             </p>
           )}
           {mode === "customer" && (
@@ -783,7 +804,9 @@ export function Editor(p: EditorProps) {
               <StickerTip />
             </>
           )}
-          {manifest.editorFields?.includes("photoDecor") && <PhotoDecorPanel invitationId={p.id} />}
+          {manifest.editorFields?.includes("photoDecor") && !p.uploadsDisabled && (
+            <PhotoDecorPanel invitationId={p.id} />
+          )}
           <PhotoField
             name="celebrant.photo"
             slot="celebrant"
@@ -965,7 +988,7 @@ export function Editor(p: EditorProps) {
   })();
 
   // ── Mode claim: form bertahap (satu grup per langkah + langkah konfirmasi) ──
-  const stepped = mode === "claim";
+  const stepped = mode === "claim" || mode === "local";
   const stepCount = shownGroups.length + (p.finalStep ? 1 : 0);
   const [step, setStep] = useState(() =>
     Math.min(Math.max(0, p.steps?.initial ?? 0), Math.max(0, stepCount - 1)),
@@ -1041,13 +1064,15 @@ export function Editor(p: EditorProps) {
             >
               {showCover ? "Lihat isi" : "Lihat cover"}
             </button>
-            <Link
-              href={previewBase}
-              target="_blank"
-              className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
-            >
-              Pratinjau penuh
-            </Link>
+            {mode !== "local" && (
+              <Link
+                href={previewBase}
+                target="_blank"
+                className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
+              >
+                Pratinjau penuh
+              </Link>
+            )}
             {mode === "customer" && p.liveUrl && (
               <a
                 href={p.liveUrl}
@@ -1224,7 +1249,7 @@ export function Editor(p: EditorProps) {
                   <ol className="flex flex-wrap gap-1.5" aria-label="Langkah pengisian">
                     {[
                       ...shownGroups.map((g) => g.title),
-                      ...(p.finalStep ? ["Konfirmasi"] : []),
+                      ...(p.finalStep ? [p.finalStepTitle ?? "Konfirmasi"] : []),
                     ].map((t, i) => (
                       <li key={t}>
                         <button
@@ -1303,7 +1328,7 @@ export function Editor(p: EditorProps) {
             >
               <PreviewFrame
                 ref={iframeRef}
-                src={`${previewBase}?editor=1`}
+                src={`${previewBase}${previewBase.includes("?") ? "&" : "?"}editor=1`}
                 title="Pratinjau undangan"
               />
             </section>

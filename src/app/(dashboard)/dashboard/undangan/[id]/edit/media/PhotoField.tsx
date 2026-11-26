@@ -9,7 +9,7 @@ import { ClientUploadError, cropToBlob, preparePhoto, uploadPhoto } from "@/lib/
 import type { Photo } from "@/schemas";
 
 import { CropDialog } from "./CropDialog";
-import { useMedia } from "./MediaContext";
+import { UploadsDisabledNote, useMedia } from "./MediaContext";
 import { LimitNotice } from "./LimitNotice";
 
 /**
@@ -90,6 +90,13 @@ export function PhotoField({
     setCropSrc(null);
   };
 
+  if (media.uploadsDisabled)
+    return (
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium">{label}</p>
+        <UploadsDisabledNote message={media.uploadsDisabled} />
+      </div>
+    );
   const busy = progress !== null;
   return (
     <div className="space-y-1.5">

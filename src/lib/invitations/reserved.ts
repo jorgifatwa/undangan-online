@@ -24,6 +24,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "u", // tautan lama /u/{slug} → dialihkan 301
   "p", // link pratinjau rahasia /p/{token}
   "isi", // link khusus pembeli /isi/{token}
+  "pesan", // pemesanan website /pesan/{tema}
   "lisensi", // atribusi komponen pihak ketiga
   "licenses", // berkas lisensi (public/licenses)
   "ml", // model & runtime ML yang di-host sendiri (public/ml)

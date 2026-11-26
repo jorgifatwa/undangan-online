@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import type { Photo } from "@/schemas";
 
 import { CropDialog } from "./CropDialog";
-import { useMedia } from "./MediaContext";
+import { UploadsDisabledNote, useMedia } from "./MediaContext";
 import { LimitNotice } from "./LimitNotice";
 
 /**
@@ -180,6 +180,7 @@ export function GalleryField() {
 
   const full = photos.length >= media.galleryLimit;
 
+  if (media.uploadsDisabled) return <UploadsDisabledNote message={media.uploadsDisabled} />;
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">

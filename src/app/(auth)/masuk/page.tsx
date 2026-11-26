@@ -21,7 +21,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   Configuration: "Terjadi masalah konfigurasi server. Hubungi admin.",
   CredentialsSignin: "Email atau kata sandi salah.",
   [NOT_ADMIN_ERROR]:
-    "Halaman ini khusus admin. Untuk memesan undangan, silakan pilih tema lalu isi form pemesanan — admin kami yang akan membuatkannya.",
+    'Halaman ini khusus admin & pembeli yang sudah punya akun. Untuk memesan undangan, pilih tema lalu tekan "Pesan tema ini".',
 };
 
 export default async function MasukPage({

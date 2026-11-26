@@ -7,7 +7,7 @@ import { ClientUploadError, uploadMusic } from "@/lib/upload/client";
 import { cn } from "@/lib/utils";
 
 import { mediaStatusAction } from "../media-actions";
-import { useMedia } from "./MediaContext";
+import { UploadsDisabledNote, useMedia } from "./MediaContext";
 import { LimitNotice } from "./LimitNotice";
 
 export interface LibraryTrack {
@@ -227,86 +227,90 @@ export function MusicPicker({
           )}
       </ul>
 
-      <fieldset className="space-y-2 rounded-xl border p-3" data-testid="music-upload">
-        <legend className="px-1 text-sm font-medium">
-          {current ? "Ganti musik" : "Unggah musik sendiri"}
-        </legend>
-        {overLimit ? (
-          // data lama (sebelum batas 1 lagu): sisakan satu dulu
-          <LimitNotice
-            message={`Ada ${ready.length} lagu unggahan, sekarang maksimal ${media.musicLimit} per undangan.`}
-            hint="Hapus lagu yang tidak dipakai hingga tersisa satu, lalu musik bisa diganti kapan saja."
-          />
-        ) : (
-          <>
-            <p className="text-muted-foreground text-xs">
-              {current ? (
-                <>
-                  Musik saya &ldquo;{current.title}&rdquo; akan diganti. Lagu lama otomatis dihapus
-                  begitu lagu baru siap (bila gagal diproses, lagu lama tetap dipakai).
-                </>
-              ) : (
-                <>
-                  Satu lagu per undangan, bisa diganti kapan saja. MP3, M4A, WAV, OGG, atau FLAC,
-                  maks. 10 MB — dikompres otomatis agar ringan diputar tamu.
-                </>
-              )}
-            </p>
-            <label className="flex items-start gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 size-4"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-              />
-              <span>Saya bertanggung jawab atas hak penggunaan lagu ini.</span>
-            </label>
-            <input
-              ref={input}
-              type="file"
-              accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac"
-              className="sr-only"
-              aria-label="Pilih file musik"
-              onChange={(e) => {
-                void onFile(e.target.files?.[0]);
-                e.target.value = "";
-              }}
+      {media.uploadsDisabled ? (
+        <UploadsDisabledNote message={media.uploadsDisabled} />
+      ) : (
+        <fieldset className="space-y-2 rounded-xl border p-3" data-testid="music-upload">
+          <legend className="px-1 text-sm font-medium">
+            {current ? "Ganti musik" : "Unggah musik sendiri"}
+          </legend>
+          {overLimit ? (
+            // data lama (sebelum batas 1 lagu): sisakan satu dulu
+            <LimitNotice
+              message={`Ada ${ready.length} lagu unggahan, sekarang maksimal ${media.musicLimit} per undangan.`}
+              hint="Hapus lagu yang tidak dipakai hingga tersisa satu, lalu musik bisa diganti kapan saja."
             />
-            <button
-              type="button"
-              disabled={!consent || progress !== null || processing.length > 0}
-              onClick={() => input.current?.click()}
-              className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
-            >
-              {progress !== null
-                ? `Mengunggah… ${Math.round(progress * 100)}%`
-                : current
-                  ? "Ganti musik"
-                  : "Pilih file musik"}
-            </button>
-          </>
-        )}
-        {processing.map((u) => (
-          <p key={u.id} className="text-muted-foreground text-sm" role="status">
-            ⏳ {u.title}: sedang diproses…
-          </p>
-        ))}
-        {uploaded
-          .filter((u) => u.status === "FAILED")
-          .map((u) => (
-            <p key={u.id} className="text-destructive text-sm" role="alert">
-              {u.title}: {u.error ?? "gagal diproses"}
-            </p>
-          ))}
-        {error &&
-          (error.code === "MUSIC_LIMIT" || error.code === "QUOTA" ? (
-            <LimitNotice message={error.message} />
           ) : (
-            <p className="text-destructive text-sm" role="alert">
-              {error.message}
+            <>
+              <p className="text-muted-foreground text-xs">
+                {current ? (
+                  <>
+                    Musik saya &ldquo;{current.title}&rdquo; akan diganti. Lagu lama otomatis
+                    dihapus begitu lagu baru siap (bila gagal diproses, lagu lama tetap dipakai).
+                  </>
+                ) : (
+                  <>
+                    Satu lagu per undangan, bisa diganti kapan saja. MP3, M4A, WAV, OGG, atau FLAC,
+                    maks. 10 MB — dikompres otomatis agar ringan diputar tamu.
+                  </>
+                )}
+              </p>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-4"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                />
+                <span>Saya bertanggung jawab atas hak penggunaan lagu ini.</span>
+              </label>
+              <input
+                ref={input}
+                type="file"
+                accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac"
+                className="sr-only"
+                aria-label="Pilih file musik"
+                onChange={(e) => {
+                  void onFile(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                disabled={!consent || progress !== null || processing.length > 0}
+                onClick={() => input.current?.click()}
+                className="hover:bg-muted rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
+              >
+                {progress !== null
+                  ? `Mengunggah… ${Math.round(progress * 100)}%`
+                  : current
+                    ? "Ganti musik"
+                    : "Pilih file musik"}
+              </button>
+            </>
+          )}
+          {processing.map((u) => (
+            <p key={u.id} className="text-muted-foreground text-sm" role="status">
+              ⏳ {u.title}: sedang diproses…
             </p>
           ))}
-      </fieldset>
+          {uploaded
+            .filter((u) => u.status === "FAILED")
+            .map((u) => (
+              <p key={u.id} className="text-destructive text-sm" role="alert">
+                {u.title}: {u.error ?? "gagal diproses"}
+              </p>
+            ))}
+          {error &&
+            (error.code === "MUSIC_LIMIT" || error.code === "QUOTA" ? (
+              <LimitNotice message={error.message} />
+            ) : (
+              <p className="text-destructive text-sm" role="alert">
+                {error.message}
+              </p>
+            ))}
+        </fieldset>
+      )}
     </div>
   );
 }

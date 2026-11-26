@@ -593,6 +593,54 @@ model ClaimLink {
   @@index([createdAt])
 }
 
+enum WebOrderStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+/// PESANAN WEBSITE (alur: coba tema → isi form di browser → bayar Midtrans).
+/// Tidak ada undangan/akun yang dibuat sebelum lunas. Isian form disimpan
+/// sementara di `data` hanya agar bisa dipasang ke undangan setelah lunas;
+/// pesanan yang tidak dibayar dihapus otomatis (cron claims-cleanup).
+/// Lunas → link khusus (ClaimLink, source WEBSITE) dibuat & dikirim via email.
+model WebOrder {
+  id              String         @id @default(cuid())
+  /// order_id di Midtrans, mis. "WEB-7K3P9QXA".
+  midtransOrderId String         @unique
+  themeId         String
+  colorVariant    String?
+  eventType       EventType
+  /// Isian form (sudah lolos schema) — dipasang ke undangan saat lunas.
+  data            Json
+  buyerName       String
+  /// Nomor WhatsApp ternormalisasi (62…).
+  buyerPhone      String?
+  buyerEmail      String
+  amount          Int
+  status          WebOrderStatus @default(PENDING)
+  paymentType     String?
+  snapToken       String?
+  redirectUrl     String?
+  /// Notifikasi Midtrans terakhir (audit).
+  rawNotification Json?
+  paidAt          DateTime?
+  /// Hash kunci halaman hasil pesanan; kunci mentah hanya di browser pembeli.
+  viewKeyHash     String
+  /// Token link khusus terenkripsi (AES-256-GCM, kunci dari AUTH_SECRET) agar
+  /// halaman hasil bisa menampilkan link-nya.
+  claimTokenEnc   String?
+  claimId         String?        @unique
+  /// Kunci idempoten pemenuhan pesanan (webhook ganda / halaman hasil).
+  fulfilledAt     DateTime?
+  emailSentAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status, createdAt])
+}
+
 /// Pengaturan global yang diubah super admin (mis. batas waktu link khusus).
 /// Nilai JSON per kunci; bawaan ada di src/lib/settings.ts.
 model AppSetting {

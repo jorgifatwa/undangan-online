@@ -179,6 +179,7 @@ export default async function PreviewPage({
       {one("focus") && <PreviewFocus section={one("focus")!} />}
       {one("bare") !== "1" && (
         <PreviewToolbar
+          themeId={manifest.id}
           themeName={manifest.name}
           variants={manifest.variants.map((v) => ({
             id: v.id,

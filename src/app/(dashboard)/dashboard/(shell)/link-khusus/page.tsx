@@ -60,8 +60,9 @@ export default async function ClaimLinksPage() {
           </Link>
           <h1 className="font-heading mt-1 text-3xl">Link khusus</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Untuk pembeli yang sudah membayar di marketplace. Link berlaku {settings.claimLinkDays}{" "}
-            hari; masa aktif undangan setelah tayang {settings.invitationActiveDays} hari (
+            Untuk pembeli yang sudah membayar di marketplace (pesanan website dibuat otomatis
+            setelah lunas). Link berlaku {settings.claimLinkDays} hari; masa aktif undangan setelah
+            tayang {settings.invitationActiveDays} hari (
             <Link href="/dashboard/pengaturan" className="underline">
               ubah
             </Link>
@@ -101,6 +102,7 @@ export default async function ClaimLinksPage() {
                       </p>
                       <p className="text-muted-foreground text-xs">
                         Tema {theme?.name ?? c.invitation.themeId} · {formatRupiah(c.price)}
+                        {c.source === "WEBSITE" ? " · Website (lunas via Midtrans)" : ""}
                         {c.marketplace && ` · ${c.marketplace}`}
                         {c.marketplaceOrder && ` #${c.marketplaceOrder}`}
                         {c.customerPhone && ` · WA ${c.customerPhone}`}
