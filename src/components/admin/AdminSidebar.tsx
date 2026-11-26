@@ -1,6 +1,16 @@
 "use client";
 
-import { ChevronsUpDown, LayoutDashboard, Link2, LogOut, Settings, Sparkles } from "lucide-react";
+import {
+  Activity,
+  ChevronsUpDown,
+  LayoutDashboard,
+  Link2,
+  LogOut,
+  Settings,
+  ShoppingBag,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -31,6 +41,9 @@ import {
 const NAV = [
   { href: "/dashboard", label: "Ringkasan", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/link-khusus", label: "Link khusus", icon: Link2, badge: "open" as const },
+  { href: "/dashboard/pesanan", label: "Pesanan website", icon: ShoppingBag },
+  { href: "/dashboard/pengguna", label: "Pengguna", icon: Users },
+  { href: "/dashboard/sistem", label: "Sistem & log", icon: Activity },
   { href: "/dashboard/pengaturan", label: "Pengaturan", icon: Settings },
 ];
 
