@@ -11,7 +11,7 @@ import { authConfig } from "../src/auth.config";
 import { business } from "../src/config/business";
 import { NOT_ADMIN_ERROR, isAdminEmail } from "../src/lib/admin-access";
 
-const base = process.argv.slice(2).find((a) => a.startsWith("http")) ?? "http://localhost:3000";
+const base = process.argv.slice(2).find((a) => a.startsWith("http")) ?? "http://localhost:3001";
 let failed = 0;
 const check = (ok: boolean, label: string) => {
   console.log(`${ok ? "  ✓" : "  ✗"} ${label}`);

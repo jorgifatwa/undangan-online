@@ -1,0 +1,31 @@
+{
+  "id": "scaffold",
+  "commit": "3bd347609ca8363567b7574fdd98d5487743842d",
+  "screenshot": "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold.png",
+  "extraScreenshots": [
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-open-t0000.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-open-t0300.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-open-t0450.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-open-t1100.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-open-t2000.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-music-toggled.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-biru-long.png",
+    "/Users/Projects/udangan-website/.reference/report/tema-13/scaffold-read-running.png"
+  ],
+  "refs": [
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/00-cover.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/00-cover@2x.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/00-load-t2000.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/d00-cover.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/01-open-t0000.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/01-open-t0300.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/01-open-t0450.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/01-open-t1100.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/01-open-t2000.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/i-music-toggled.png",
+    "/Users/Projects/udangan-website/.reference/jsambac-tema-13/i-after-open-top.png"
+  ],
+  "checks": "pnpm typecheck: pass. pnpm lint: 3 errors + 321 warnings, all in gitignored generated public/ml/runtime/* (pre-existing, not from this change); eslint src/themes/kliping-merah: 0 problems; prettier --check FixedUi.tsx: pass. Earlier scaffold checks (fonts:build, themes:thumbs, preview 200) unchanged.",
+  "knownDiffs": "Patrick Hand is a little thinner and narrower than the reference lettering (0.9px cream stroke added to thicken). The 'Open Invitation' label uses DM Sans 700 instead of Aller, so the glyphs are slightly wider. While sliding, the reference card's top corners look square; ours keep the 25px radius. The opening frames were captured with about 100-150 ms screenshot latency, so mid-frame positions differ by tens of px but the curve (1.3s card slide, 0.7s backdrop fade from black 0.5) matches. The playing-state music icon is a drawn disc, not the reference's image icon. The content under the cover is still the default _shared sections (later items). Other themes' THEME_THUMBS ?v= stamps were restored to their committed values after themes:sync rewrote them from mtimes.",
+  "fixPass": "review-scaffold.md Blocker 1 fixed: Read stop listeners now use pointerdown/touchstart that ignore targets inside the Read button (ref), plus wheel; the button's onClick still toggles off. Measured at 430x860 on :3013 after opening: scrollY 0 -> 999 after 4.5s with aria-pressed=true; click elsewhere stops (999, false); toggle button off stops; wheel stops; near bottom it stops at the end (pressed=false)."
+}
