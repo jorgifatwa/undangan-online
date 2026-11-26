@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Check,
   ChevronLeft,
+  ExternalLink,
   ChevronRight,
   CircleDot,
   ListOrdered,
@@ -213,7 +214,10 @@ function Group({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-card rounded-2xl border" data-group-open={open || undefined}>
+    <section
+      className="bg-card rounded-xl border shadow-xs transition-shadow data-[group-open]:shadow-md"
+      data-group-open={open || undefined}
+    >
       <button
         type="button"
         onClick={onToggle}
@@ -1009,7 +1013,9 @@ export function Editor(p: EditorProps) {
 
   // ── Mode claim/local: form bertahap — ±6 langkah, tiap langkah berisi
   //    beberapa grup; langkah terakhir = finalStep (konfirmasi / pesan & bayar) ──
-  const stepped = mode === "claim" || mode === "local";
+  const stepped = mode === "claim" || mode === "local" || mode === "customer";
+  const cardTitle =
+    mode === "claim" ? "Isi undangan" : mode === "local" ? "Pesan undangan" : "Ubah undangan";
   const stepDefs = [
     { key: "tema", title: "Tema & warna", hint: "Pilih tema dan warna favorit.", groups: ["tema"] },
     {
@@ -1099,6 +1105,10 @@ export function Editor(p: EditorProps) {
   const saveAndClose = async () => {
     setStepError(null);
     const ok = await flushSave();
+    if (ok && mode === "customer") {
+      window.location.href = p.backHref ?? "/akun";
+      return;
+    }
     setSavedNote(
       ok
         ? mode === "claim"
@@ -1207,13 +1217,18 @@ export function Editor(p: EditorProps) {
                   <p className="font-heading text-primary text-3xl leading-none">
                     U<span className="text-gold">.</span>
                   </p>
-                  <h1 className="font-heading mt-6 text-2xl leading-tight">
-                    {mode === "claim" ? "Isi undangan" : "Pesan undangan"}
-                  </h1>
-                  {mode === "claim" && (
+                  <h1 className="font-heading mt-6 text-2xl leading-tight">{cardTitle}</h1>
+                  {mode !== "local" && (
                     <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{p.title}</p>
                   )}
                   <div className="mt-6 flex-1">{stepList}</div>
+                  {mode === "customer" && p.liveUrl && (
+                    <Button asChild variant="outline" size="sm" className="mb-3 justify-start">
+                      <a href={p.liveUrl} target="_blank" rel="noreferrer">
+                        <ExternalLink /> Lihat undangan
+                      </a>
+                    </Button>
+                  )}
                   <StatusPill state={state} />
                 </aside>
 
@@ -1235,9 +1250,7 @@ export function Editor(p: EditorProps) {
                       </SheetTrigger>
                       <SheetContent side="left" className="w-72">
                         <SheetHeader>
-                          <SheetTitle className="font-heading text-2xl">
-                            {mode === "claim" ? "Isi undangan" : "Pesan undangan"}
-                          </SheetTitle>
+                          <SheetTitle className="font-heading text-2xl">{cardTitle}</SheetTitle>
                           <SheetDescription>{p.title}</SheetDescription>
                         </SheetHeader>
                         <div className="px-4">{stepList}</div>
@@ -1425,84 +1438,65 @@ export function Editor(p: EditorProps) {
   return (
     <FormProvider {...form}>
       <MediaContext.Provider value={mediaCtx}>
-        <div className="flex h-dvh flex-col bg-neutral-50">
-          <header className="bg-background flex h-14 shrink-0 items-center gap-3 border-b px-3 sm:px-4">
+        <div className="bg-muted/40 flex h-dvh flex-col">
+          <header className="bg-background flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:gap-3 sm:px-4">
             {p.backHref !== null && (
-              <Link
-                href={p.backHref ?? "/dashboard"}
-                className="text-muted-foreground hover:text-foreground text-sm"
-                aria-label="Kembali"
-              >
-                ←
-              </Link>
+              <Button asChild variant="ghost" size="icon-sm" aria-label="Kembali">
+                <Link href={p.backHref ?? "/dashboard"}>
+                  <ChevronLeft />
+                </Link>
+              </Button>
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{p.title}</p>
               <StatusPill state={state} />
             </div>
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:inline-flex"
               onClick={() => {
                 const next = !showCover;
                 setShowCover(next);
                 post({ ns: "undangku", type: "cover", show: next });
               }}
-              className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
             >
               {showCover ? "Lihat isi" : "Lihat cover"}
-            </button>
-            <Link
-              href={previewBase}
-              target="_blank"
-              className="hover:bg-muted hidden rounded-md border px-3 py-1.5 text-sm sm:block"
-            >
-              Pratinjau penuh
-            </Link>
-            {mode === "customer" && p.liveUrl && (
-              <a
-                href={p.liveUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-md bg-[#1f9d55] px-3 py-1.5 text-sm font-medium text-white"
-              >
-                Lihat undangan
-              </a>
-            )}
+            </Button>
+            <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+              <Link href={previewBase} target="_blank">
+                <ExternalLink /> Pratinjau penuh
+              </Link>
+            </Button>
             {isAdmin && !p.suspended && (
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPreviewOpen(true)}
                 data-testid="open-preview-link"
-                className="hover:bg-muted rounded-md border px-2.5 py-1.5 text-sm sm:px-3"
               >
                 <span className="sm:hidden">Pratinjau</span>
                 <span className="hidden sm:inline">Bagikan pratinjau</span>
-              </button>
+              </Button>
             )}
             {isAdmin && live && (
-              <button
-                type="button"
+              <Button
+                size="sm"
+                className="bg-[#1f9d55] text-white hover:bg-[#1f9d55]/90"
                 onClick={() => setShareOpen(true)}
-                className="rounded-md bg-[#1f9d55] px-3 py-1.5 text-sm font-medium text-white"
               >
                 Bagikan
-              </button>
+              </Button>
             )}
             {isAdmin && (
-              <button
-                type="button"
+              <Button
+                size="sm"
+                variant={publish.suspended ? "destructive" : live ? "outline" : "default"}
+                className={live && !publish.suspended ? "border-emerald-600 text-emerald-700" : ""}
                 onClick={() => setPublishOpen(true)}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium",
-                  publish.suspended
-                    ? "border border-red-300 text-red-800"
-                    : live
-                      ? "border border-emerald-600 text-emerald-700"
-                      : "bg-primary text-primary-foreground",
-                )}
               >
                 {publish.suspended ? "Ditangguhkan" : live ? "Terbit ✓" : "Terbitkan"}
-              </button>
+              </Button>
             )}
           </header>
           {publishOpen && (

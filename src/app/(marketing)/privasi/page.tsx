@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 
 import { LegalContact, LegalPage, type LegalSection } from "@/components/marketing/LegalPage";
 import { business } from "@/config/business";
-import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
-import { DRAFT_MEDIA_RETENTION_DAYS } from "@/lib/invitations/retention";
 import { PAID_ACTIVE } from "@/lib/pricing";
 
 export const metadata: Metadata = {
@@ -30,13 +28,29 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          <strong>Data akun</strong> — nama, alamat email, foto profil, dan ID akun dari Google saat
-          Anda masuk.
+          <strong>Data pemesan</strong> — nama, alamat email, dan (bila diisi) nomor WhatsApp yang
+          Anda berikan saat memesan di website atau kepada admin saat membeli di marketplace. Bila
+          akun pembeli dibuat: email dan kata sandi (disimpan sebagai hash, tidak dapat dibaca siapa
+          pun). Admin kami masuk dengan akun Google atau email & kata sandi.
         </p>
         <p>
           <strong>Isi undangan</strong> yang Anda masukkan — misalnya nama mempelai atau yang
           berulang tahun, nama orang tua, tanggal dan lokasi acara, foto, musik, kutipan, serta
           (bila diisi) nomor rekening, QRIS, alamat kirim hadiah, dan nomor kontak.
+        </p>
+        <p>
+          <strong>Isian sebelum pembayaran</strong> disimpan di browser Anda (penyimpanan lokal),
+          bukan di server kami. Saat Anda menekan &ldquo;Pesan & bayar&rdquo;, isian dikirim dan
+          disimpan bersama pesanan; bila tidak dibayar, pesanan beserta isiannya dihapus otomatis.
+        </p>
+        <p>
+          <strong>Data pembayaran</strong> — nomor pesanan, nominal, metode, dan status pembayaran
+          dari Midtrans. Data kartu atau rekening pembayaran tidak kami terima.
+        </p>
+        <p>
+          <strong>Daftar tamu</strong> yang Anda masukkan di dashboard — nama, nomor WhatsApp
+          (opsional), grup, dan status terkirim — hanya untuk membuat link personal dan membuka
+          WhatsApp di perangkat Anda.
         </p>
         <p>
           <strong>Data tamu</strong> yang dikirim tamu lewat undangan — nama, konfirmasi kehadiran
@@ -48,13 +62,8 @@ const SECTIONS: LegalSection[] = [
           mencegah spam pada RSVP & ucapan; serta log server standar dari penyedia hosting.
         </p>
         <p>
-          <strong>Link pratinjau</strong> — bila Anda membuatnya: sidik (hash) link, waktu dibuat,
-          kedaluwarsa, dan waktu dicabut. Pembuka link pratinjau tidak dapat mengirim RSVP atau
-          ucapan, jadi tidak ada data mereka yang tersimpan.
-        </p>
-        <p>
-          <strong>Yang TIDAK kami simpan:</strong> nomor WhatsApp tamu yang Anda ketik di dialog
-          &ldquo;Bagikan&rdquo; (hanya dipakai untuk membuka WhatsApp di perangkat Anda).
+          <strong>Link khusus</strong> — hanya sidik (hash) link yang disimpan, bukan link aslinya,
+          beserta batas waktu dan waktu terakhir dibuka.
         </p>
       </>
     ),
@@ -67,7 +76,10 @@ const SECTIONS: LegalSection[] = [
         <li>Menjalankan layanan: membuat, menampilkan, dan membagikan undangan Anda.</li>
         <li>Menampilkan rekap RSVP dan ucapan kepada pemilik undangan.</li>
         <li>Keamanan dan pencegahan penyalahgunaan (spam, akses tidak sah).</li>
-        <li>Menanggapi pertanyaan dan permintaan Anda, serta pembayaran (saat tersedia).</li>
+        <li>
+          Memproses pembayaran, lalu mengirim link khusus dan data login lewat email atau WhatsApp.
+        </li>
+        <li>Menanggapi pertanyaan dan permintaan Anda.</li>
         <li>Memenuhi kewajiban hukum.</li>
       </ul>
     ),
@@ -94,8 +106,9 @@ const SECTIONS: LegalSection[] = [
           <li>Penyedia hosting/server aplikasi.</li>
           <li>Neon — database (region Singapura).</li>
           <li>Cloudflare R2 — penyimpanan foto & musik (kawasan Asia-Pasifik).</li>
-          <li>Google — layanan masuk (login).</li>
-          <li>Penyedia pembayaran (Midtrans) — saat pembayaran online tersedia.</li>
+          <li>Google — layanan masuk (login) admin.</li>
+          <li>Midtrans — pemrosesan pembayaran online.</li>
+          <li>Penyedia email (SMTP) — pengiriman link khusus & data login.</li>
         </ul>
         <p>
           Sebagian data disimpan di luar Indonesia (Singapura/Asia-Pasifik). Kami memilih penyedia
@@ -111,16 +124,14 @@ const SECTIONS: LegalSection[] = [
       <ul>
         <li>Data akun: selama akun aktif, atau sampai Anda meminta penghapusan.</li>
         <li>
-          Draf yang temanya belum pernah dibeli: foto dan musik dihapus otomatis bila draf tidak
-          Anda ubah selama {DRAFT_MEDIA_RETENTION_DAYS} hari (teks tetap tersimpan sampai Anda
-          menghapusnya atau meminta penghapusan).
+          Pesanan website yang tidak dibayar: dihapus otomatis beserta isian formnya setelah 2 hari.
         </li>
         <li>
-          Link pratinjau: hanya sidik (hash) link yang disimpan, tidak pernah link aslinya; link
-          berhenti berlaku setelah {PREVIEW_LINK_DAYS} hari atau saat Anda mencabutnya.
+          Link khusus yang lewat batas waktu dan belum dikonfirmasi: undangan beserta foto, musik,
+          dan isinya dihapus otomatis.
         </li>
         <li>
-          Undangan yang temanya sudah dibeli: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
+          Undangan yang sudah tayang: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
           {PAID_ACTIVE.long.slice(1)} Hubungi kami bila ingin undangan dihapus lebih cepat.
         </li>
         <li>
@@ -170,9 +181,9 @@ const SECTIONS: LegalSection[] = [
           <li>mengajukan keberatan atas pemrosesan tertentu.</li>
         </ul>
         <p>
-          Sebagian besar data undangan dapat Anda ubah atau hapus sendiri dari editor. Untuk hak
-          lainnya, hubungi kami melalui kontak di bawah. Tamu yang ingin ucapannya dihapus dapat
-          menghubungi pemilik undangan atau kami.
+          Sebagian besar data undangan dapat Anda ubah sendiri dari dashboard akun selama masa
+          aktif. Untuk hak lainnya, hubungi kami melalui kontak di bawah. Tamu yang ingin ucapannya
+          dihapus dapat menghubungi pemilik undangan atau kami.
         </p>
       </>
     ),

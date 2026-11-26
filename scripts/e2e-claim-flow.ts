@@ -392,7 +392,12 @@ async function main() {
       (await bodyText(buyer)).includes("Lihat undangan"),
       "editor pembeli (setelah tayang) tampil",
     );
-    check(!(await bodyText(buyer)).includes("Langkah 1/"), "editor pembeli tidak bertahap");
+    const editorText = await bodyText(buyer);
+    check(
+      editorText.includes("Ubah undangan") && !editorText.includes("Konfirmasi"),
+      "editor pembeli: kartu langkah tanpa langkah konfirmasi",
+    );
+    await shot(buyer, "07b-editor-pembeli");
 
     // ── 8. keamanan pembeli ────────────────────────────────────────────────
     console.log("8. Keamanan");

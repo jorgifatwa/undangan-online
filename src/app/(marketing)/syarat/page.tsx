@@ -3,8 +3,6 @@ import Link from "next/link";
 
 import { LegalContact, LegalPage, type LegalSection } from "@/components/marketing/LegalPage";
 import { business } from "@/config/business";
-import { PREVIEW_LINK_DAYS } from "@/lib/invitations/preview-link-config";
-import { DRAFT_MEDIA_RETENTION_DAYS, RETENTION_WARNING_DAYS } from "@/lib/invitations/retention";
 import { PAYMENT_TEXT, REFUND_TEXT, THEME_CHANGE_TEXT } from "@/lib/marketing/content";
 import { LIMITS, PAID_ACTIVE } from "@/lib/pricing";
 
@@ -35,10 +33,15 @@ const SECTIONS: LegalSection[] = [
     title: "Akun",
     body: (
       <ul>
-        <li>Akun dibuat dengan masuk menggunakan akun Google Anda.</li>
         <li>
-          Anda bertanggung jawab atas semua aktivitas di akun Anda dan wajib menjaga akses ke akun
-          Google tersebut.
+          Memesan undangan tidak memerlukan akun. Setelah pembayaran diterima, Anda menerima{" "}
+          <strong>link khusus</strong> untuk mengisi dan menayangkan undangan; link ini berfungsi
+          sebagai kunci akses, jadi jangan dibagikan.
+        </li>
+        <li>
+          Setelah undangan tayang, kami dapat membuatkan <strong>akun pembeli</strong> (email & kata
+          sandi) untuk mengelola tamu, ucapan, dan RSVP. Anda bertanggung jawab menjaga kerahasiaan
+          link khusus dan kata sandi tersebut.
         </li>
         <li>
           Anda harus cakap secara hukum untuk membuat perjanjian, atau didampingi orang tua/wali.
@@ -48,7 +51,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "harga",
-    title: "Harga tema, draf gratis & masa aktif",
+    title: "Harga tema, pemesanan & masa aktif",
     body: (
       <ul>
         <li>
@@ -57,25 +60,27 @@ const SECTIONS: LegalSection[] = [
           inti undangan.
         </li>
         <li>
-          <strong>Draf gratis</strong>: undangan bisa dibuat, diisi, diganti temanya, dan
-          dipratinjau tanpa biaya dan tanpa batas waktu. Undangan baru dapat{" "}
-          <strong>diterbitkan</strong> (dibuka tamu) setelah tema dibeli.
+          <strong>Coba gratis</strong>: semua tema dapat dicoba dengan data contoh tanpa biaya dan
+          tanpa akun.
         </li>
         <li>
-          <strong>Link pratinjau</strong>: pemilik dapat membuat satu link rahasia untuk
-          memperlihatkan draf tanpa login. Link bertanda &ldquo;PRATINJAU&rdquo;, tidak menerima
-          RSVP, ucapan, maupun menampilkan amplop digital, berlaku {PREVIEW_LINK_DAYS} hari, dan
-          dapat dicabut kapan saja. Siapa pun yang memegang link dapat melihat isi draf, jadi
-          bagikan hanya kepada orang yang Anda percaya.
+          <strong>Pemesanan</strong>: isian undangan sebelum pembayaran disimpan di browser Anda.
+          Setelah lunas, isian dipasang ke undangan Anda dan link khusus dikirim lewat email (dan
+          ditampilkan di halaman pesanan). Pembelian di marketplace mendapat link khusus dari admin
+          kami.
         </li>
         <li>
-          <strong>Penyimpanan draf</strong>: foto dan musik draf yang temanya belum pernah dibeli
-          dan tidak Anda ubah selama {DRAFT_MEDIA_RETENTION_DAYS} hari dihapus otomatis; teks
-          undangan tetap tersimpan. Peringatan tampil di dashboard {RETENTION_WARNING_DAYS} hari
-          sebelumnya, dan menyimpan perubahan apa pun di editor memulai hitungan dari awal.
+          <strong>Batas waktu link khusus</strong>: link berlaku sampai tanggal yang tertera saat
+          link dikirim. Bila lewat dan undangan belum dikonfirmasi tayang, undangan beserta isinya
+          dihapus otomatis. Hubungi kami sebelum batas waktu bila perlu perpanjangan.
         </li>
         <li>
-          <strong>Setelah tema dibeli</strong>: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
+          <strong>Konfirmasi & tayang</strong>: Anda memilih alamat undangan lalu menayangkannya.
+          Setelah tayang, tema terkunci; isi undangan masih bisa diubah selama masa aktif yang
+          tertera di dashboard akun Anda.
+        </li>
+        <li>
+          <strong>Setelah tayang</strong>: {PAID_ACTIVE.long.charAt(0).toLowerCase()}
           {PAID_ACTIVE.long.slice(1)}
         </li>
         <li>
@@ -100,6 +105,14 @@ const SECTIONS: LegalSection[] = [
     body: (
       <ul>
         <li>{PAYMENT_TEXT}</li>
+        <li>
+          Pembayaran online diproses oleh Midtrans. Kami tidak menerima maupun menyimpan data kartu
+          atau rekening pembayaran Anda.
+        </li>
+        <li>
+          Pesanan yang tidak dibayar dalam batas waktu pembayaran dibatalkan otomatis beserta isian
+          formnya.
+        </li>
         <li>Harga dalam Rupiah. Perubahan harga tidak berlaku bagi tema yang sudah dibayar.</li>
       </ul>
     ),
@@ -111,8 +124,9 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>{REFUND_TEXT}</p>
         <p>
-          Permintaan diajukan melalui kontak di bawah dengan menyebutkan email akun dan alamat
-          undangan. Dana dikembalikan melalui metode pembayaran semula.
+          Permintaan diajukan melalui kontak di bawah dengan menyebutkan nomor pesanan (atau nomor
+          pesanan marketplace), email, dan alamat undangan. Dana dikembalikan melalui metode
+          pembayaran semula.
         </p>
       </>
     ),
