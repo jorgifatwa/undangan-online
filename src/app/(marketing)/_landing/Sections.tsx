@@ -29,12 +29,26 @@ export function SectionHead({
   center?: boolean;
 }) {
   return (
-    <div className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"} data-reveal>
-      <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">{eyebrow}</p>
-      <h2 className="font-heading mt-3 text-3xl leading-tight tracking-tight text-balance sm:text-5xl">
+    <div className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+      <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase" data-reveal>
+        {eyebrow}
+      </p>
+      <h2
+        className="font-heading mt-3 text-3xl leading-tight tracking-tight text-balance sm:text-5xl"
+        data-reveal="mask"
+        style={{ ["--reveal-delay" as string]: "80ms" }}
+      >
         {title}
       </h2>
-      {lead && <p className="text-muted-foreground mt-4 text-pretty sm:text-lg">{lead}</p>}
+      {lead && (
+        <p
+          className="text-muted-foreground mt-4 text-pretty sm:text-lg"
+          data-reveal
+          style={{ ["--reveal-delay" as string]: "200ms" }}
+        >
+          {lead}
+        </p>
+      )}
     </div>
   );
 }
@@ -132,7 +146,10 @@ export function Testimonials() {
 export function FinalCta({ waHref }: { waHref: string | null }) {
   return (
     <section className="mx-auto max-w-[1320px] px-2 pb-6 sm:px-4">
-      <div className="photo-panel text-primary-foreground relative overflow-hidden rounded-[32px]">
+      <div
+        className="photo-panel text-primary-foreground relative overflow-hidden rounded-[32px]"
+        data-reveal="curtain"
+      >
         <Image src={velvetBg} alt="" fill sizes="100vw" className="object-cover" />
         <Image
           src={bouquetHanging}

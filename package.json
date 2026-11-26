@@ -27,6 +27,7 @@
     "check:slugs": "tsx scripts/check-reserved-slugs.ts",
     "check:assets": "tsx scripts/check-dev-assets.ts",
     "landing:record": "tsx scripts/landing-record.ts",
+    "landing:story": "tsx scripts/landing-story.ts",
     "ref:assets": "tsx scripts/ref-assets.ts",
     "ref:shots": "tsx scripts/ref-shots.ts",
     "assets:sync": "tsx scripts/assets-sync.ts",

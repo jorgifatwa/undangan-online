@@ -14,11 +14,13 @@ import { THEME_MANIFESTS, themeThumb } from "@/themes/registry";
 import { Demo, type DemoTheme } from "./_landing/Demo";
 import { Hero } from "./_landing/Hero";
 import { About } from "./_landing/About";
+import { IntroCurtain } from "./_landing/IntroCurtain";
 import { ThemeMarquee } from "./_landing/Marquee";
 import { Numbered } from "./_landing/Numbered";
 import { PriceList } from "./_landing/PriceList";
 import { Faq, FinalCta, SectionHead, Steps, Testimonials } from "./_landing/Sections";
 import { SelectedThemes } from "./_landing/SelectedThemes";
+import { StoryPhone } from "./_landing/StoryPhone";
 import { StickyCta } from "./_landing/StickyCta";
 
 const TITLE = `${business.name} — Undangan Pernikahan Online & Undangan Digital Ulang Tahun`;
@@ -91,11 +93,24 @@ export default function HomePage() {
           __html: JSON.stringify(landingJsonLd()).replace(/</g, "\\u003c"),
         }}
       />
+      <IntroCurtain />
       <div id="hero">
         <Hero />
       </div>
 
       <ThemeMarquee />
+
+      <section id="lihat" className="mx-auto max-w-6xl scroll-mt-16 px-4 pt-10 pb-20 sm:px-6">
+        <SectionHead
+          center={false}
+          eyebrow="Lihat undanganmu hidup"
+          title="Satu undangan, dari sampul sampai doa tamu"
+          lead="Gulir pelan — beginilah tamu membuka undangan tema Tirai Beludru di HP mereka."
+        />
+        <div className="mt-6">
+          <StoryPhone />
+        </div>
+      </section>
 
       <div className="bg-sand paper border-y">
         <About />

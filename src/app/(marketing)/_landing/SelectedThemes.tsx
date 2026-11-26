@@ -20,13 +20,16 @@ export function SelectedThemes({ themes }: { themes: ThemeManifest[] }) {
         <article
           key={t.id}
           className={cn("group", i === 0 && "md:col-span-2")}
-          data-reveal
           data-theme-card={t.id}
         >
           <Link
             href={`/preview/${t.id}`}
             className="relative flex h-[380px] items-end justify-center overflow-hidden rounded-[28px] sm:h-[440px]"
-            style={{ background: t.thumbnail.background }}
+            style={{
+              background: t.thumbnail.background,
+              ["--reveal-delay" as string]: `${(i % 3) * 120}ms`,
+            }}
+            data-reveal="curtain"
             aria-label={`Coba tema ${t.name}`}
           >
             <div

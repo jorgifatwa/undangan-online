@@ -25,7 +25,7 @@ export function Hero() {
   return (
     <section className="relative">
       <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 md:pt-16">
-        <ul className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-[11px] font-semibold tracking-[0.22em] uppercase">
+        <ul className="hero-fade text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-[11px] font-semibold tracking-[0.22em] uppercase">
           {LABELS.map((l) => (
             <li key={l}>
               <span className="text-gold">+</span> {l}
@@ -34,10 +34,22 @@ export function Hero() {
         </ul>
         <div className="mt-6 grid items-end gap-8 lg:grid-cols-[1.5fr_1fr]">
           <h1 className="font-heading text-[2.9rem] leading-[0.98] tracking-tight text-balance sm:text-7xl lg:text-[5.6rem]">
-            {words.slice(0, -2).join(" ")}{" "}
-            <em className="text-primary font-normal italic">{words.slice(-2).join(" ")}</em>
+            {words.map((w, i) => (
+              <span key={`${w}-${i}`}>
+                <span className="hero-word">
+                  <span
+                    style={{ ["--i" as string]: i }}
+                    className={
+                      i >= words.length - 2 ? "text-primary font-normal italic" : undefined
+                    }
+                  >
+                    {w}
+                  </span>
+                </span>{" "}
+              </span>
+            ))}
           </h1>
-          <div className="space-y-6 lg:pb-3">
+          <div className="hero-fade space-y-6 lg:pb-3">
             <p className="text-muted-foreground text-[17px] leading-relaxed text-pretty">
               Undangan digital pernikahan & ulang tahun dengan tema yang hangat. Pilih tema, isi
               sendiri sambil melihat hasilnya, lalu sapa setiap tamu dengan namanya.
@@ -67,7 +79,11 @@ export function Hero() {
 
       {/* Panel "foto": tekstur beludru (Tirai Beludru) + tiga HP + ornamen */}
       <div className="mx-auto mt-10 max-w-[1320px] px-2 sm:px-4 md:mt-14">
-        <div className="photo-panel relative h-[460px] overflow-hidden rounded-[32px] sm:h-[540px] lg:h-[600px]">
+        <div
+          className="photo-panel relative h-[460px] overflow-hidden rounded-[32px] sm:h-[540px] lg:h-[600px]"
+          data-reveal="curtain"
+          style={{ ["--reveal-delay" as string]: "var(--intro-delay, 0s)" }}
+        >
           <Image
             src={velvetBg}
             alt=""
