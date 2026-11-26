@@ -57,6 +57,12 @@ const SECTIONS: LegalSection[] = [
           dan jumlah orang, serta ucapan.
         </p>
         <p>
+          <strong>Statistik pengunjung website</strong> — hanya jumlah per hari untuk beberapa
+          peristiwa (membuka beranda, membuka galeri tema, mencoba tema, mulai mengisi pesanan,
+          menuju pembayaran). Tanpa cookie pelacak, tanpa alamat IP, dan tanpa data yang bisa
+          mengenali Anda; tidak memakai layanan analitik pihak ketiga.
+        </p>
+        <p>
           <strong>Data teknis untuk keamanan</strong> — sidik acak dari alamat IP yang berganti
           setiap hari (IP asli tidak disimpan) dan cookie penanda perangkat acak, keduanya untuk
           mencegah spam pada RSVP & ucapan; serta log server standar dari penyedia hosting.

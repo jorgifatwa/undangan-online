@@ -9,6 +9,8 @@ import { dummyFor, DUMMY_WISHES } from "@/themes/_shared/dummy";
 import { THEME_COMPONENTS } from "@/themes/components.generated";
 import { getManifest } from "@/themes/registry";
 
+import { VisitBeacon } from "@/components/analytics/VisitBeacon";
+
 import { DemoPreview } from "./DemoPreview";
 import { PreviewFocus } from "./PreviewFocus";
 import { PreviewToolbar } from "./PreviewToolbar";
@@ -177,6 +179,7 @@ export default async function PreviewPage({
         preview
       />
       {one("focus") && <PreviewFocus section={one("focus")!} />}
+      {one("bare") !== "1" && <VisitBeacon k="preview" />}
       {one("bare") !== "1" && (
         <PreviewToolbar
           themeId={manifest.id}

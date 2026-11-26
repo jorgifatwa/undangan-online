@@ -36,6 +36,11 @@ const createSchema = z.object({
   customerEmail: z.union([z.literal(""), z.email("Email tidak valid")]).optional(),
   marketplace: z.string().trim().max(40).optional(),
   marketplaceOrder: z.string().trim().max(80).optional(),
+  /** Nominal bersih diterima (opsional; kosong = harga tema). */
+  receivedAmount: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : String(v).replace(/\D/g, "")),
+    z.coerce.number().int().min(0).max(100_000_000).optional(),
+  ),
 });
 
 export interface IssuedLink {
@@ -64,6 +69,7 @@ export async function createClaimAction(raw: unknown): Promise<R<{ link: IssuedL
     customerEmail: v.customerEmail || null,
     marketplace: v.marketplace || null,
     marketplaceOrder: v.marketplaceOrder || null,
+    receivedAmount: v.receivedAmount ?? null,
     createdById: admin.id,
   });
   await audit(admin.email ?? admin.id, "claim.create", claim.invitationId, {

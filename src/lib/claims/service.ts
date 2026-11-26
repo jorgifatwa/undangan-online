@@ -77,6 +77,8 @@ export interface CreateClaimInput {
   customerEmail?: string | null;
   marketplace?: string | null;
   marketplaceOrder?: string | null;
+  /** Nominal bersih diterima (marketplace); null = harga tema. */
+  receivedAmount?: number | null;
   createdById?: string | null;
 }
 
@@ -126,6 +128,7 @@ export async function createClaim(input: CreateClaimInput, now = new Date()) {
             customerPhone: input.customerPhone ?? null,
             customerEmail: input.customerEmail ?? null,
             price,
+            receivedAmount: input.receivedAmount ?? null,
             invitationId: invitation.id,
             expiresAt,
             createdById: input.createdById ?? null,

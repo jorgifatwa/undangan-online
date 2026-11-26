@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Editor, type EditorProps } from "@/app/(dashboard)/dashboard/undangan/[id]/edit/Editor";
 
+import { sendVisit } from "@/components/analytics/VisitBeacon";
+
 import { CheckoutStep } from "./CheckoutStep";
 import { readOrderDraft, writeOrderDraft, type OrderDraft } from "./order-storage";
 
@@ -24,6 +26,7 @@ export function OrderEditor({
   const [draft, setDraft] = useState<OrderDraft | null | undefined>(undefined);
   useEffect(() => {
     setDraft(readOrderDraft(props.eventType));
+    sendVisit("pesan_mulai");
   }, [props.eventType]);
 
   const persist = useCallback(

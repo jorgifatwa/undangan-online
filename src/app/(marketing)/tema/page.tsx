@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { VisitBeacon } from "@/components/analytics/VisitBeacon";
 import { Button } from "@/components/ui/button";
 
 import { ThemeCard } from "@/components/themes/ThemeCard";
@@ -55,6 +56,7 @@ export default async function TemaPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+      <VisitBeacon k="tema" />
       <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">Tema</p>
       <h1 className="font-heading mt-3 text-4xl sm:text-5xl">Pilih tema undanganmu</h1>
       <p className="text-muted-foreground mt-3 max-w-xl">

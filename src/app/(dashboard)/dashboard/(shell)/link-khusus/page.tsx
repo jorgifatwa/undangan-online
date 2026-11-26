@@ -126,8 +126,11 @@ export default async function ClaimLinksPage() {
                       <TableCell className="hidden align-top whitespace-normal md:table-cell">
                         <p>{theme?.name ?? c.invitation.themeId}</p>
                         <p className="text-muted-foreground text-xs">
-                          {formatRupiah(c.price)} ·{" "}
-                          {c.source === "WEBSITE" ? "Website" : (c.marketplace ?? "Marketplace")}
+                          {formatRupiah(c.price)}
+                          {c.receivedAmount !== null &&
+                            c.receivedAmount !== c.price &&
+                            ` (diterima ${formatRupiah(c.receivedAmount)})`}{" "}
+                          · {c.source === "WEBSITE" ? "Website" : (c.marketplace ?? "Marketplace")}
                           {c.marketplaceOrder && ` #${c.marketplaceOrder}`}
                         </p>
                       </TableCell>

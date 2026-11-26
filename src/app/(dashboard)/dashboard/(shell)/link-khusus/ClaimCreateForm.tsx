@@ -109,6 +109,18 @@ export function ClaimCreateForm({
             <Label htmlFor="marketplaceOrder">No. pesanan (opsional)</Label>
             <Input id="marketplaceOrder" name="marketplaceOrder" maxLength={80} />
           </div>
+          <div className="grid gap-2">
+            <Label htmlFor="receivedAmount">Nominal diterima (opsional)</Label>
+            <Input
+              id="receivedAmount"
+              name="receivedAmount"
+              inputMode="numeric"
+              placeholder={`Kosong = harga tema (${formatRupiah(themes.find((t) => t.id === themeId)?.price ?? 0)})`}
+            />
+            <p className="text-muted-foreground text-xs">
+              Setelah dipotong biaya marketplace — dipakai di laporan pendapatan.
+            </p>
+          </div>
           <div className="sm:col-span-2">
             <Button type="submit" size="lg" disabled={pending}>
               <Link2 /> {pending ? "Membuat…" : "Buat link khusus"}

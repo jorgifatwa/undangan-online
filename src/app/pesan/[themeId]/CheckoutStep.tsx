@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { formatRupiah } from "@/lib/format";
 import type { ThemeManifest } from "@/themes/types";
 
+import { sendVisit } from "@/components/analytics/VisitBeacon";
+
 import { createWebOrderAction } from "../actions";
 import { readOrderDraft, rememberOrder } from "./order-storage";
 
@@ -80,6 +82,7 @@ export function CheckoutStep({
       return;
     }
     rememberOrder(r.orderId, r.viewKey, eventType);
+    sendVisit("pesan_bayar");
     window.location.href = r.redirectUrl;
   };
 

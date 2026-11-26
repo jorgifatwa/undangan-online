@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { VisitBeacon } from "@/components/analytics/VisitBeacon";
 import { Button } from "@/components/ui/button";
 import { business, waLink } from "@/config/business";
 import { INCLUDED, PAYMENT_TEXT } from "@/lib/marketing/content";
@@ -189,6 +190,7 @@ export default function HomePage() {
         <FinalCta waHref={wa} />
       </div>
       <StickyCta />
+      <VisitBeacon k="landing" />
     </main>
   );
 }

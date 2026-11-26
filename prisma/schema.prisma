@@ -573,6 +573,9 @@ model ClaimLink {
   customerEmail    String?
   /// Harga tema yang dibayar (rupiah) — ganti tema hanya ke harga yang sama.
   price            Int
+  /// Nominal bersih yang diterima (rupiah) — pesanan marketplace (setelah
+  /// dipotong biaya marketplace). null = sama dengan `price`.
+  receivedAmount   Int?
   /// Undangan draf milik link ini (dibuat bersama link).
   invitationId     String      @unique
   status           ClaimStatus @default(OPEN)
@@ -639,6 +642,17 @@ model WebOrder {
   updatedAt       DateTime       @updatedAt
 
   @@index([status, createdAt])
+}
+
+/// PENGHITUNG PENGUNJUNG website (ramah privasi): hanya jumlah per hari per
+/// halaman/peristiwa — tanpa cookie pelacak, tanpa IP, tanpa identitas.
+model PageVisit {
+  day   DateTime @db.Date
+  /// Kunci peristiwa, mis. "landing", "preview", "pesan_mulai", "pesan_bayar".
+  key   String
+  count Int      @default(0)
+
+  @@id([day, key])
 }
 
 /// Pengaturan global yang diubah super admin (mis. batas waktu link khusus).
