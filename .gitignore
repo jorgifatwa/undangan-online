@@ -54,3 +54,6 @@ next-env.d.ts
 # runtime ML (disalin dari node_modules oleh pnpm ml:assets)
 /public/ml/runtime/
 /public/licenses/
+
+# worktree git lokal
+/.worktrees/
