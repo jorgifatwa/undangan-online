@@ -28,6 +28,9 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "lisensi", // atribusi komponen pihak ketiga
   "licenses", // berkas lisensi (public/licenses)
   "ml", // model & runtime ML yang di-host sendiri (public/ml)
+  "brand", // logo (public/brand)
+  "icon", // ikon tab (src/app/icon.svg)
+  "apple-icon", // ikon layar beranda iOS (src/app/apple-icon.png)
   "og",
   // --- Akun & autentikasi ---
   "daftar",

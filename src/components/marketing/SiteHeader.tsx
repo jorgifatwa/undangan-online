@@ -16,6 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Logo } from "@/components/brand/Logo";
 import { business } from "@/config/business";
 
 import { AuthButtons } from "./AuthButtons";
@@ -29,15 +30,8 @@ const NAV = [
 
 function Brand() {
   return (
-    <Link
-      href="/"
-      className="font-heading text-xl tracking-tight sm:text-2xl"
-      aria-label={`${business.name} — beranda`}
-    >
-      {business.name}
-      <span className="text-gold" aria-hidden>
-        .
-      </span>
+    <Link href="/" aria-label={`${business.name} — beranda`} className="shrink-0">
+      <Logo className="h-7 sm:h-8" />
     </Link>
   );
 }
@@ -73,9 +67,9 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
               <SheetHeader>
-                <SheetTitle className="font-heading text-2xl">
-                  {business.name}
-                  <span className="text-gold">.</span>
+                <SheetTitle>
+                  <Logo className="h-7" />
+                  <span className="sr-only">{business.name}</span>
                 </SheetTitle>
                 <SheetDescription>{business.tagline}</SheetDescription>
               </SheetHeader>

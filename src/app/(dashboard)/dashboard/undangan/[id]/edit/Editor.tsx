@@ -19,6 +19,7 @@ import { prune } from "@/lib/editor/prune";
 import { shareInfo } from "@/lib/invitations/share";
 import { fromPreviewSchema, parseMessage, type ToPreview } from "@/lib/editor/protocol";
 import type { Entitlements } from "@/lib/pricing";
+import { LogoMark } from "@/components/brand/Logo";
 import { SuspendedNotice } from "@/components/dashboard/SuspendedNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1214,9 +1215,7 @@ export function Editor(p: EditorProps) {
               {/* Kartu form: daftar langkah (kiri) + isian (kanan) */}
               <div className="bg-card flex h-dvh min-w-0 flex-1 overflow-hidden border shadow-[0_30px_80px_-40px_rgb(80_40_20/0.35)] sm:h-[calc(100dvh-2.5rem)] sm:rounded-[28px] lg:h-[calc(100dvh-3rem)]">
                 <aside className="bg-muted/70 m-2 hidden w-64 shrink-0 flex-col rounded-[22px] p-5 md:flex">
-                  <p className="font-heading text-primary text-3xl leading-none">
-                    U<span className="text-gold">.</span>
-                  </p>
+                  <LogoMark className="size-11" />
                   <h1 className="font-heading mt-6 text-2xl leading-tight">{cardTitle}</h1>
                   {mode !== "local" && (
                     <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{p.title}</p>

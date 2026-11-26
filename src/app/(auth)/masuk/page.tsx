@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
+import { Logo } from "@/components/brand/Logo";
 import { GoogleIcon } from "@/components/layout/google-icon";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -74,9 +75,8 @@ export default async function MasukPage({
             width={260}
             className="pointer-events-none absolute -top-6 -right-8 z-[1] w-52 opacity-90 drop-shadow-2xl"
           />
-          <Link href="/" className="font-heading relative z-[2] text-2xl">
-            {siteConfig.name}
-            <span className="text-gold">.</span>
+          <Link href="/" className="relative z-[2] w-fit" aria-label={siteConfig.name}>
+            <Logo variant="emas" className="h-8" />
           </Link>
           <div className="relative z-[2] mt-auto">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-sm backdrop-blur">
@@ -116,9 +116,8 @@ export default async function MasukPage({
 
         {/* Panel kanan: form */}
         <section className="flex flex-col justify-center px-5 py-10 sm:px-10 lg:px-14">
-          <Link href="/" className="font-heading mb-8 text-center text-2xl md:hidden">
-            {siteConfig.name}
-            <span className="text-gold">.</span>
+          <Link href="/" className="mx-auto mb-8 md:hidden" aria-label={siteConfig.name}>
+            <Logo className="h-8" />
           </Link>
           <div className="mx-auto w-full max-w-sm">
             <h1 className="font-heading text-center text-4xl tracking-tight">

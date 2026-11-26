@@ -1,3 +1,4 @@
+import { LogoMark } from "@/components/brand/Logo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteConfig } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -26,9 +27,8 @@ export function CenterCard({
         )}
       >
         <CardHeader className="px-8">
-          <p className="text-gold text-[11px] font-semibold tracking-[0.24em] uppercase">
-            {siteConfig.name}
-          </p>
+          <LogoMark className="mx-auto size-12" />
+          <span className="sr-only">{siteConfig.name}</span>
           <CardTitle className="font-heading mt-3 text-3xl leading-tight font-normal">
             {title}
           </CardTitle>

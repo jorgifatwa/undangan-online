@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { LogoMark } from "@/components/brand/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -68,9 +69,7 @@ export function AdminSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <span className="bg-sidebar-primary text-sidebar-primary-foreground grid size-8 shrink-0 place-items-center rounded-lg">
-                  <Sparkles className="size-4" />
-                </span>
+                <LogoMark className="size-8 shrink-0" />
                 <span className="grid leading-tight">
                   <span className="font-heading truncate text-base">{brand}</span>
                   <span className="text-muted-foreground truncate text-xs">Panel admin</span>

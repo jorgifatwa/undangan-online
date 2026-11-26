@@ -1,6 +1,7 @@
 import { Mail, MapPin } from "lucide-react";
 import Link from "next/link";
 
+import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { business, hasContact, instagramLink, waLink } from "@/config/business";
@@ -24,10 +25,7 @@ export function SiteFooter() {
     <footer className="bg-sand paper border-t">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <p className="font-heading text-2xl">
-            {business.name}
-            <span className="text-gold">.</span>
-          </p>
+          <Logo variant="tagline" className="h-14" />
           <p className="text-muted-foreground mt-2 max-w-sm text-sm">{business.tagline}.</p>
           {business.about && (
             <p className="text-muted-foreground mt-3 max-w-sm text-sm">{business.about}</p>

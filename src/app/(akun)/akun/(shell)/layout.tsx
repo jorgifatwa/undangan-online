@@ -2,6 +2,7 @@ import { LogOut } from "lucide-react";
 import Link from "next/link";
 
 import { signOut } from "@/auth";
+import { Logo } from "@/components/brand/Logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -29,9 +30,8 @@ export default async function AkunLayout({ children }: { children: React.ReactNo
     <div className="min-h-dvh">
       <header className="bg-background/80 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4">
-          <Link href="/akun" className="font-heading text-xl">
-            {siteConfig.name}
-            <span className="text-gold">.</span>
+          <Link href="/akun" aria-label={siteConfig.name}>
+            <Logo className="h-7" />
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
