@@ -15,7 +15,8 @@ export async function requireUser() {
   if (session.user.role === "CUSTOMER") redirect("/akun");
   // Model jasa: dashboard/editor hanya untuk admin — diperiksa di setiap
   // request, termasuk server action, bukan hanya di middleware.
-  if (!canUseDashboard(session.user.email)) redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
+  if (!canUseDashboard(session.user.email, session.user.role))
+    redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
   return session.user;
 }
 
@@ -46,6 +47,7 @@ export async function requireMember() {
   const session = await auth();
   if (!session?.user?.id) redirect("/masuk");
   if (session.user.role === "CUSTOMER") return session.user;
-  if (!canUseDashboard(session.user.email)) redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
+  if (!canUseDashboard(session.user.email, session.user.role))
+    redirect(`/masuk?error=${NOT_ADMIN_ERROR}`);
   return session.user;
 }

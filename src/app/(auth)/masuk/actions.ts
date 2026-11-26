@@ -14,7 +14,8 @@ export async function customerLoginAction(
     await signIn("credentials", {
       email,
       password: String(form.get("password") ?? ""),
-      redirectTo: "/akun",
+      // /masuk mengarahkan sesuai role: pembeli → /akun, admin → /dashboard
+      redirectTo: "/masuk",
     });
   } catch (e) {
     // email dikembalikan agar form (yang direset React setelah action) tetap terisi

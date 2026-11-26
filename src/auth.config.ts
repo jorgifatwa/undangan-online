@@ -28,7 +28,7 @@ export const authConfig = {
      * SEBELUM akun dibuat, jadi email lain tidak pernah tersimpan.
      */
     signIn({ user, account }) {
-      if (canUseDashboard(user?.email)) return true;
+      if (canUseDashboard(user?.email, user?.role)) return true;
       // Akun pembeli (dibuat admin) — hanya lewat email/kata sandi.
       if (account?.provider === "credentials" && user?.role === "CUSTOMER") return true;
       return `/masuk?error=${NOT_ADMIN_ERROR}`;
@@ -37,7 +37,7 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const p = nextUrl.pathname;
       if (p.startsWith("/dashboard"))
-        return Boolean(auth?.user) && canUseDashboard(auth?.user?.email);
+        return Boolean(auth?.user) && canUseDashboard(auth?.user?.email, auth?.user?.role);
       if (p === "/akun" || p.startsWith("/akun/")) return auth?.user?.role === "CUSTOMER";
       return true;
     },

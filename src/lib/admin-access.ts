@@ -25,9 +25,13 @@ export function isAdminEmail(email: string | null | undefined): boolean {
   return process.env.NODE_ENV !== "production" && e.endsWith("@test.local");
 }
 
-/** Boleh memakai dashboard/editor: semua user (layanan mandiri) atau admin saja. */
-export function canUseDashboard(email: string | null | undefined): boolean {
-  return business.selfService || isAdminEmail(email);
+/**
+ * Boleh memakai dashboard/editor: semua user (layanan mandiri) atau admin saja.
+ * Admin = email di ADMIN_EMAILS ATAU akun ber-role ADMIN di database (dibuat
+ * lewat `pnpm admin:create`, login email + kata sandi).
+ */
+export function canUseDashboard(email: string | null | undefined, role?: string | null): boolean {
+  return business.selfService || isAdminEmail(email) || role === "ADMIN";
 }
 
 /** Kode error di /masuk?error=… untuk email yang bukan admin. */

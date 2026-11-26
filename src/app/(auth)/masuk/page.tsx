@@ -37,7 +37,7 @@ export default async function MasukPage({
   if (session?.user?.role === "CUSTOMER") redirect("/akun");
   // Sesi lama milik email non-admin: jangan dialihkan ke dashboard (akan
   // kembali ke sini terus) — tampilkan pesan & tombol keluar.
-  const blocked = !!session?.user && !canUseDashboard(session.user.email);
+  const blocked = !!session?.user && !canUseDashboard(session.user.email, session.user.role);
   if (session?.user && !blocked) redirect(redirectTo);
 
   const errorKey = blocked ? NOT_ADMIN_ERROR : error;
